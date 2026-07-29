@@ -3,15 +3,1205 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Competitor Analysis AI — Sketch Your Competitive Edge</title>
-    <meta name="description" content="AI-powered competitive intelligence. Analyze any competitor and get executive-ready SWOT reports, strategic recommendations, and differentiation insights." />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✏️</text></svg>" />
+    <title>Aetheris — AI-Powered Competitive Intelligence Platform</title>
+    <meta name="description" content="Drop in any competitor's URL. Our AI scrapes, analyzes, and hands you a boardroom-ready strategy report in 60 seconds — with actionable next steps, not fluff." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'>⚡</text></svg>" />
+    
+    <!-- Google Fonts: Outfit for headings, Plus Jakarta Sans for body, Kalam/Patrick Hand for mockup reports -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Kalam:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind Configuration for Playful Geometric Design System -->
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              paperBg: '#FFFDF5',
+              darkBg: '#0B0F1A',
+              slateFg: '#1E293B',
+              accent: '#8B5CF6',      // Vivid Violet
+              secondary: '#F472B6',   // Hot Pink
+              tertiary: '#FBBF24',    // Yellow
+              quaternary: '#34D399',  // Mint
+            },
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+              heading: ['"Outfit"', 'system-ui', 'sans-serif'],
+              kalam: ['Kalam', 'cursive'],
+              patrick: ['"Patrick Hand"', 'cursive'],
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Custom CSS for dot grids, hard shadows, bouncy transitions -->
+    <style type="text/css">
+      html {
+        scroll-behavior: smooth;
+      }
+      
+      /* Dot Grid Background Texture */
+      .dot-grid {
+        background-image: radial-gradient(#e2e8f0 2px, transparent 2px);
+        background-size: 24px 24px;
+      }
+      .dark .dot-grid {
+        background-image: radial-gradient(#1e293b 2px, transparent 2px);
+        background-size: 24px 24px;
+      }
+
+      /* Chunky Borders & Custom Shadows */
+      .chunky-border {
+        border: 2px solid #1E293B;
+      }
+      .dark .chunky-border {
+        border: 2px solid #cbd5e1;
+      }
+
+      /* Hard Offset Shadows */
+      .pop-shadow-accent {
+        box-shadow: 4px 4px 0px 0px #1E293B;
+      }
+      .dark .pop-shadow-accent {
+        box-shadow: 4px 4px 0px 0px #cbd5e1;
+      }
+
+      .pop-shadow-pink {
+        box-shadow: 4px 4px 0px 0px #F472B6;
+      }
+      .pop-shadow-yellow {
+        box-shadow: 4px 4px 0px 0px #FBBF24;
+      }
+      .pop-shadow-mint {
+        box-shadow: 4px 4px 0px 0px #34D399;
+      }
+      .pop-shadow-slate {
+        box-shadow: 4px 4px 0px 0px #64748B;
+      }
+
+      .pop-shadow-lg {
+        box-shadow: 8px 8px 0px 0px #1E293B;
+      }
+      .dark .pop-shadow-lg {
+        box-shadow: 8px 8px 0px 0px #cbd5e1;
+      }
+      
+      .pop-shadow-lg-pink {
+        box-shadow: 8px 8px 0px 0px #F472B6;
+      }
+
+      /* Bouncy transition easing curve */
+      .bouncy-transition {
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      /* Floating animation for hero mockup */
+      @keyframes float-report {
+        0%, 100% {
+          transform: translateY(0) rotate(-3deg);
+        }
+        50% {
+          transform: translateY(-8px) rotate(-1.5deg);
+        }
+      }
+      @keyframes float-toast {
+        0%, 100% {
+          transform: translateY(0) translate(0, 0);
+        }
+        50% {
+          transform: translateY(-6px) translate(3px, -3px);
+        }
+      }
+      @keyframes float-bubble {
+        0%, 100% {
+          transform: translateY(0) rotate(6deg) translate(0, 0);
+        }
+        50% {
+          transform: translateY(-5px) rotate(4deg) translate(-2px, 2px);
+        }
+      }
+
+      .animate-float-report {
+        animation: float-report 6s ease-in-out infinite;
+      }
+      .animate-float-toast {
+        animation: float-toast 6s ease-in-out infinite 0.4s;
+      }
+      .animate-float-bubble {
+        animation: float-bubble 6s ease-in-out infinite 0.8s;
+      }
+
+      /* Scroll animations elements */
+      .fade-up-element {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .fade-up-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Accordion Content height toggle */
+      .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      /* Custom scrollbar matching styling */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #FFFDF5;
+      }
+      .dark ::-webkit-scrollbar-track {
+        background: #0B0F1A;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border: 2px solid #FFFDF5;
+        border-radius: 9999px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border: 2px solid #0B0F1A;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+    </style>
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+  <body class="bg-paperBg dark:bg-darkBg text-slateFg dark:text-slate-100 font-sans transition-colors duration-200 antialiased selection:bg-tertiary selection:text-slateFg">
+    
+    <!-- ─── NAVBAR (Sticky Glassmorphism) ────────────────── -->
+    <nav id="navbar" class="sticky top-0 z-50 w-full transition-all duration-300 bg-paperBg/0 dark:bg-darkBg/0 border-b-2 border-transparent">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+          
+          <!-- Logo & Wordmark -->
+          <a href="/" class="flex items-center gap-2 group shrink-0">
+            <div class="w-9 h-9 rounded-xl bg-accent text-white flex items-center justify-center chunky-border pop-shadow-accent group-hover:rotate-12 group-hover:scale-105 bouncy-transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 8V5a2 2 0 0 1 2-2h3"/>
+                <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+                <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+                <path d="M21 16v3a2 2 0 0 1-2 2h-3"/>
+                <path d="M8 12s2.5-4 4-4 4 4 4 4-2.5 4-4 4-4-4-4-4z"/>
+                <circle cx="12" cy="12" r="2"/>
+              </svg>
+            </div>
+            <span class="font-heading font-extrabold text-2xl tracking-tight text-slateFg dark:text-white">
+              Aetheris
+            </span>
+          </a>
+
+          <!-- Navigation Links (Desktop) -->
+          <div class="hidden md:flex items-center gap-8">
+            <a href="#features" class="font-heading font-bold text-sm text-slateFg dark:text-slate-300 hover:text-accent dark:hover:text-accent bouncy-transition">Features</a>
+            <a href="#how-it-works" class="font-heading font-bold text-sm text-slateFg dark:text-slate-300 hover:text-accent dark:hover:text-accent bouncy-transition">How it Works</a>
+            <a href="#example-report" class="font-heading font-bold text-sm text-slateFg dark:text-slate-300 hover:text-accent dark:hover:text-accent bouncy-transition">Example Report</a>
+          </div>
+
+          <!-- Actions (Desktop) -->
+          <div class="hidden md:flex items-center gap-4">
+            <!-- Theme Toggle -->
+            <button id="dark-mode-toggle" class="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-900 chunky-border rounded-xl pop-shadow-accent hover:translate-y-[-2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#1E293B] dark:active:shadow-[2px_2px_0px_0px_#cbd5e1] bouncy-transition" aria-label="Toggle theme">
+              <i data-lucide="moon" class="w-5 h-5 hidden dark:block text-tertiary"></i>
+              <i data-lucide="sun" class="w-5 h-5 block dark:hidden text-slateFg"></i>
+            </button>
+
+            <a href="/login/" class="font-heading font-bold text-sm text-slateFg dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/40 px-4 py-2 rounded-xl bouncy-transition">Sign in</a>
+            
+            <!-- Candy Button -->
+            <a href="/signup/" class="flex items-center gap-2 bg-accent text-white font-heading font-bold text-sm px-5 py-3 rounded-full chunky-border pop-shadow-accent hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#1E293B] dark:hover:shadow-[6px_6px_0px_0px_#cbd5e1] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#1E293B] bouncy-transition">
+              Get Started Free
+              <span class="w-5 h-5 rounded-full bg-white text-accent flex items-center justify-center shrink-0">
+                <i data-lucide="arrow-right" class="w-3 h-3 stroke-[3px]"></i>
+              </span>
+            </a>
+          </div>
+
+          <!-- Mobile Hamburger Controls -->
+          <div class="flex items-center md:hidden gap-3">
+            <button id="dark-mode-toggle-mobile" class="w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-900 chunky-border rounded-lg pop-shadow-accent" aria-label="Toggle theme">
+              <i data-lucide="moon" class="w-4 h-4 hidden dark:block text-tertiary"></i>
+              <i data-lucide="sun" class="w-4 h-4 block dark:hidden text-slateFg"></i>
+            </button>
+            <button id="mobile-menu-trigger" class="w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-900 chunky-border rounded-lg pop-shadow-accent" aria-label="Open menu">
+              <i data-lucide="menu" class="w-4.5 h-4.5 text-slateFg dark:text-white"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile Slide-out Menu -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <div id="mobile-menu" class="fixed right-0 top-0 bottom-0 z-50 w-72 max-w-xs bg-paperBg dark:bg-slate-950 border-l-2 border-slateFg dark:border-slate-700 p-6 flex flex-col justify-between translate-x-full transition-transform duration-300 ease-in-out">
+      <div>
+        <div class="flex items-center justify-between mb-8">
+          <span class="font-heading font-extrabold text-xl text-slateFg dark:text-white">Menu</span>
+          <button id="mobile-menu-close" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg bouncy-transition" aria-label="Close menu">
+            <i data-lucide="x" class="w-5 h-5 text-slateFg dark:text-white"></i>
+          </button>
+        </div>
+        <div class="flex flex-col gap-6">
+          <a href="#features" class="font-heading font-bold text-lg text-slateFg dark:text-slate-300 hover:text-accent bouncy-transition mobile-link">Features</a>
+          <a href="#how-it-works" class="font-heading font-bold text-lg text-slateFg dark:text-slate-300 hover:text-accent bouncy-transition mobile-link">How it Works</a>
+          <a href="#example-report" class="font-heading font-bold text-lg text-slateFg dark:text-slate-300 hover:text-accent bouncy-transition mobile-link">Example Report</a>
+        </div>
+      </div>
+      <div class="flex flex-col gap-4 border-t-2 border-slateFg dark:border-slate-800 pt-6">
+        <a href="/login/" class="w-full text-center py-3 font-heading font-bold text-slateFg dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 bouncy-transition">Sign in</a>
+        <a href="/signup/" class="w-full text-center py-3 bg-accent text-white font-heading font-bold rounded-xl chunky-border pop-shadow-accent hover:translate-y-[-2px] active:translate-y-[2px] bouncy-transition">Get Started Free</a>
+      </div>
+    </div>
+
+
+    <!-- ─── HERO SECTION ────────────────────────────────── -->
+    <header class="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28 lg:pt-24 lg:pb-32 dot-grid">
+      <!-- Memphis Geometric Background Ornaments -->
+      <div class="absolute -top-12 left-[15%] w-24 h-24 rounded-full bg-secondary/15 dark:bg-secondary/10 pointer-events-none hidden md:block"></div>
+      <div class="absolute top-[60%] right-[8%] w-16 h-16 border-4 border-dashed border-quaternary/30 rounded-lg pointer-events-none hidden md:block rotate-12"></div>
+      <div class="absolute bottom-6 left-[6%] w-20 h-8 rounded-full bg-tertiary/15 dark:bg-tertiary/10 pointer-events-none hidden md:block -rotate-12"></div>
+
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          
+          <!-- Hero Left Column (60%) -->
+          <div class="lg:col-span-7 flex flex-col justify-center text-left fade-up-element fade-up-visible">
+            
+            <!-- Alpha Access Badge -->
+            <div class="inline-flex items-center gap-1.5 self-start px-4 py-2 rounded-full bg-tertiary text-slateFg font-heading font-extrabold text-xs uppercase tracking-wider chunky-border pop-shadow-accent mb-6 select-none">
+              <span class="w-2 h-2 bg-slateFg rounded-full animate-ping"></span>
+              Limited access list open
+            </div>
+
+            <!-- H1 -->
+            <h1 class="font-heading text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.05] text-slateFg dark:text-white">
+              Know your competitors better than <span class="bg-gradient-to-r from-accent via-secondary to-tertiary bg-clip-text text-transparent">they know themselves</span>.
+            </h1>
+
+            <!-- Subhead -->
+            <p class="mt-6 text-base md:text-lg text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-xl">
+              Drop in any competitor's URL. Our AI scrapes, analyzes, and hands you a boardroom-ready strategy report in 60 seconds — with actionable next steps, not fluff.
+            </p>
+
+            <!-- Buttons -->
+            <div class="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <!-- Candy Button -->
+              <a href="/signup/" class="flex items-center justify-center gap-2 bg-accent text-white font-heading font-extrabold text-lg px-8 py-4 rounded-full chunky-border pop-shadow-accent hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#1E293B] dark:hover:shadow-[6px_6px_0px_0px_#cbd5e1] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_#1E293B] bouncy-transition">
+                Get Started Free
+                <span class="w-6 h-6 rounded-full bg-white text-accent flex items-center justify-center shrink-0">
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 stroke-[3px]"></i>
+                </span>
+              </a>
+
+              <!-- Secondary hover-fill Button -->
+              <a href="/dashboard/" class="flex items-center justify-center gap-2 font-heading font-bold text-lg px-8 py-4 rounded-full bg-white dark:bg-slate-900 text-slateFg dark:text-slate-300 chunky-border hover:bg-tertiary dark:hover:bg-tertiary hover:text-slateFg active:translate-y-[2px] bouncy-transition">
+                <i data-lucide="play" class="w-5 h-5 fill-current"></i> View Live Demo
+              </a>
+            </div>
+
+            <!-- Bullet checkoff list -->
+            <div class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs md:text-sm text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+              <span class="flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-quaternary"></i> Free signup</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-quaternary"></i> No credit card</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-quaternary"></i> Reports in 60 seconds</span>
+            </div>
+
+          </div>
+
+          <!-- Hero Right Column (40%): Float Report Mockup -->
+          <div class="lg:col-span-5 relative mt-12 lg:mt-0 flex justify-center items-center fade-up-element fade-up-visible" style="transition-delay: 100ms;">
+            
+            <!-- Memphis abstract element background -->
+            <div class="absolute w-60 h-60 bg-accent/10 rounded-full border-4 border-dashed border-accent/20 animate-spin-slow pointer-events-none"></div>
+
+            <!-- Real Mockup Report Card (uses hand-drawn fonts for contrast/tactile feel) -->
+            <div class="relative animate-float-report bg-[#fdfbf7] text-[#2d2d2d] border-[3px] border-[#2d2d2d] p-5 w-full max-w-[390px] rounded-xl shadow-hard font-patrick leading-relaxed select-none transform z-10">
+              
+              <!-- Report header -->
+              <div class="flex items-center justify-between border-b-2 border-dashed border-[#e5e0d8] pb-3 mb-4">
+                <div>
+                  <h4 class="font-kalam font-bold text-lg text-slate-900 leading-tight">Aetheris Intelligence Report</h4>
+                  <span class="text-xs text-slate-500 font-sans tracking-wide uppercase">Domain: nike.com</span>
+                </div>
+                <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-50/10 text-emerald-700 text-xs font-semibold font-sans">
+                  <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Monitor Live
+                </div>
+              </div>
+
+              <!-- SWOT matrix -->
+              <div class="mb-4">
+                <span class="font-kalam font-bold text-xs uppercase text-slate-500 block mb-1">Product SWOT Summary</span>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="bg-[#d4edda] border border-[#2d2d2d] p-2 rounded flex flex-col">
+                    <span class="font-kalam font-bold text-emerald-800">Strengths</span>
+                    <span class="text-[10px] leading-tight text-emerald-950/80">World-class brand equity & DTC distribution channels.</span>
+                  </div>
+                  <div class="bg-[#fde2e2] border border-[#2d2d2d] p-2 rounded flex flex-col">
+                    <span class="font-kalam font-bold text-red-800">Weaknesses</span>
+                    <span class="text-[10px] leading-tight text-red-950/80">High inventory overheads & low supply adaptability.</span>
+                  </div>
+                  <div class="bg-[#d6eaf8] border border-[#2d2d2d] p-2 rounded flex flex-col">
+                    <span class="font-kalam font-bold text-blue-800">Opportunities</span>
+                    <span class="text-[10px] leading-tight text-blue-950/80">Expand sustainable apparel & hyper-local digital events.</span>
+                  </div>
+                  <div class="bg-[#fff3cd] border border-[#2d2d2d] p-2 rounded flex flex-col">
+                    <span class="font-kalam font-bold text-amber-800">Threats</span>
+                    <span class="text-[10px] leading-tight text-amber-950/80">Intense niche DTC athletic brand differentiation.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Priorities table -->
+              <div>
+                <span class="font-kalam font-bold text-xs uppercase text-slate-500 block mb-1.5">Actionable Next Steps</span>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 border-b border-dashed border-[#e5e0d8] pb-1.5">
+                    <span class="w-5 h-5 flex items-center justify-center rounded-full bg-red-100 text-red-700 text-[10px] font-bold border border-red-400">P0</span>
+                    <span class="text-xs leading-none font-bold text-slate-800">Audit DTC checkouts for cart friction</span>
+                  </div>
+                  <div class="flex items-center gap-2 border-b border-dashed border-[#e5e0d8] pb-1.5">
+                    <span class="w-5 h-5 flex items-center justify-center rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold border border-amber-400">P1</span>
+                    <span class="text-xs leading-none font-bold text-slate-800">Launch urban running microsites</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-5 h-5 flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold border border-blue-400">P2</span>
+                    <span class="text-xs leading-none font-bold text-slate-800">Recycle raw factory leather cutoffs</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Floating Notification Toast Card (Top-Right) -->
+            <div class="absolute -top-6 -right-2 md:-right-6 animate-float-toast bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 rounded-xl p-3.5 flex items-center gap-3 shadow-hard select-none z-20">
+              <div class="w-8 h-8 rounded-lg bg-accent text-white flex items-center justify-center shrink-0">
+                <i data-lucide="sparkles" class="w-4 h-4 fill-current"></i>
+              </div>
+              <div class="flex flex-col text-left">
+                <span class="font-heading font-extrabold text-xs text-slateFg dark:text-white">Report is ready!</span>
+                <span class="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">nike.com updated</span>
+              </div>
+            </div>
+
+            <!-- Floating Sticker Post-it Bubble (Bottom-Left) -->
+            <div class="absolute -bottom-8 -left-4 md:-left-8 animate-float-bubble bg-tertiary text-slateFg border-2 border-slateFg p-3 rounded-lg shadow-hard flex flex-col font-patrick text-sm max-w-[125px] rotate-[6deg] z-20 select-none">
+              <div class="absolute top-1 left-1/2 -translate-x-1/2 w-8 h-2.5 bg-slateFg/10 rounded-sm"></div>
+              <p class="mt-1 leading-tight text-center font-bold">This is wild 🤯</p>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+
+    <!-- ─── FEATURES (6 Sticker Cards Grid) ──────────────── -->
+    <section id="features" class="py-24 md:py-32 relative">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <!-- Header -->
+        <div class="text-center max-w-3xl mx-auto mb-20 md:mb-24 fade-up-element">
+          <h2 class="font-heading text-4xl sm:text-5xl font-black tracking-tight text-slateFg dark:text-white">
+            Everything you need to <span class="bg-secondary text-white px-3 py-1 rounded-tl-2xl rounded-br-2xl rounded-tr-none rounded-bl-none inline-block transform rotate-[-2deg]">outmaneuver</span> the competition
+          </h2>
+          <p class="mt-6 text-base md:text-lg text-slate-600 dark:text-slate-300 font-medium">
+            From raw competitor website to strategic boardroom playbook — in 60 seconds.
+          </p>
+        </div>
+
+        <!-- Grid of 6 Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          
+          <!-- Card 1 (Violet Shadow) -->
+          <div class="fade-up-element group bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 p-8 rounded-2xl pop-shadow-accent hover:-translate-y-2 hover:rotate-[1deg] hover:scale-[1.02] hover:shadow-accent dark:hover:shadow-accent bouncy-transition relative pt-12">
+            <!-- Icon floating badge half-in/half-out -->
+            <div class="absolute -top-6 left-8 w-12 h-12 rounded-xl bg-accent text-white flex items-center justify-center chunky-border pop-shadow-accent group-hover:rotate-[-12deg] bouncy-transition">
+              <i data-lucide="scan-eye" class="w-6 h-6 stroke-[2.5px]"></i>
+            </div>
+            <h3 class="font-heading font-black text-xl mb-3 text-slateFg dark:text-white">Deep Website Scan</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
+              Crawls 100+ pages including core product definitions, pricing tables, service terms, and SEO directory signals.
+            </p>
+          </div>
+
+          <!-- Card 2 (Pink Shadow) -->
+          <div class="fade-up-element group bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 p-8 rounded-2xl pop-shadow-pink hover:-translate-y-2 hover:rotate-[-1deg] hover:scale-[1.02] hover:shadow-pink bouncy-transition relative pt-12" style="transition-delay: 80ms;">
+            <div class="absolute -top-6 left-8 w-12 h-12 rounded-xl bg-secondary text-white flex items-center justify-center chunky-border pop-shadow-pink group-hover:rotate-[12deg] bouncy-transition">
+              <i data-lucide="brain" class="w-6 h-6 stroke-[2.5px]"></i>
+            </div>
+            <h3 class="font-heading font-black text-xl mb-3 text-slateFg dark:text-white">GPT-4o Strategy Engine</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
+              Not just raw data dumps — high-fidelity strategy recommendations tied dynamically to your specific target context.
+            </p>
+          </div>
+
+          <!-- Card 3 (Yellow Shadow) -->
+          <div class="fade-up-element group bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 p-8 rounded-2xl pop-shadow-yellow hover:-translate-y-2 hover:rotate-[1deg] hover:scale-[1.02] hover:shadow-yellow bouncy-transition relative pt-12" style="transition-delay: 160ms;">
+            <div class="absolute -top-6 left-8 w-12 h-12 rounded-xl bg-tertiary text-slateFg flex items-center justify-center chunky-border pop-shadow-yellow group-hover:rotate-[-12deg] bouncy-transition">
+              <i data-lucide="target" class="w-6 h-6 stroke-[2.5px]"></i>
+            </div>
+            <h3 class="font-heading font-black text-xl mb-3 text-slateFg dark:text-white">SWOT + Positioning</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
+              Full structured competitive matrixes outlining market gaps, internal vulnerabilities, and targeted brand differentiation.
+            </p>
+          </div>
+
+          <!-- Card 4 (Mint Shadow) -->
+          <div class="fade-up-element group bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 p-8 rounded-2xl pop-shadow-mint hover:-translate-y-2 hover:rotate-[-1deg] hover:scale-[1.02] hover:shadow-mint bouncy-transition relative pt-12">
+            <div class="absolute -top-6 left-8 w-12 h-12 rounded-xl bg-quaternary text-slateFg flex items-center justify-center chunky-border pop-shadow-mint group-hover:rotate-[12deg] bouncy-transition">
+              <i data-lucide="zap" class="w-6 h-6 stroke-[2.5px]"></i>
+            </div>
+            <h3 class="font-heading font-black text-xl mb-3 text-slateFg dark:text-white">Actionable Next Steps</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
+              P0/P1/P2 task hierarchies containing suggestions for department ownership, executive rationale, and estimated impact.
+            </p>
+          </div>
+
+          <!-- Card 5 (Violet Shadow) -->
+          <div class="fade-up-element group bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 p-8 rounded-2xl pop-shadow-accent hover:-translate-y-2 hover:rotate-[1deg] hover:scale-[1.02] hover:shadow-accent dark:hover:shadow-accent bouncy-transition relative pt-12" style="transition-delay: 80ms;">
+            <div class="absolute -top-6 left-8 w-12 h-12 rounded-xl bg-accent text-white flex items-center justify-center chunky-border pop-shadow-accent group-hover:rotate-[-12deg] bouncy-transition">
+              <i data-lucide="users" class="w-6 h-6 stroke-[2.5px]"></i>
+            </div>
+            <h3 class="font-heading font-black text-xl mb-3 text-slateFg dark:text-white">Social Signal Mining</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
+              Monitors public reviews and customer complaints to isolate gaps in your competitor's marketing and product experience.
+            </p>
+          </div>
+
+          <!-- Card 6 (Pink Shadow) -->
+          <div class="fade-up-element group bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 p-8 rounded-2xl pop-shadow-pink hover:-translate-y-2 hover:rotate-[-1deg] hover:scale-[1.02] hover:shadow-pink bouncy-transition relative pt-12" style="transition-delay: 160ms;">
+            <div class="absolute -top-6 left-8 w-12 h-12 rounded-xl bg-secondary text-white flex items-center justify-center chunky-border pop-shadow-pink group-hover:rotate-[12deg] bouncy-transition">
+              <i data-lucide="file-text" class="w-6 h-6 stroke-[2.5px]"></i>
+            </div>
+            <h3 class="font-heading font-black text-xl mb-3 text-slateFg dark:text-white">Export-Ready Reports</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
+              Beautiful structured reports in Markdown + JSON. Import directly into Notion docs, Slack channels, or save to PDF.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ─── HOW IT WORKS (Connected Memphis Steps) ──────── -->
+    <section id="how-it-works" class="py-24 md:py-32 bg-slate-100/40 dark:bg-slate-900/20 relative border-y-2 border-slateFg dark:border-slate-800">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <!-- Header -->
+        <div class="text-center max-w-2xl mx-auto mb-24 fade-up-element">
+          <h2 class="font-heading text-4xl sm:text-5xl font-black tracking-tight text-slateFg dark:text-white">
+            From URL to strategy in 3 steps
+          </h2>
+          <p class="mt-4 text-base md:text-lg text-slate-600 dark:text-slate-300 font-medium">
+            Building structured competitive databases in seconds.
+          </p>
+        </div>
+
+        <!-- Dashed Connector Line in background (Desktop only) -->
+        <div class="absolute top-[48%] left-[10%] right-[10%] hidden lg:block border-t-2 border-dashed border-slateFg dark:border-slate-600 h-0.5 opacity-30 pointer-events-none"></div>
+
+        <!-- 3 Step Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-8 relative">
+          
+          <!-- Step 1 (Pink Accent) -->
+          <div class="fade-up-element bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 p-8 rounded-2xl pop-shadow-pink hover:scale-105 hover:rotate-1 bouncy-transition flex flex-col items-center text-center">
+            <div class="w-14 h-14 rounded-2xl bg-secondary text-white border-2 border-slateFg dark:border-slate-200 shadow-[3px_3px_0px_0px_#1E293B] flex items-center justify-center mb-6">
+              <i data-lucide="globe" class="w-6.5 h-6.5 stroke-[2.5px]"></i>
+            </div>
+            <span class="font-heading font-black text-xs text-secondary uppercase tracking-widest block mb-2">Step 01</span>
+            <h3 class="font-heading font-black text-xl text-slateFg dark:text-white mb-2">Drop the URL</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+              Paste the main domain of your competitor, and link their social handles to run consumer sentiment audits.
+            </p>
+          </div>
+
+          <!-- Step 2 (Yellow Accent) -->
+          <div class="fade-up-element bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 p-8 rounded-2xl pop-shadow-yellow hover:scale-105 hover:rotate-[-1deg] bouncy-transition flex flex-col items-center text-center" style="transition-delay: 80ms;">
+            <div class="w-14 h-14 rounded-2xl bg-tertiary text-slateFg border-2 border-slateFg dark:border-slate-200 shadow-[3px_3px_0px_0px_#1E293B] flex items-center justify-center mb-6">
+              <i data-lucide="cpu" class="w-6.5 h-6.5 stroke-[2.5px]"></i>
+            </div>
+            <span class="font-heading font-black text-xs text-tertiary uppercase tracking-widest block mb-2">Step 02</span>
+            <h3 class="font-heading font-black text-xl text-slateFg dark:text-white mb-2">AI Analyzes</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+              Our automated crawlers retrieve public web pages, and GPT-4o synthesizes findings and builds matrices.
+            </p>
+          </div>
+
+          <!-- Step 3 (Violet Accent) -->
+          <div class="fade-up-element bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 p-8 rounded-2xl pop-shadow-accent hover:scale-105 hover:rotate-1 bouncy-transition flex flex-col items-center text-center" style="transition-delay: 160ms;">
+            <div class="w-14 h-14 rounded-2xl bg-accent text-white border-2 border-slateFg dark:border-slate-200 shadow-[3px_3px_0px_0px_#1E293B] flex items-center justify-center mb-6">
+              <i data-lucide="book-open" class="w-6.5 h-6.5 stroke-[2.5px]"></i>
+            </div>
+            <span class="font-heading font-black text-xs text-accent uppercase tracking-widest block mb-2">Step 03</span>
+            <h3 class="font-heading font-black text-xl text-slateFg dark:text-white mb-2">Get the Playbook</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+              Instantly view reports containing SWOT grids, priority metrics, rationale targets, and export details.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ─── INTERACTIVE EXAMPLE REPORT ──────────────────── -->
+    <section id="example-report" class="py-24 md:py-32 relative dot-grid">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <!-- Header -->
+        <div class="text-center max-w-2xl mx-auto mb-16 fade-up-element">
+          <h2 class="font-heading text-4xl sm:text-5xl font-black tracking-tight text-slateFg dark:text-white">
+            See what the AI actually delivers
+          </h2>
+          <p class="mt-4 text-base md:text-lg text-slate-600 dark:text-slate-300 font-medium">
+            Real excerpts extracted from live competitor intelligence outputs.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          
+          <!-- Left Mockup Card View (8 cols) -->
+          <div class="lg:col-span-8 bg-[#fdfbf7] text-[#2d2d2d] border-[3px] border-[#2d2d2d] p-6 rounded-2xl shadow-hard font-patrick leading-relaxed select-none transform relative fade-up-element">
+            
+            <!-- Floating tag header -->
+            <div class="absolute -top-3.5 left-10 px-4 py-0.5 bg-accent border-2 border-slateFg text-white rounded font-heading font-bold text-xs uppercase tracking-wider">
+              nike.com
+            </div>
+
+            <!-- Tab bar selection (styled in Playful Geometric) -->
+            <div class="flex flex-wrap gap-2 border-b-2 border-dashed border-[#e5e0d8] pb-3 mt-4 mb-6">
+              <button onclick="switchTab(0)" class="tab-button font-heading font-extrabold text-sm md:text-base px-4 py-2 rounded-xl bg-accent text-white border-2 border-slateFg shadow-[2px_2px_0px_0px_#1E293B] bouncy-transition outline-none">
+                Executive Summary
+              </button>
+              <button onclick="switchTab(1)" class="tab-button font-heading font-extrabold text-sm md:text-base px-4 py-2 rounded-xl bg-white border-2 border-slateFg text-slateFg hover:bg-tertiary shadow-[2px_2px_0px_0px_#1E293B] bouncy-transition outline-none">
+                SWOT Matrix
+              </button>
+              <button onclick="switchTab(2)" class="tab-button font-heading font-extrabold text-sm md:text-base px-4 py-2 rounded-xl bg-white border-2 border-slateFg text-slateFg hover:bg-tertiary shadow-[2px_2px_0px_0px_#1E293B] bouncy-transition outline-none">
+                Next Steps
+              </button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="min-h-[220px]">
+              
+              <!-- Tab 0: Summary -->
+              <div id="tab-content-0" class="tab-pane block animate-fade-in">
+                <h3 class="font-kalam font-bold text-xl md:text-2xl text-slate-800 mb-3">Strategic Position Overview</h3>
+                <p class="text-base md:text-lg text-slate-700 leading-relaxed">
+                  Nike’s digital footprint is heavily anchored in emotional brand storytelling and its DTC mobile application ecosystem. However, a detailed analysis reveals an operational bottleneck in inventory management and a growing vulnerability to localized DTC brands in European markets. Our strategic recommendation is to prioritize digital optimization and launch targeted localized campaigns.
+                </p>
+                <div class="mt-4 p-3.5 bg-accent/5 rounded-lg border border-accent/20 font-sans text-xs text-slate-600 leading-normal flex items-start gap-2">
+                  <i data-lucide="info" class="w-4 h-4 text-accent shrink-0 mt-0.5"></i>
+                  <span>This summary is auto-synthesized from crawling Nike's primary web domain, sub-categories, app store rankings, and public media releases within the past 24 hours.</span>
+                </div>
+              </div>
+
+              <!-- Tab 1: SWOT -->
+              <div id="tab-content-1" class="tab-pane hidden animate-fade-in">
+                <h3 class="font-kalam font-bold text-xl md:text-2xl text-slate-800 mb-4">SWOT Analysis Matrix</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  <div class="border-2 border-[#2d2d2d] p-4 bg-[#d4edda] rounded-xl shadow-hardSm">
+                    <h4 class="font-kalam text-lg font-bold text-emerald-800 mb-1 flex items-center gap-1.5">
+                      <i data-lucide="award" class="w-4 h-4"></i> Strengths
+                    </h4>
+                    <ul class="text-xs space-y-1 text-slate-800 list-disc pl-4">
+                      <li>Unrivaled global brand equity and customer affinity.</li>
+                      <li>Highly integrated Nike+ app customer loyalty pipeline.</li>
+                      <li>Advanced manufacturing logistics network.</li>
+                    </ul>
+                  </div>
+
+                  <div class="border-2 border-[#2d2d2d] p-4 bg-[#fde2e2] rounded-xl shadow-hardSm">
+                    <h4 class="font-kalam text-lg font-bold text-red-800 mb-1 flex items-center gap-1.5">
+                      <i data-lucide="alert-triangle" class="w-4 h-4"></i> Weaknesses
+                    </h4>
+                    <ul class="text-xs space-y-1 text-slate-800 list-disc pl-4">
+                      <li>Heavy dependency on traditional wholesale retail distributors.</li>
+                      <li>Inventory supply lag due to complex vendor logistics.</li>
+                      <li>Vulnerability to premium localized DTC run brands.</li>
+                    </ul>
+                  </div>
+
+                  <div class="border-2 border-[#2d2d2d] p-4 bg-[#d6eaf8] rounded-xl shadow-hardSm">
+                    <h4 class="font-kalam text-lg font-bold text-blue-800 mb-1 flex items-center gap-1.5">
+                      <i data-lucide="trending-up" class="w-4 h-4"></i> Opportunities
+                    </h4>
+                    <ul class="text-xs space-y-1 text-slate-800 list-disc pl-4">
+                      <li>Further optimization of personalized DTC application funnels.</li>
+                      <li>Hyper-local community running club memberships.</li>
+                      <li>Expanding circular product recycling product models.</li>
+                    </ul>
+                  </div>
+
+                  <div class="border-2 border-[#2d2d2d] p-4 bg-[#fff3cd] rounded-xl shadow-hardSm">
+                    <h4 class="font-kalam text-lg font-bold text-amber-800 mb-1 flex items-center gap-1.5">
+                      <i data-lucide="shield" class="w-4 h-4"></i> Threats
+                    </h4>
+                    <ul class="text-xs space-y-1 text-slate-800 list-disc pl-4">
+                      <li>Rapid rise of eco-friendly runners (e.g. On, Allbirds).</li>
+                      <li>Unpredictable fluctuations in raw material pricing tariffs.</li>
+                      <li>Fluctuating currency values impacting wholesale exports.</li>
+                    </ul>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Tab 2: Next Steps -->
+              <div id="tab-content-2" class="tab-pane hidden animate-fade-in">
+                <h3 class="font-kalam font-bold text-xl md:text-2xl text-slate-800 mb-3">Prioritized Tactical Action Plan</h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                      <tr class="bg-[#2d2d2d] text-[#fdfbf7] font-kalam">
+                        <th class="px-2 py-1.5 rounded-l-md">Priority</th>
+                        <th class="px-2 py-1.5">Action Item</th>
+                        <th class="px-2 py-1.5">Owner</th>
+                        <th class="px-2 py-1.5 rounded-r-md">Impact</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-patrick text-base">
+                      <tr class="border-b border-dashed border-[#e5e0d8] hover:bg-[#2d45a1]/5">
+                        <td class="px-2 py-2"><span class="px-2 py-0.5 border-2 border-red-500 text-red-500 font-bold text-xs bg-red-50 rounded">P0</span></td>
+                        <td class="px-2 py-2 font-bold">Optimize checkout loading times & reduce friction</td>
+                        <td class="px-2 py-2">PMM & Eng</td>
+                        <td class="px-2 py-2 text-emerald-600 font-bold">High Conversion Boost</td>
+                      </tr>
+                      <tr class="border-b border-dashed border-[#e5e0d8] hover:bg-[#2d45a1]/5">
+                        <td class="px-2 py-2"><span class="px-2 py-0.5 border-2 border-amber-500 text-amber-500 font-bold text-xs bg-amber-50 rounded">P1</span></td>
+                        <td class="px-2 py-2 font-bold">Launch community running micro-sites in London</td>
+                        <td class="px-2 py-2">Growth Mktg</td>
+                        <td class="px-2 py-2 text-indigo-600 font-bold">Mid Customer CAC</td>
+                      </tr>
+                      <tr class="hover:bg-[#2d45a1]/5">
+                        <td class="px-2 py-2"><span class="px-2 py-0.5 border-2 border-blue-500 text-blue-500 font-bold text-xs bg-blue-50 rounded">P2</span></td>
+                        <td class="px-2 py-2 font-bold">Integrate recycled leather catalog options</td>
+                        <td class="px-2 py-2">Product Supply</td>
+                        <td class="px-2 py-2 text-slate-500">Long PR & ESG Brand</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Right Monitor Box (4 cols) -->
+          <div class="lg:col-span-4 flex flex-col gap-6 fade-up-element justify-center" style="transition-delay: 80ms;">
+            
+            <div class="bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 rounded-2xl p-6 shadow-hard relative overflow-hidden">
+              <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-accent/10 to-transparent rounded-bl-full pointer-events-none"></div>
+              
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-accent text-white flex items-center justify-center shrink-0 chunky-border">
+                  <i data-lucide="sparkles" class="w-5 h-5 fill-current"></i>
+                </div>
+                <div>
+                  <h4 class="font-heading font-black text-sm text-slateFg dark:text-white leading-tight">Intelligence Stream</h4>
+                  <span class="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">Active Monitor</span>
+                </div>
+              </div>
+
+              <div class="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border-2 border-slateFg dark:border-slate-800/60 mb-4 shadow-[2px_2px_0px_0px_#1E293B] dark:shadow-[2px_2px_0px_0px_#cbd5e1]">
+                <p class="text-xs font-bold text-slateFg dark:text-slate-200">
+                  "Report for <span class="text-accent font-extrabold">nike.com</span> is ready ✨"
+                </p>
+                <span class="text-[10px] text-slate-400 dark:text-slate-500 block mt-1.5">Generated 10s ago • 142 pages scanned</span>
+              </div>
+
+              <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                Aetheris monitors competitor revisions continuously, alerting you instantly when positioning changes or SWOT threats are detected.
+              </p>
+            </div>
+
+            <!-- Run live CTA card -->
+            <a href="/dashboard/" class="flex items-center justify-between p-4 bg-tertiary border-2 border-slateFg dark:border-slate-200 rounded-2xl pop-shadow-accent hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#1E293B] dark:hover:shadow-[6px_6px_0px_0px_#cbd5e1] group bouncy-transition">
+              <div class="flex items-center gap-3">
+                <i data-lucide="play-circle" class="w-6 h-6 text-slateFg shrink-0"></i>
+                <span class="font-heading font-extrabold text-sm text-slateFg">Run your own report live</span>
+              </div>
+              <i data-lucide="arrow-right" class="w-4 h-4 text-slateFg group-hover:translate-x-1 transition-transform"></i>
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ─── EARLY ACCESS CTA ────────────────────────────── -->
+    <section class="py-24 relative overflow-hidden bg-[#FFFDF5] dark:bg-darkBg border-y-2 border-slateFg dark:border-slate-800">
+      <!-- Dotted texture -->
+      <div class="absolute inset-0 dot-grid opacity-35 pointer-events-none"></div>
+
+      <!-- Outer Memphis styled frame -->
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="bg-[#FFFDF5] dark:bg-slate-900 border-4 border-slateFg dark:border-slate-200 rounded-3xl p-8 sm:p-12 md:p-16 text-center pop-shadow-lg relative overflow-hidden">
+          
+          <!-- Geometric decorations inside card -->
+          <div class="absolute -top-12 -left-12 w-24 h-24 rounded-full bg-secondary/10 border-2 border-dashed border-secondary/20 pointer-events-none"></div>
+          <div class="absolute -bottom-6 -right-6 w-16 h-16 bg-quaternary/15 border-2 border-slateFg dark:border-slate-200 rounded-lg rotate-45 pointer-events-none"></div>
+
+          <h2 class="font-heading text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slateFg dark:text-white relative z-10">
+            Join the early access list. <span class="bg-tertiary dark:bg-yellow-500 text-slateFg px-3 py-1 rounded-lg inline-block transform rotate-[1.5deg] chunky-border shadow-[3px_3px_0px_0px_#1E293B]">It's free.</span>
+          </h2>
+          
+          <p class="mt-6 text-base md:text-lg text-slate-600 dark:text-slate-300 font-medium max-w-xl mx-auto leading-relaxed relative z-10">
+            We're onboarding 100 teams a week. Get your reports in 60 seconds, help shape the product, and keep free access forever.
+          </p>
+
+          <!-- Input Submission Form -->
+          <div class="mt-10 max-w-md mx-auto relative z-10">
+            <form id="beta-cta-form" onsubmit="handleCtaSubmit(event)" class="flex flex-col sm:flex-row gap-3 items-stretch">
+              <input type="email" required placeholder="Enter your business email" class="flex-1 px-5 py-4 bg-white border-2 border-slateFg dark:border-slate-700 rounded-xl text-slateFg dark:text-white placeholder-slate-400 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 text-base shadow-[2px_2px_0px_0px_rgba(30,41,59,0.05)] dark:bg-slate-900" />
+              <!-- Candy Submit button -->
+              <button type="submit" class="px-6 py-4 bg-accent text-white font-heading font-extrabold rounded-xl chunky-border pop-shadow-accent hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#1E293B] dark:hover:shadow-[6px_6px_0px_0px_#cbd5e1] active:translate-x-[2px] active:translate-y-[2px] bouncy-transition text-base shrink-0">
+                Request Access
+              </button>
+            </form>
+            <!-- Success Message -->
+            <div id="beta-cta-success" class="hidden mt-4 p-4 rounded-xl bg-quaternary text-slateFg border-2 border-slateFg font-bold text-center text-sm sm:text-base animate-fade-in shadow-[3px_3px_0px_0px_#1E293B]">
+              ✓ You're on the list! Check your email.
+            </div>
+          </div>
+
+          <!-- Redirect sign-in link -->
+          <p class="mt-8 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider relative z-10">
+            Already have access? <a href="/login/" class="underline hover:text-accent font-black inline-flex items-center gap-0.5">Sign in <i data-lucide="arrow-right" class="w-3.5 h-3.5 stroke-[3px]"></i></a>
+          </p>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ─── FAQ (Accordion Menu) ────────────────────────── -->
+    <section class="py-24 md:py-32 relative">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <!-- Header -->
+        <div class="text-center mb-20 fade-up-element">
+          <h2 class="font-heading text-4xl font-black tracking-tight text-slateFg dark:text-white">
+            Quick answers
+          </h2>
+        </div>
+
+        <!-- Accordion items stack -->
+        <div class="space-y-6">
+          
+          <!-- Accordion 1 -->
+          <div class="fade-up-element bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 rounded-2xl pop-shadow-accent hover:-translate-y-[2px] bouncy-transition">
+            <button onclick="toggleAccordion(1)" class="w-full flex items-center justify-between p-6 text-left font-heading font-extrabold text-slateFg dark:text-white text-base md:text-lg select-none outline-none group">
+              <span>Is it really free?</span>
+              <span class="accordion-icon shrink-0 ml-4 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 border-2 border-slateFg dark:border-slate-700 flex items-center justify-center group-hover:bg-accent group-hover:text-white bouncy-transition">
+                <i data-lucide="chevron-down" class="w-4 h-4 stroke-[3px]"></i>
+              </span>
+            </button>
+            <div id="accordion-content-1" class="accordion-content">
+              <div class="px-6 pb-6 text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium border-t-2 border-dashed border-slate-100 dark:border-slate-800 pt-4">
+                Yes, during early access. No credit card, no trials, no strings attached. We may introduce paid tiers later for high-frequency search users.
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 2 -->
+          <div class="fade-up-element bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 rounded-2xl pop-shadow-pink hover:-translate-y-[2px] bouncy-transition" style="transition-delay: 40ms;">
+            <button onclick="toggleAccordion(2)" class="w-full flex items-center justify-between p-6 text-left font-heading font-extrabold text-slateFg dark:text-white text-base md:text-lg select-none outline-none group">
+              <span>What do I get in a report?</span>
+              <span class="accordion-icon shrink-0 ml-4 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 border-2 border-slateFg dark:border-slate-700 flex items-center justify-center group-hover:bg-secondary group-hover:text-white bouncy-transition">
+                <i data-lucide="chevron-down" class="w-4 h-4 stroke-[3px]"></i>
+              </span>
+            </button>
+            <div id="accordion-content-2" class="accordion-content">
+              <div class="px-6 pb-6 text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium border-t-2 border-dashed border-slate-100 dark:border-slate-800 pt-4">
+                Each report includes a high-level executive summary, a structured SWOT analysis, detected positioning strengths/threats, and prioritized P0/P1/P2 tactical next steps with rationale and owners.
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 3 -->
+          <div class="fade-up-element bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 rounded-2xl pop-shadow-yellow hover:-translate-y-[2px] bouncy-transition" style="transition-delay: 80ms;">
+            <button onclick="toggleAccordion(3)" class="w-full flex items-center justify-between p-6 text-left font-heading font-extrabold text-slateFg dark:text-white text-base md:text-lg select-none outline-none group">
+              <span>How long does it take?</span>
+              <span class="accordion-icon shrink-0 ml-4 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 border-2 border-slateFg dark:border-slate-700 flex items-center justify-center group-hover:bg-tertiary group-hover:text-slateFg bouncy-transition">
+                <i data-lucide="chevron-down" class="w-4 h-4 stroke-[3px]"></i>
+              </span>
+            </button>
+            <div id="accordion-content-3" class="accordion-content">
+              <div class="px-6 pb-6 text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium border-t-2 border-dashed border-slate-100 dark:border-slate-800 pt-4">
+                Usually under 60 seconds. Larger competitor sites with dense structural directories may occasionally take up to 2 minutes to scan fully.
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 4 -->
+          <div class="fade-up-element bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 rounded-2xl pop-shadow-mint hover:-translate-y-[2px] bouncy-transition" style="transition-delay: 120ms;">
+            <button onclick="toggleAccordion(4)" class="w-full flex items-center justify-between p-6 text-left font-heading font-extrabold text-slateFg dark:text-white text-base md:text-lg select-none outline-none group">
+              <span>Can I analyze my own company?</span>
+              <span class="accordion-icon shrink-0 ml-4 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 border-2 border-slateFg dark:border-slate-700 flex items-center justify-center group-hover:bg-quaternary group-hover:text-slateFg bouncy-transition">
+                <i data-lucide="chevron-down" class="w-4 h-4 stroke-[3px]"></i>
+              </span>
+            </button>
+            <div id="accordion-content-4" class="accordion-content">
+              <div class="px-6 pb-6 text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium border-t-2 border-dashed border-slate-100 dark:border-slate-800 pt-4">
+                Absolutely. Many teams use Aetheris to run a self-audit and evaluate how their brand value proposition, prices, and features are parsed by scraping agents.
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 5 -->
+          <div class="fade-up-element bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-200 rounded-2xl pop-shadow-slate hover:-translate-y-[2px] bouncy-transition" style="transition-delay: 160ms;">
+            <button onclick="toggleAccordion(5)" class="w-full flex items-center justify-between p-6 text-left font-heading font-extrabold text-slateFg dark:text-white text-base md:text-lg select-none outline-none group">
+              <span>Do you store competitor data?</span>
+              <span class="accordion-icon shrink-0 ml-4 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 border-2 border-slateFg dark:border-slate-700 flex items-center justify-center group-hover:bg-slate-500 group-hover:text-white bouncy-transition">
+                <i data-lucide="chevron-down" class="w-4 h-4 stroke-[3px]"></i>
+              </span>
+            </button>
+            <div id="accordion-content-5" class="accordion-content">
+              <div class="px-6 pb-6 text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium border-t-2 border-dashed border-slate-100 dark:border-slate-800 pt-4">
+                We cache competitor scraped information for up to 24 hours to prevent rate limits. You can request immediate hard deletion of reports and data from our active caches at any time.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ─── FOOTER ──────────────────────────────────────── -->
+    <footer class="bg-white dark:bg-slate-950 border-t-2 border-slateFg dark:border-slate-900 py-16 relative">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
+          
+          <!-- Column 1 (Branding) -->
+          <div class="col-span-2 flex flex-col gap-4 text-left">
+            <a href="#" class="flex items-center gap-2 shrink-0">
+              <div class="w-7 h-7 rounded-lg bg-accent text-white flex items-center justify-center chunky-border shadow-[2px_2px_0px_0px_#1E293B]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 8V5a2 2 0 0 1 2-2h3"/>
+                  <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+                  <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+                  <path d="M21 16v3a2 2 0 0 1-2 2h-3"/>
+                  <path d="M8 12s2.5-4 4-4 4 4 4 4-2.5 4-4 4-4-4-4-4z"/>
+                  <circle cx="12" cy="12" r="2"/>
+                </svg>
+              </div>
+              <span class="font-heading font-extrabold tracking-tight text-lg text-slateFg dark:text-white">
+                Aetheris
+              </span>
+            </a>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed font-medium">
+              AI-powered competitive intelligence. Crawl competitor websites and build boardroom strategy dashboards in 60s.
+            </p>
+            <!-- Social links -->
+            <div class="flex items-center gap-4 text-slate-400 dark:text-slate-500">
+              <a href="#" aria-label="Twitter account link" class="hover:text-accent transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+              <a href="#" aria-label="LinkedIn page link" class="hover:text-accent transition-colors"><i data-lucide="linkedin" class="w-4.5 h-4.5"></i></a>
+              <a href="#" aria-label="GitHub repository link" class="hover:text-accent transition-colors"><i data-lucide="github" class="w-4.5 h-4.5"></i></a>
+            </div>
+          </div>
+
+          <!-- Column 2 (Product) -->
+          <div class="text-left flex flex-col gap-3">
+            <h4 class="font-heading font-extrabold text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">Product</h4>
+            <a href="#features" class="text-sm text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-white transition-colors font-medium">Features</a>
+            <a href="#example-report" class="text-sm text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-white transition-colors font-medium">Example Report</a>
+            <a href="#" class="text-sm text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-white transition-colors font-medium">Changelog</a>
+          </div>
+
+          <!-- Column 3 (Company) -->
+          <div class="text-left flex flex-col gap-3">
+            <h4 class="font-heading font-extrabold text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">Company</h4>
+            <a href="#" class="text-sm text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-white transition-colors font-medium">About</a>
+            <a href="#" class="text-sm text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-white transition-colors font-medium">Blog</a>
+            <a href="mailto:earlyaccess@aetheris.ai" class="text-sm text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-white transition-colors font-medium">Contact</a>
+          </div>
+
+          <!-- Column 4 (Legal) -->
+          <div class="text-left flex flex-col gap-3">
+            <h4 class="font-heading font-extrabold text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">Legal</h4>
+            <a href="#" class="text-sm text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-white transition-colors font-medium">Privacy Policy</a>
+            <a href="#" class="text-sm text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-white transition-colors font-medium">Terms of Service</a>
+            <a href="#" class="text-sm text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-white transition-colors font-medium">Security</a>
+          </div>
+
+          <!-- Spacer -->
+          <div class="hidden md:block col-span-1"></div>
+
+        </div>
+
+        <!-- Bottom bar details -->
+        <div class="border-t-2 border-slate-100 dark:border-slate-900 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-slate-400 dark:text-slate-500">
+          <div>
+            © 2025 Aetheris. Built with 🧠 + AI.
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded bg-accent/15 border-2 border-accent text-accent uppercase tracking-widest text-[9px] font-extrabold shadow-[2px_2px_0px_0px_rgba(139,92,246,0.15)]">v1.0 Early Access</span>
+          </div>
+        </div>
+
+      </div>
+    </footer>
+
+
+    <!-- ─── EARLY ACCESS FORM DIALOG MODAL ──────────────── -->
+    <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+      
+      <!-- Memphis Sticker modal panel -->
+      <div id="modal-panel" class="w-full max-w-md bg-[#FFFDF5] dark:bg-slate-900 border-4 border-slateFg dark:border-slate-200 rounded-3xl p-8 relative shadow-hard scale-90 opacity-0 transition-all duration-300 select-none">
+        
+        <!-- Close trigger button -->
+        <button onclick="closeModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slateFg dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg bouncy-transition" aria-label="Close dialog">
+          <i data-lucide="x" class="w-5 h-5 stroke-[2.5px]"></i>
+        </button>
+
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-2xl bg-accent text-white border-2 border-slateFg shadow-[3px_3px_0px_0px_#1E293B] flex items-center justify-center mx-auto mb-6">
+            <i data-lucide="sparkles" class="w-7 h-7 fill-current"></i>
+          </div>
+
+          <h3 class="font-heading font-black text-2xl text-slateFg dark:text-white">Get early access</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 font-medium">
+            We'll send your invite within 24 hours.
+          </p>
+
+          <!-- Modal capture email form -->
+          <form id="modal-form" onsubmit="handleModalSubmit(event)" class="mt-6 space-y-4">
+            <input type="email" required placeholder="Enter your business email" class="w-full px-4 py-3 bg-white border-2 border-slateFg dark:border-slate-700 rounded-xl text-slateFg dark:text-white placeholder-slate-400 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 text-sm shadow-[2px_2px_0px_0px_rgba(30,41,59,0.05)] dark:bg-slate-900" />
+            <!-- Candy Button -->
+            <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-primary to-accent hover:scale-[1.02] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#1E293B] dark:hover:shadow-[4px_4px_0px_0px_#cbd5e1] active:translate-x-[2px] active:translate-y-[2px] text-white font-heading font-extrabold rounded-xl transition-all shadow-[2px_2px_0px_0px_#1E293B] text-sm shrink-0 border-2 border-slateFg dark:border-slate-200">
+              Send Invite
+            </button>
+          </form>
+
+          <!-- Success Alert Card -->
+          <div id="modal-success" class="hidden mt-6 p-4 rounded-xl bg-quaternary text-slateFg border-2 border-slateFg font-bold text-center text-sm animate-fade-in shadow-[3px_3px_0px_0px_#1E293B]">
+            🎉 Check your inbox — invite is on the way.
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ─── CORE INTERACTIVE SCRIPTING ──────────────────── -->
+    <script type="text/javascript">
+      // Initialize Lucide icons
+      lucide.createIcons();
+
+      /* ────────────────────────────────────────────────────────
+         1. DARK MODE ACCENT PREFERENCES
+         ──────────────────────────────────────────────────────── */
+      const htmlElement = document.documentElement;
+      const themeKey = 'aetheris-theme';
+
+      function initTheme() {
+        const storedTheme = localStorage.getItem(themeKey);
+        if (storedTheme === 'dark') {
+          htmlElement.classList.add('dark');
+        } else {
+          htmlElement.classList.remove('dark');
+        }
+      }
+
+      function toggleTheme() {
+        const isDark = htmlElement.classList.toggle('dark');
+        localStorage.setItem(themeKey, isDark ? 'dark' : 'light');
+      }
+
+      document.getElementById('dark-mode-toggle').addEventListener('click', toggleTheme);
+      document.getElementById('dark-mode-toggle-mobile').addEventListener('click', toggleTheme);
+      initTheme();
+
+      /* ────────────────────────────────────────────────────────
+         2. STICKY MEMPHIS NAVBAR ON SCROLL
+         ──────────────────────────────────────────────────────── */
+      const navbar = document.getElementById('navbar');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {
+          navbar.classList.add('bg-paperBg/80', 'dark:bg-darkBg/80', 'backdrop-blur-md', 'border-slateFg/50', 'dark:border-slate-800', 'shadow-sm');
+          navbar.classList.remove('bg-paperBg/0', 'dark:bg-darkBg/0', 'border-transparent');
+        } else {
+          navbar.classList.remove('bg-paperBg/80', 'dark:bg-darkBg/80', 'backdrop-blur-md', 'border-slateFg/50', 'dark:border-slate-800', 'shadow-sm');
+          navbar.classList.add('bg-paperBg/0', 'dark:bg-darkBg/0', 'border-transparent');
+        }
+      });
+
+      /* ────────────────────────────────────────────────────────
+         3. MOBILE COLLAPSIBLE NAVIGATION SIDEBAR
+         ──────────────────────────────────────────────────────── */
+      const menuTrigger = document.getElementById('mobile-menu-trigger');
+      const menuClose = document.getElementById('mobile-menu-close');
+      const backdrop = document.getElementById('mobile-menu-backdrop');
+      const menuPanel = document.getElementById('mobile-menu');
+      const mobileLinks = document.querySelectorAll('.mobile-link');
+
+      function openMenu() {
+        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+        menuPanel.classList.remove('translate-x-full');
+      }
+
+      function closeMenu() {
+        backdrop.classList.add('opacity-0', 'pointer-events-none');
+        menuPanel.classList.add('translate-x-full');
+      }
+
+      menuTrigger.addEventListener('click', openMenu);
+      menuClose.addEventListener('click', closeMenu);
+      backdrop.addEventListener('click', closeMenu);
+      mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+      /* ────────────────────────────────────────────────────────
+         4. FADE-UP INTERSECTION OBSERVER
+         ──────────────────────────────────────────────────────── */
+      const fadeObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('fade-up-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      document.querySelectorAll('.fade-up-element').forEach(el => {
+        fadeObserver.observe(el);
+      });
+
+      /* ────────────────────────────────────────────────────────
+         5. EXAMPLE TABS NAVIGATION SWITCHER
+         ──────────────────────────────────────────────────────── */
+      function switchTab(index) {
+        const tabs = document.querySelectorAll('.tab-button');
+        const contents = document.querySelectorAll('.tab-pane');
+
+        tabs.forEach((tab, i) => {
+          if (i === index) {
+            tab.className = "tab-button font-heading font-extrabold text-sm md:text-base px-4 py-2 rounded-xl bg-accent text-white border-2 border-slateFg shadow-[2px_2px_0px_0px_#1E293B] dark:shadow-[2px_2px_0px_0px_#cbd5e1] bouncy-transition outline-none";
+          } else {
+            tab.className = "tab-button font-heading font-extrabold text-sm md:text-base px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border-2 border-slateFg dark:border-slate-700 text-slateFg dark:text-slate-300 hover:bg-tertiary dark:hover:bg-tertiary hover:text-slateFg shadow-[2px_2px_0px_0px_#1E293B] dark:shadow-[2px_2px_0px_0px_#cbd5e1] bouncy-transition outline-none";
+          }
+        });
+
+        contents.forEach((pane, i) => {
+          if (i === index) {
+            pane.classList.remove('hidden');
+            pane.classList.add('block');
+          } else {
+            pane.classList.remove('block');
+            pane.classList.add('hidden');
+          }
+        });
+      }
+
+      /* ────────────────────────────────────────────────────────
+         6. FAQ ACCORDION TRANSITIONS (Single Open)
+         ──────────────────────────────────────────────────────── */
+      function toggleAccordion(index) {
+        const allContents = document.querySelectorAll('.accordion-content');
+        const allChevrons = document.querySelectorAll('.accordion-icon');
+        const targetContent = document.getElementById(`accordion-content-${index}`);
+        const targetChevron = targetContent.previousElementSibling.querySelector('.accordion-icon');
+
+        const isOpen = targetContent.style.maxHeight && targetContent.style.maxHeight !== '0px';
+
+        allContents.forEach(c => {
+          c.style.maxHeight = '0px';
+        });
+        allChevrons.forEach(ch => {
+          ch.classList.remove('rotate-180');
+        });
+
+        if (!isOpen) {
+          targetContent.style.maxHeight = targetContent.scrollHeight + 'px';
+          targetChevron.classList.add('rotate-180');
+        }
+      }
+
+      /* ────────────────────────────────────────────────────────
+         7. SUBMISSIONS & MODAL CONTROLS
+         ──────────────────────────────────────────────────────── */
+      const modalContainer = document.getElementById('modal-container');
+      const modalPanel = document.getElementById('modal-panel');
+
+      function openModal(e) {
+        if (e) e.preventDefault();
+        modalContainer.classList.remove('opacity-0', 'pointer-events-none');
+        modalPanel.classList.remove('scale-90', 'opacity-0');
+        modalPanel.classList.add('scale-100', 'opacity-100');
+      }
+
+      function closeModal() {
+        modalContainer.classList.add('opacity-0', 'pointer-events-none');
+        modalPanel.classList.remove('scale-100', 'opacity-100');
+        modalPanel.classList.add('scale-90', 'opacity-0');
+        setTimeout(() => {
+          document.getElementById('modal-success').classList.add('hidden');
+          document.getElementById('modal-form').classList.remove('hidden');
+          document.getElementById('modal-form').reset();
+        }, 300);
+      }
+
+      modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) closeModal();
+      });
+
+      // Hook up clicks on page to check for modal triggers
+      document.addEventListener('click', (e) => {
+        const text = e.target.textContent || '';
+        if (e.target.closest('a') && (text.includes('Request Access') || text.includes('Early Access') || text.includes('early access'))) {
+          openModal(e);
+        }
+      });
+
+      // Form Submits
+      function handleCtaSubmit(event) {
+        event.preventDefault();
+        const form = document.getElementById('beta-cta-form');
+        const success = document.getElementById('beta-cta-success');
+        form.classList.add('hidden');
+        success.classList.remove('hidden');
+      }
+
+      function handleModalSubmit(event) {
+        event.preventDefault();
+        const form = document.getElementById('modal-form');
+        const success = document.getElementById('modal-success');
+        form.classList.add('hidden');
+        success.classList.remove('hidden');
+      }
+    </script>
   </body>
 </html>

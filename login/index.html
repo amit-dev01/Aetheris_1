@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In — Aetheris</title>
+    <meta name="description" content="Sign in to your Aetheris account and access AI-powered competitive intelligence." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'>⚡</text></svg>" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              paperBg: '#FFFDF5',
+              darkBg: '#0B0F1A',
+              slateFg: '#1E293B',
+              accent: '#8B5CF6',
+              secondary: '#F472B6',
+              tertiary: '#FBBF24',
+              quaternary: '#34D399',
+            },
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+              heading: ['"Outfit"', 'system-ui', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      html { scroll-behavior: smooth; }
+
+      .dot-grid {
+        background-image: radial-gradient(#e2e8f0 2px, transparent 2px);
+        background-size: 24px 24px;
+      }
+      .dark .dot-grid {
+        background-image: radial-gradient(#1e293b 2px, transparent 2px);
+        background-size: 24px 24px;
+      }
+
+      .chunky-border { border: 2px solid #1E293B; }
+      .dark .chunky-border { border: 2px solid #cbd5e1; }
+
+      .pop-shadow { box-shadow: 4px 4px 0px 0px #1E293B; }
+      .dark .pop-shadow { box-shadow: 4px 4px 0px 0px #cbd5e1; }
+
+      .bouncy { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+      .geo-input {
+        border: 2px solid #cbd5e1;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        outline: none;
+      }
+      .geo-input:focus {
+        border-color: #8B5CF6;
+        box-shadow: 3px 3px 0px 0px #8B5CF6;
+      }
+      .dark .geo-input {
+        border-color: #334155;
+        background: #0f172a;
+        color: #f1f5f9;
+      }
+      .dark .geo-input:focus {
+        border-color: #8B5CF6;
+        box-shadow: 3px 3px 0px 0px #8B5CF6;
+      }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .spinner {
+        width: 18px; height: 18px;
+        border: 3px solid rgba(255,255,255,0.4);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        display: inline-block;
+      }
+
+      @keyframes float-slow {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(3deg); }
+      }
+      .float-slow { animation: float-slow 7s ease-in-out infinite; }
+      .float-slow-2 { animation: float-slow 9s ease-in-out infinite 1.5s; }
+      .float-slow-3 { animation: float-slow 8s ease-in-out infinite 3s; }
+    </style>
+  </head>
+
+  <body class="bg-paperBg dark:bg-darkBg font-sans min-h-screen flex flex-col antialiased">
+
+    <script>
+      if (localStorage.getItem('aetheris-theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+
+    <!-- NAVBAR -->
+    <nav class="w-full border-b-2 border-slate-200 dark:border-slate-800 bg-paperBg/80 dark:bg-darkBg/80 backdrop-blur-sm">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 group">
+          <div class="w-8 h-8 rounded-xl bg-accent text-white flex items-center justify-center chunky-border pop-shadow group-hover:rotate-12 bouncy">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 8V5a2 2 0 0 1 2-2h3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+              <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/>
+              <path d="M8 12s2.5-4 4-4 4 4 4 4-2.5 4-4 4-4-4-4-4z"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <span class="font-heading font-extrabold text-xl text-slateFg dark:text-white">Aetheris</span>
+        </a>
+        <div class="flex items-center gap-4">
+          <button id="theme-toggle" class="w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-900 chunky-border rounded-lg pop-shadow bouncy hover:-translate-y-0.5" aria-label="Toggle theme">
+            <svg class="w-4 h-4 hidden dark:block text-tertiary" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="w-4 h-4 block dark:hidden text-slateFg" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </button>
+          <a href="/signup/" class="font-heading font-bold text-sm text-accent hover:underline bouncy">Create account →</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="flex-1 dot-grid flex items-center justify-center px-4 py-16 relative overflow-hidden">
+
+      <!-- Floating Ornaments -->
+      <div class="absolute top-[10%] left-[8%] w-16 h-16 rounded-full border-4 border-dashed border-accent/30 float-slow hidden lg:block"></div>
+      <div class="absolute bottom-[15%] right-[10%] w-12 h-12 bg-secondary/20 rounded-xl rotate-12 float-slow-2 hidden lg:block"></div>
+      <div class="absolute top-[50%] right-[5%] w-10 h-10 bg-tertiary/25 rounded-full float-slow-3 hidden lg:block"></div>
+      <div class="absolute bottom-[25%] left-[10%] w-8 h-8 border-4 border-quaternary/30 rotate-45 float-slow hidden lg:block" style="animation-delay:4s"></div>
+
+      <!-- Card -->
+      <div class="relative z-10 w-full max-w-md">
+        <div class="bg-white dark:bg-slate-900 chunky-border pop-shadow rounded-2xl p-8 sm:p-10">
+
+          <!-- Icon + title -->
+          <div class="mb-8 text-center">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent/10 dark:bg-accent/20 chunky-border pop-shadow mb-5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-accent" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <h1 class="font-heading font-extrabold text-2xl text-slateFg dark:text-white">Welcome back</h1>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 font-medium">Sign in to your Aetheris account</p>
+          </div>
+
+          <!-- Google -->
+          <button onclick="handleSocialLogin()" class="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl chunky-border pop-shadow bg-white dark:bg-slate-800 text-slateFg dark:text-slate-200 font-heading font-bold text-sm hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#1E293B] dark:hover:shadow-[6px_6px_0px_0px_#cbd5e1] bouncy mb-6">
+            <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+          </button>
+
+          <!-- Divider -->
+          <div class="flex items-center gap-3 mb-6">
+            <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">or</span>
+            <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
+          </div>
+
+          <!-- Form -->
+          <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5" novalidate>
+
+            <div>
+              <label for="email" class="block text-sm font-heading font-bold text-slateFg dark:text-slate-300 mb-1.5">Email address</label>
+              <input id="email" name="email" type="email" autocomplete="email"
+                placeholder="you@example.com" required
+                class="geo-input w-full px-4 py-3 rounded-xl text-sm bg-white dark:bg-slate-900 text-slateFg dark:text-white placeholder:text-slate-400" />
+              <p id="email-error" class="hidden mt-1.5 text-xs font-bold text-red-500">Please enter a valid email address.</p>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="password" class="text-sm font-heading font-bold text-slateFg dark:text-slate-300">Password</label>
+                <a href="#" class="text-xs font-bold text-accent hover:underline">Forgot password?</a>
+              </div>
+              <div class="relative">
+                <input id="password" name="password" type="password" autocomplete="current-password"
+                  placeholder="••••••••" required
+                  class="geo-input w-full px-4 py-3 pr-12 rounded-xl text-sm bg-white dark:bg-slate-900 text-slateFg dark:text-white placeholder:text-slate-400" />
+                <button type="button" onclick="togglePw('password','eye1')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slateFg dark:hover:text-white bouncy" aria-label="Toggle password visibility">
+                  <svg id="eye1" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+              <p id="password-error" class="hidden mt-1.5 text-xs font-bold text-red-500">Password must be at least 6 characters.</p>
+            </div>
+
+            <button id="submit-btn" type="submit"
+              class="w-full flex items-center justify-center gap-2 bg-accent text-white font-heading font-extrabold text-base py-3.5 rounded-xl chunky-border pop-shadow hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#1E293B] dark:hover:shadow-[6px_6px_0px_0px_#cbd5e1] active:translate-x-0.5 active:translate-y-0.5 bouncy mt-2">
+              <span id="btn-text">Sign in</span>
+              <span id="btn-spinner" class="hidden spinner"></span>
+            </button>
+          </form>
+
+          <p class="mt-7 text-center text-sm text-slate-500 dark:text-slate-400">
+            Don't have an account?
+            <a href="/signup/" class="font-heading font-bold text-accent hover:underline ml-1">Create one free →</a>
+          </p>
+        </div>
+        <p class="mt-4 text-center text-xs text-slate-400 dark:text-slate-600">No credit card required · Cancel anytime</p>
+      </div>
+    </main>
+
+    <script>
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('aetheris-theme', isDark ? 'dark' : 'light');
+      });
+
+      function togglePw(inputId, iconId) {
+        const inp = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (inp.type === 'password') {
+          inp.type = 'text';
+          icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+        } else {
+          inp.type = 'password';
+          icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+        }
+      }
+
+      function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        let valid = true;
+
+        const emailErr = document.getElementById('email-error');
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          emailErr.classList.remove('hidden'); valid = false;
+        } else { emailErr.classList.add('hidden'); }
+
+        const pwErr = document.getElementById('password-error');
+        if (!password || password.length < 6) {
+          pwErr.classList.remove('hidden'); valid = false;
+        } else { pwErr.classList.add('hidden'); }
+
+        if (!valid) return;
+
+        const btn = document.getElementById('submit-btn');
+        document.getElementById('btn-text').textContent = 'Signing in…';
+        document.getElementById('btn-spinner').classList.remove('hidden');
+        btn.disabled = true;
+        btn.classList.add('opacity-80', 'cursor-not-allowed');
+
+        setTimeout(() => { window.location.href = '/dashboard/'; }, 1400);
+      }
+
+      function handleSocialLogin() {
+        setTimeout(() => { window.location.href = '/dashboard/'; }, 800);
+      }
+    </script>
+  </body>
+</html>
