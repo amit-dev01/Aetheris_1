@@ -1,25 +1,33 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  content: ['./index.html', './src/**/*.{js,jsx}', './login/index.html', './signup/index.html', './dashboard/index.html'],
   theme: {
     extend: {
       colors: {
-        paper: '#fdfbf7',
-        pencil: '#2d2d2d',
-        muted: '#e5e0d8',
-        accent: '#ff4d4d',
-        secondary: '#2d5da1',
-        'post-it': '#fff9c4',
+        paper: '#FFFFFF',
+        pencil: '#000000',
+        muted: '#F2F2F2',
+        accent: '#FF3000',
+        secondary: '#000000',
+        'post-it': '#F2F2F2',
+        swiss: {
+          bg: '#FFFFFF',
+          fg: '#000000',
+          muted: '#F2F2F2',
+          accent: '#FF3000',
+          border: '#000000',
+        }
       },
       fontFamily: {
-        kalam: ['Kalam', 'cursive'],
-        patrick: ['"Patrick Hand"', 'cursive'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        kalam: ['Inter', 'sans-serif'],
+        patrick: ['Inter', 'sans-serif'],
       },
       boxShadow: {
-        hard: '4px 4px 0px 0px #2d2d2d',
-        'hard-sm': '3px 3px 0px 0px rgba(45, 45, 45, 0.15)',
-        'hard-lg': '8px 8px 0px 0px #2d2d2d',
-        'hard-hover': '2px 2px 0px 0px #2d2d2d',
+        hard: 'none',
+        'hard-sm': 'none',
+        'hard-lg': 'none',
+        'hard-hover': 'none',
       },
     },
   },

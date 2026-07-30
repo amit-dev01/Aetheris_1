@@ -5,7 +5,6 @@ import {
   Copy, Download, FileJson, ChevronRight, Shield, AlertTriangle,
   TrendingUp, Target, Zap, Award, BarChart3, Lightbulb, Check,
 } from 'lucide-react';
-import { W, S } from '../constants';
 
 /* ═══════════════════════════════════════════════════════════
    SMALL HELPERS
@@ -46,24 +45,25 @@ function downloadFile(content, filename, type = 'text/markdown') {
 /* ── Stats Bar ──────────────────────────────────────────── */
 function StatsBar({ result }) {
   const stats = [
-    { label: 'Strengths',     value: result.strengths?.length || 0, color: '#4caf50', bg: '#d4edda' },
-    { label: 'Weaknesses',    value: result.weaknesses?.length || 0, color: '#e53935', bg: '#fde2e2' },
-    { label: 'Opportunities', value: result.opportunities?.length || 0, color: '#2196f3', bg: '#d6eaf8' },
-    { label: 'Threats',       value: result.threats?.length || 0, color: '#ff9800', bg: '#fff3cd' },
-    { label: 'Next Steps',    value: result.next_steps?.length || 0, color: '#2d5da1', bg: '#e3edf7' },
+    { label: 'Strengths',     value: result.strengths?.length || 0, isAccent: false },
+    { label: 'Weaknesses',    value: result.weaknesses?.length || 0, isAccent: false },
+    { label: 'Opportunities', value: result.opportunities?.length || 0, isAccent: false },
+    { label: 'Threats',       value: result.threats?.length || 0, isAccent: false },
+    { label: 'Next Steps',    value: result.next_steps?.length || 0, isAccent: true }, // Highlight next steps with Swiss Red background!
   ];
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8 stagger">
       {stats.map(s => (
         <div
           key={s.label}
-          className="text-center p-3 border-2 border-pencil animate-fade-in-up hover:rotate-1 transition-transform"
-          style={{ borderRadius: W.sm, backgroundColor: s.bg, boxShadow: S.hardSm }}
+          className={`text-left p-4 border-2 border-black dark:border-white animate-fade-in-up snappy hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:border-black group ${s.isAccent ? 'bg-accent text-white border-accent' : 'bg-white dark:bg-black'}`}
         >
-          <div className="font-kalam text-3xl font-bold" style={{ color: s.color }}>
+          <div className={`font-heading text-3xl font-black ${s.isAccent ? 'text-white' : 'text-black dark:text-white group-hover:text-white dark:group-hover:text-black'}`}>
             <AnimatedCount to={s.value} />
           </div>
-          <div className="font-patrick text-sm text-pencil/70">{s.label}</div>
+          <div className={`font-heading text-[10px] font-black uppercase tracking-widest mt-1 ${s.isAccent ? 'text-white/80' : 'text-slate-500 dark:text-slate-400 group-hover:text-white/80 dark:group-hover:text-black/80'}`}>
+            {s.label}
+          </div>
         </div>
       ))}
     </div>
@@ -71,21 +71,19 @@ function StatsBar({ result }) {
 }
 
 /* ── Section Card wrapper ───────────────────────────────── */
-function SectionCard({ title, icon: Icon, children, className = '', bgColor = 'bg-white', decoration = 'none' }) {
+function SectionCard({ title, icon: Icon, children, className = '', bgColor = 'bg-white dark:bg-black', sectionNum = '' }) {
   return (
     <div
-      className={`${bgColor} border-[3px] border-pencil p-5 md:p-6 relative animate-fade-in-up ${className}`}
-      style={{ borderRadius: W.md, boxShadow: S.hard }}
+      className={`${bgColor} border-4 border-black dark:border-white p-6 relative animate-fade-in-up rounded-none ${className}`}
     >
-      {decoration === 'tape' && (
-        <div className="absolute -top-3 left-8 w-20 h-6 bg-pencil/10 rotate-2 z-10" style={{ borderRadius: '3px' }} />
-      )}
-      {decoration === 'tack' && (
-        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-5 h-5 bg-accent rounded-full border-2 border-pencil z-10" />
+      {sectionNum && (
+        <div className="absolute -top-3.5 left-6 bg-accent border-2 border-black dark:border-white text-white px-2 py-0.5 font-mono text-[9px] tracking-widest font-black uppercase">
+          {sectionNum}
+        </div>
       )}
       {title && (
-        <h3 className="font-kalam text-xl md:text-2xl font-bold mb-4 flex items-center gap-2 text-pencil">
-          {Icon && <Icon size={22} strokeWidth={2.5} />} {title}
+        <h3 className="font-heading text-base md:text-lg font-black mb-6 flex items-center gap-2 text-black dark:text-white uppercase tracking-wider">
+          {Icon && <Icon size={18} strokeWidth={3} className="text-accent" />} {title}
         </h3>
       )}
       {children}
@@ -94,15 +92,15 @@ function SectionCard({ title, icon: Icon, children, className = '', bgColor = 'b
 }
 
 /* ── Bullet List ────────────────────────────────────────── */
-function BulletList({ items, color }) {
+function BulletList({ items, bulletColor = '#FF3000' }) {
   return (
-    <ul className="space-y-3 stagger">
+    <ul className="space-y-4 stagger">
       {items.map((item, i) => (
         <li
           key={i}
-          className="flex items-start gap-3 font-patrick text-base md:text-lg leading-relaxed animate-fade-in-up"
+          className="flex items-start gap-3 font-sans text-sm md:text-base leading-relaxed animate-fade-in-up text-black dark:text-white"
         >
-          <ChevronRight size={18} className="shrink-0 mt-1" strokeWidth={3} style={{ color }} />
+          <ChevronRight size={16} className="shrink-0 mt-0.5" strokeWidth={3} style={{ color: bulletColor }} />
           <span>{item}</span>
         </li>
       ))}
@@ -113,26 +111,26 @@ function BulletList({ items, color }) {
 /* ── SWOT Matrix ────────────────────────────────────────── */
 function SwotMatrix({ swot }) {
   const quadrants = [
-    { key: 'Strengths',     label: 'Strengths',     bg: '#d4edda', color: '#2e7d32', icon: Award },
-    { key: 'Weaknesses',    label: 'Weaknesses',    bg: '#fde2e2', color: '#c62828', icon: AlertTriangle },
-    { key: 'Opportunities', label: 'Opportunities', bg: '#d6eaf8', color: '#1565c0', icon: TrendingUp },
-    { key: 'Threats',       label: 'Threats',        bg: '#fff3cd', color: '#e65100', icon: Shield },
+    { key: 'Strengths',     label: 'Strengths',     bg: 'bg-white dark:bg-black', color: '#FF3000', icon: Award },
+    { key: 'Weaknesses',    label: 'Weaknesses',    bg: 'bg-tertiary dark:bg-slate-900', color: '#000000', icon: AlertTriangle },
+    { key: 'Opportunities', label: 'Opportunities', bg: 'bg-tertiary dark:bg-slate-900', color: '#000000', icon: TrendingUp },
+    { key: 'Threats',       label: 'Threats',        bg: 'bg-white dark:bg-black', color: '#FF3000', icon: Shield },
   ];
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {quadrants.map(q => (
         <div
           key={q.key}
-          className="border-2 border-pencil p-4 hover:-rotate-1 transition-transform"
-          style={{ borderRadius: W.sm, backgroundColor: q.bg, boxShadow: S.hardSm }}
+          className={`border-2 border-black dark:border-white p-5 rounded-none hover:bg-accent hover:text-white group transition-colors ${q.bg}`}
         >
-          <h4 className="font-kalam text-lg font-bold mb-2 flex items-center gap-2" style={{ color: q.color }}>
-            <q.icon size={18} strokeWidth={2.5} /> {q.label}
+          <h4 className="font-heading text-xs font-black mb-3 flex items-center gap-2 uppercase tracking-wider" style={{ color: q.color }}>
+            <q.icon size={14} strokeWidth={3} className="group-hover:text-white" />
+            <span className="group-hover:text-white">{q.label}</span>
           </h4>
-          <ul className="space-y-1.5">
+          <ul className="space-y-2">
             {(swot[q.key] || []).map((item, i) => (
-              <li key={i} className="font-patrick text-sm md:text-base flex items-start gap-2">
-                <span style={{ color: q.color }}>•</span>
+              <li key={i} className="font-sans text-xs md:text-sm flex items-start gap-2 leading-relaxed text-black dark:text-white group-hover:text-white">
+                <span className="text-accent group-hover:text-white">•</span>
                 <span>{item}</span>
               </li>
             ))}
@@ -147,18 +145,18 @@ function SwotMatrix({ swot }) {
 function NextStepsTable({ steps }) {
   const priorityStyle = (p) => {
     const lower = (p || '').toLowerCase();
-    if (lower.includes('p0')) return { bg: '#fde2e2', border: '#e53935', badge: 'P0' };
-    if (lower.includes('p1')) return { bg: '#fff3cd', border: '#ff9800', badge: 'P1' };
-    return { bg: '#d6eaf8', border: '#2196f3', badge: 'P2' };
+    if (lower.includes('p0')) return { border: '#FF3000', badge: 'P0' };
+    if (lower.includes('p1')) return { border: '#000000', badge: 'P1' };
+    return { border: '#000000', badge: 'P2' };
   };
 
   return (
     <div className="overflow-x-auto -mx-1">
-      <table className="w-full border-collapse font-patrick text-base">
+      <table className="w-full border-collapse font-sans text-sm border-2 border-black dark:border-white">
         <thead>
-          <tr className="bg-pencil text-paper">
+          <tr className="bg-black text-white dark:bg-white dark:text-black">
             {['Priority', 'Action', 'Owner', 'Impact', 'Rationale'].map(h => (
-              <th key={h} className="font-kalam text-left px-3 py-2 first:rounded-tl-lg last:rounded-tr-lg">
+              <th key={h} className="font-heading text-[10px] font-black tracking-widest text-left px-4 py-3 uppercase">
                 {h}
               </th>
             ))}
@@ -170,21 +168,20 @@ function NextStepsTable({ steps }) {
             return (
               <tr
                 key={i}
-                className="border-b-2 border-dashed border-muted hover:bg-paper/50 transition-colors"
-                style={{ backgroundColor: ps.bg + '44' }}
+                className="border-b-2 border-black dark:border-white hover:bg-accent hover:text-white dark:hover:text-black dark:hover:bg-white group transition-colors"
               >
-                <td className="px-3 py-3">
+                <td className="px-4 py-4">
                   <span
-                    className="inline-block px-2 py-0.5 border-2 font-kalam font-bold text-sm"
-                    style={{ borderColor: ps.border, color: ps.border, borderRadius: W.pill }}
+                    className="inline-block px-2.5 py-1 border-2 font-mono font-black text-xs rounded-none group-hover:border-white dark:group-hover:border-black group-hover:text-white dark:group-hover:text-black"
+                    style={{ borderColor: ps.border, color: ps.border }}
                   >
                     {ps.badge}
                   </span>
                 </td>
-                <td className="px-3 py-3 font-bold">{s.action}</td>
-                <td className="px-3 py-3">{s.owner_suggestion}</td>
-                <td className="px-3 py-3 text-sm">{s.expected_impact}</td>
-                <td className="px-3 py-3 text-sm text-pencil/70">{s.rationale}</td>
+                <td className="px-4 py-4 font-black">{s.action}</td>
+                <td className="px-4 py-4 font-mono text-xs uppercase">{s.owner_suggestion}</td>
+                <td className="px-4 py-4 font-semibold">{s.expected_impact}</td>
+                <td className="px-4 py-4 text-xs opacity-75">{s.rationale}</td>
               </tr>
             );
           })}
@@ -202,11 +199,10 @@ function SnapshotGrid({ snapshot }) {
       {Object.entries(snapshot).map(([key, value]) => (
         <div
           key={key}
-          className="bg-post-it border-2 border-pencil p-3 hover:rotate-1 transition-transform"
-          style={{ borderRadius: W.sm, boxShadow: S.hardSm }}
+          className="bg-tertiary dark:bg-slate-900 border-2 border-black dark:border-white p-4 rounded-none hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white group transition-colors"
         >
-          <div className="font-kalam text-sm font-bold text-pencil/60">{key}</div>
-          <div className="font-patrick text-base mt-1">{value}</div>
+          <div className="font-heading text-[10px] font-black tracking-widest text-slate-500 dark:text-slate-400 group-hover:text-white/80 uppercase">{key}</div>
+          <div className="font-sans text-sm font-semibold mt-2 text-black dark:text-white group-hover:text-white">{value}</div>
         </div>
       ))}
     </div>
@@ -245,38 +241,34 @@ export default function ResultsView({ result, onNewAnalysis }) {
   };
 
   return (
-    <div ref={topRef} className="space-y-6 md:space-y-8">
+    <div ref={topRef} className="space-y-8">
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 animate-fade-in-up">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b-4 border-black dark:border-white animate-fade-in-up">
         <div>
-          <p className="font-patrick text-base text-pencil/50 mb-1">Competitive Intelligence Report</p>
-          <h2 className="font-kalam text-3xl md:text-4xl font-bold text-pencil">
+          <span className="font-mono text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 block mb-1">02 // SCAN_RESULTS</span>
+          <h2 className="font-heading text-4xl sm:text-5xl font-black uppercase tracking-tighter text-black dark:text-white leading-none">
             {result.company_name}
           </h2>
-          <p className="font-patrick text-sm text-pencil/40 mt-1">
-            Generated {new Date(result.generated_at).toLocaleDateString('en-US', {
-              weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-            })}
+          <p className="font-mono text-xs opacity-60 mt-3">
+            RUN_TIMESTAMP: {new Date(result.generated_at).toISOString()}
           </p>
         </div>
 
         {/* Action buttons */}
         <div className="flex gap-2 flex-wrap">
           {[
-            { label: copied ? 'Copied!' : 'Copy Report', icon: copied ? Check : Copy, action: handleCopy },
+            { label: copied ? 'Copied!' : 'Copy report', icon: copied ? Check : Copy, action: handleCopy },
             { label: 'Download .md', icon: Download, action: handleDownloadMd },
             { label: 'Export JSON', icon: FileJson, action: handleExportJson },
           ].map(btn => (
             <button
               key={btn.label}
               onClick={btn.action}
-              className="flex items-center gap-1.5 px-3 py-2 bg-white border-2 border-pencil
-                         font-patrick text-sm hover:bg-pencil hover:text-paper
-                         active:translate-x-[2px] active:translate-y-[2px]
-                         transition-all duration-100"
-              style={{ borderRadius: W.pill, boxShadow: S.hardSm }}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-black border-2 border-black dark:border-white
+                         font-heading text-xs uppercase tracking-widest font-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black
+                         transition-colors rounded-none"
             >
-              <btn.icon size={14} strokeWidth={2.5} /> {btn.label}
+              <btn.icon size={12} strokeWidth={3} className="text-accent" /> {btn.label}
             </button>
           ))}
         </div>
@@ -286,100 +278,93 @@ export default function ResultsView({ result, onNewAnalysis }) {
       <StatsBar result={result} />
 
       {/* ── Executive Summary ───────────────────────────── */}
-      <SectionCard title="Executive Summary" icon={Zap} decoration="tape" bgColor="bg-post-it">
-        <p className="font-patrick text-lg md:text-xl leading-relaxed">{result.executive_summary}</p>
+      <SectionCard title="Executive Summary" icon={Zap} sectionNum="02.1 // REPORT_SUMMARY">
+        <p className="font-sans text-base md:text-lg leading-relaxed text-black dark:text-white">{result.executive_summary}</p>
       </SectionCard>
 
       {/* ── Competitor Snapshot ──────────────────────────── */}
-      <SectionCard title="Competitor at a Glance" icon={BarChart3} decoration="tack">
+      <SectionCard title="Competitor Metrics" icon={BarChart3} sectionNum="02.2 // META_METRICS">
         <SnapshotGrid snapshot={result.snapshot} />
       </SectionCard>
 
       {/* ── Strengths & Weaknesses ──────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <SectionCard title="What They Do Well" icon={Award}>
-          <BulletList items={result.strengths || []} color="#4caf50" />
+        <SectionCard title="Strengths & Advantages" icon={Award} sectionNum="02.3 // ADVANTAGES">
+          <BulletList items={result.strengths || []} bulletColor="#FF3000" />
         </SectionCard>
-        <SectionCard title="Where They're Vulnerable" icon={AlertTriangle}>
-          <BulletList items={result.weaknesses || []} color="#e53935" />
+        <SectionCard title="Weaknesses & Vulnerabilities" icon={AlertTriangle} sectionNum="02.4 // VULNERABILITIES">
+          <BulletList items={result.weaknesses || []} bulletColor="#000000" />
         </SectionCard>
       </div>
 
       {/* ── SWOT Matrix ─────────────────────────────────── */}
-      <SectionCard title="SWOT Matrix" icon={Target}>
+      <SectionCard title="SWOT Matrix Grid" icon={Target} sectionNum="02.5 // SWOT_GRID">
         <SwotMatrix swot={result.swot || {}} />
       </SectionCard>
 
       {/* ── Opportunities & Threats ─────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <SectionCard title="Opportunities for Us" icon={TrendingUp}>
-          <BulletList items={result.opportunities || []} color="#2196f3" />
+        <SectionCard title="Opportunities" icon={TrendingUp} sectionNum="02.6 // OPPORTUNITIES">
+          <BulletList items={result.opportunities || []} bulletColor="#FF3000" />
         </SectionCard>
-        <SectionCard title="Threats & How to Defend" icon={Shield}>
-          <BulletList items={result.threats || []} color="#ff9800" />
+        <SectionCard title="Threats & Defensive strategy" icon={Shield} sectionNum="02.7 // DEFENSIVE">
+          <BulletList items={result.threats || []} bulletColor="#000000" />
         </SectionCard>
       </div>
 
       {/* ── Next Steps ──────────────────────────────────── */}
-      <SectionCard title="Recommended Next Steps" icon={ChevronRight} decoration="tape">
+      <SectionCard title="Prioritized Next Steps" icon={ChevronRight} sectionNum="02.8 // ACTION_PIPELINE">
         <NextStepsTable steps={result.next_steps || []} />
       </SectionCard>
 
       {/* ── Differentiation Strategy ────────────────────── */}
-      <SectionCard title="Recommended Positioning" icon={Lightbulb} decoration="tack" bgColor="bg-post-it">
-        <p className="font-patrick text-lg md:text-xl leading-relaxed italic">
+      <SectionCard title="Recommended Brand Positioning" icon={Lightbulb} sectionNum="02.9 // REPOSITION_TARGET" bgColor="bg-accent text-white">
+        <p className="font-heading text-lg md:text-2xl font-black uppercase tracking-tight leading-tight text-white italic">
           "{result.differentiation_strategy}"
         </p>
       </SectionCard>
 
       {/* ── Full Markdown Report ────────────────────────── */}
-      <SectionCard title="Full Report" icon={BarChart3}>
-        <div className="markdown-report font-patrick">
+      <SectionCard title="Synthesized MD Document" icon={BarChart3} sectionNum="03 // COMPILED_REPORT">
+        <div className="markdown-report">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {result.full_markdown_report || ''}
           </ReactMarkdown>
         </div>
 
         {/* Bottom action bar */}
-        <div className="flex gap-3 mt-6 pt-4 border-t-2 border-dashed border-muted flex-wrap">
+        <div className="flex gap-3 mt-8 pt-6 border-t-4 border-black dark:border-white flex-wrap">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-4 py-2 bg-secondary text-white border-[3px] border-secondary
-                       font-patrick text-base hover:opacity-90 active:translate-x-[2px] active:translate-y-[2px]
-                       transition-all duration-100"
-            style={{ borderRadius: W.pill, boxShadow: S.hard }}
+            className="flex items-center gap-2 px-5 py-3 bg-accent text-white border-2 border-black dark:border-white
+                       font-heading text-xs uppercase tracking-widest font-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black
+                       transition-colors rounded-none"
           >
-            {copied ? <Check size={16} strokeWidth={2.5} /> : <Copy size={16} strokeWidth={2.5} />}
+            {copied ? <Check size={14} strokeWidth={3} /> : <Copy size={14} strokeWidth={3} />}
             {copied ? 'Copied!' : 'Copy to Clipboard'}
           </button>
           <button
             onClick={handleDownloadMd}
-            className="flex items-center gap-2 px-4 py-2 bg-white border-[3px] border-pencil
-                       font-patrick text-base hover:bg-pencil hover:text-paper
-                       active:translate-x-[2px] active:translate-y-[2px]
-                       transition-all duration-100"
-            style={{ borderRadius: W.pill, boxShadow: S.hard }}
+            className="flex items-center gap-2 px-5 py-3 bg-white text-black dark:bg-black dark:text-white border-2 border-black dark:border-white
+                       font-heading text-xs uppercase tracking-widest font-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black
+                       transition-colors rounded-none"
           >
-            <Download size={16} strokeWidth={2.5} /> Download as .md
+            <Download size={14} strokeWidth={3} /> Download as .md
           </button>
         </div>
       </SectionCard>
 
       {/* ── Bottom CTA ──────────────────────────────────── */}
-      <div className="text-center py-8">
-        <p className="font-patrick text-pencil/40 italic mb-4">
-          This report was generated by AI-driven competitive analysis. Verify facts before strategic decisions.
+      <div className="text-center py-12 border-t-4 border-black dark:border-white">
+        <p className="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-6">
+          [ PIPELINE_END // VERIFY DATA BEFORE STRATEGIC DECISION ]
         </p>
         <button
           onClick={onNewAnalysis}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-white border-[3px] border-pencil
-                     font-patrick text-lg hover:bg-accent hover:text-white
-                     active:translate-x-1 active:translate-y-1 transition-all duration-100"
-          style={{ borderRadius: W.pill, boxShadow: S.hardLg }}
-          onMouseEnter={e => e.currentTarget.style.boxShadow = S.hard}
-          onMouseLeave={e => e.currentTarget.style.boxShadow = S.hardLg}
+          className="inline-flex items-center gap-3 px-8 py-4 bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white
+                     font-heading text-sm font-black uppercase tracking-widest hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white transition-colors rounded-none"
         >
-          ✏️ Analyze Another Competitor
+          Initialize Another Scan
         </button>
       </div>
     </div>

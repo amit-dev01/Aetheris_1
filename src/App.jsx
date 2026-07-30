@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Menu, X, PlusCircle, Clock, Pencil } from 'lucide-react';
+import { Menu, X, PlusCircle, Clock } from 'lucide-react';
 import InputForm from './components/InputForm';
 import LoadingView from './components/LoadingView';
 import ResultsView from './components/ResultsView';
-import { W, S, HISTORY_KEY, MAX_HISTORY } from './constants';
+import { HISTORY_KEY, MAX_HISTORY } from './constants';
 
 export default function App() {
   const [view, setView] = useState('form');       // form | loading | results
@@ -61,42 +61,33 @@ export default function App() {
   const clearHistory     = () => { setHistory([]); localStorage.removeItem(HISTORY_KEY); };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white">
       {/* ─── Header ──────────────────────────────────────── */}
-      <header
-        className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b-[3px] border-pencil"
-        style={{ borderBottomLeftRadius: '0 0', borderBottomRightRadius: '0 0' }}
-      >
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 bg-white dark:bg-black border-b-4 border-black dark:border-white">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-muted/50 transition-colors"
-              style={{ borderRadius: W.sm }}
+              className="p-2 border-2 border-black dark:border-white hover:bg-accent hover:text-white dark:hover:text-black dark:hover:bg-white transition-colors"
               aria-label="Toggle history"
             >
-              {sidebarOpen ? <X size={22} strokeWidth={2.5} /> : <Menu size={22} strokeWidth={2.5} />}
+              {sidebarOpen ? <X size={20} strokeWidth={3} /> : <Menu size={20} strokeWidth={3} />}
             </button>
             <h1
-              className="font-kalam text-xl md:text-2xl font-bold cursor-pointer select-none"
+              className="font-heading text-lg md:text-xl font-black cursor-pointer select-none uppercase tracking-widest flex items-center gap-2"
               onClick={handleNewAnalysis}
             >
-              <Pencil size={20} className="inline -mt-1 mr-1" strokeWidth={3} />
-              Competitor Analysis <span className="text-accent inline-block rotate-2">AI</span>
+              <span>Competitor Analysis</span>
+              <span className="bg-accent text-white px-2 py-0.5 font-mono text-xs">AI</span>
             </h1>
           </div>
 
           {view === 'results' && (
             <button
               onClick={handleNewAnalysis}
-              className="flex items-center gap-2 px-4 py-2 bg-white border-[3px] border-pencil font-patrick text-lg
-                         hover:bg-accent hover:text-white active:translate-x-1 active:translate-y-1
-                         transition-all duration-100"
-              style={{ borderRadius: W.pill, boxShadow: S.hard }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = S.hardHover}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = S.hard}
+              className="flex items-center gap-2 px-4 py-2.5 bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white font-heading text-sm font-black uppercase tracking-wider hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white transition-colors"
             >
-              <PlusCircle size={18} strokeWidth={2.5} /> New Analysis
+              <PlusCircle size={16} strokeWidth={3} /> New Analysis
             </button>
           )}
         </div>
@@ -108,22 +99,22 @@ export default function App() {
           <>
             {/* backdrop (mobile) */}
             <div
-              className="fixed inset-0 bg-pencil/20 z-30 md:hidden"
+              className="fixed inset-0 bg-black/40 z-30 md:hidden"
               onClick={() => setSidebarOpen(false)}
             />
             <aside
               className="fixed md:sticky top-[60px] left-0 z-30 w-72 h-[calc(100vh-60px)]
-                         bg-white border-r-[3px] border-pencil overflow-y-auto p-4
-                         animate-fade-in"
+                         bg-white dark:bg-black border-r-4 border-black dark:border-white overflow-y-auto p-5
+                         animate-fade-in flex flex-col gap-6"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-kalam text-lg font-bold flex items-center gap-2">
-                  <Clock size={18} strokeWidth={2.5} /> History
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                  <Clock size={16} strokeWidth={3} /> History
                 </h2>
                 {history.length > 0 && (
                   <button
                     onClick={clearHistory}
-                    className="text-sm text-accent hover:underline font-patrick"
+                    className="text-xs font-black uppercase tracking-widest text-accent hover:underline"
                   >
                     Clear all
                   </button>
@@ -131,22 +122,21 @@ export default function App() {
               </div>
 
               {history.length === 0 ? (
-                <p className="text-pencil/50 font-patrick text-lg italic">No analyses yet ✏️</p>
+                <p className="text-slate-400 font-mono text-xs uppercase tracking-widest">No previous runs [E_EMPTY]</p>
               ) : (
-                <ul className="space-y-3 stagger">
+                <ul className="space-y-4 stagger">
                   {history.map((item) => (
                     <li key={item.id}>
                       <button
                         onClick={() => loadHistoryItem(item)}
-                        className="w-full text-left p-3 border-2 border-pencil bg-post-it
-                                   hover:-rotate-1 hover:shadow-hard transition-all duration-100
-                                   animate-fade-in-up"
-                        style={{ borderRadius: W.sm, boxShadow: S.hardSm }}
+                        className="w-full text-left p-4 border-2 border-black dark:border-white bg-tertiary dark:bg-slate-900
+                                   hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white transition-colors
+                                   animate-fade-in-up flex flex-col gap-1.5"
                       >
-                        <span className="font-kalam font-bold block text-base leading-tight">
+                        <span className="font-heading font-black block text-sm uppercase tracking-wider leading-tight">
                           {item.company_name}
                         </span>
-                        <span className="text-sm text-pencil/60 font-patrick">
+                        <span className="text-[10px] font-mono opacity-60">
                           {new Date(item.timestamp).toLocaleDateString('en-US', {
                             month: 'short', day: 'numeric', year: 'numeric',
                             hour: '2-digit', minute: '2-digit',
@@ -162,15 +152,14 @@ export default function App() {
         )}
 
         {/* ─── Main Content ────────────────────────────────── */}
-        <main className="flex-1 px-4 md:px-6 py-8 md:py-12 max-w-5xl mx-auto w-full">
+        <main className="flex-1 px-6 py-12 max-w-5xl mx-auto w-full">
           {/* Error banner */}
           {error && (
             <div
-              className="mb-6 p-4 bg-white border-[3px] border-accent text-pencil
-                         font-patrick text-lg animate-fade-in-up"
-              style={{ borderRadius: W.md, boxShadow: '4px 4px 0px 0px #ff4d4d' }}
+              className="mb-8 p-5 bg-white dark:bg-black border-4 border-accent text-black dark:text-white
+                         font-mono text-sm uppercase tracking-wider animate-fade-in-up"
             >
-              <strong className="font-kalam text-accent">Oops!</strong> {error}
+              <strong className="text-accent font-black block mb-1">Error:</strong> {error}
             </div>
           )}
 

@@ -4,75 +4,82 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create Account — Aetheris</title>
-    <meta name="description" content="Create your free Aetheris account and start tracking competitors with AI-powered intelligence." />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'>⚡</text></svg>" />
+    <meta name="description" content="Create your free Aetheris account." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23FF3000'/><text y='.75em' x='.15em' font-size='70' fill='white' font-family='sans-serif' font-weight='bold'>A</text></svg>" />
 
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Tailwind Configuration for Swiss Typographic Design System -->
     <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {
           extend: {
             colors: {
-              paperBg: '#FFFDF5',
-              darkBg: '#0B0F1A',
-              slateFg: '#1E293B',
-              accent: '#8B5CF6',
-              secondary: '#F472B6',
-              tertiary: '#FBBF24',
-              quaternary: '#34D399',
+              paperBg: '#FFFFFF',
+              darkBg: '#000000',
+              slateFg: '#000000',
+              accent: '#FF3000',
+              secondary: '#000000',
+              tertiary: '#F2F2F2',
+              quaternary: '#FF3000',
             },
             fontFamily: {
-              sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-              heading: ['"Outfit"', 'system-ui', 'sans-serif'],
+              sans: ['"Inter"', 'system-ui', 'sans-serif'],
+              heading: ['"Inter"', 'system-ui', 'sans-serif'],
             }
           }
         }
       }
     </script>
 
+    <!-- Custom CSS for Swiss Typographic Design System -->
     <style>
       html { scroll-behavior: smooth; }
 
-      .dot-grid {
-        background-image: radial-gradient(#e2e8f0 2px, transparent 2px);
-        background-size: 24px 24px;
+      .swiss-dots {
+        background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1.5px, transparent 1.5px);
+        background-size: 16px 16px;
       }
-      .dark .dot-grid {
-        background-image: radial-gradient(#1e293b 2px, transparent 2px);
-        background-size: 24px 24px;
+      .dark .swiss-dots {
+        background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1.5px, transparent 1.5px);
+        background-size: 16px 16px;
       }
 
-      .chunky-border { border: 2px solid #1E293B; }
-      .dark .chunky-border { border: 2px solid #cbd5e1; }
+      .chunky-border { border: 4px solid #000000; }
+      .dark .chunky-border { border: 4px solid #FFFFFF; }
 
-      .pop-shadow { box-shadow: 4px 4px 0px 0px #1E293B; }
-      .dark .pop-shadow { box-shadow: 4px 4px 0px 0px #cbd5e1; }
-
-      .bouncy { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+      .snappy { transition: all 0.15s ease-out; }
 
       .geo-input {
-        border: 2px solid #cbd5e1;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        border: 2px solid #000000;
+        border-radius: 0px !important;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
         outline: none;
       }
       .geo-input:focus {
-        border-color: #8B5CF6;
-        box-shadow: 3px 3px 0px 0px #8B5CF6;
+        border-color: #FF3000;
       }
       .dark .geo-input {
-        border-color: #334155;
-        background: #0f172a;
-        color: #f1f5f9;
+        border-color: #FFFFFF;
+        background: #000000;
+        color: #FFFFFF;
       }
       .dark .geo-input:focus {
-        border-color: #8B5CF6;
-        box-shadow: 3px 3px 0px 0px #8B5CF6;
+        border-color: #FF3000;
+      }
+
+      /* Password strength bar */
+      .strength-bar {
+        height: 4px;
+        border-radius: 0px;
+        transition: width 0.3s ease, background-color 0.3s ease;
       }
 
       @keyframes spin { to { transform: rotate(360deg); } }
@@ -83,21 +90,6 @@
         border-radius: 50%;
         animation: spin 0.7s linear infinite;
         display: inline-block;
-      }
-
-      @keyframes float-slow {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        50% { transform: translateY(-10px) rotate(4deg); }
-      }
-      .float-slow   { animation: float-slow 7s ease-in-out infinite; }
-      .float-slow-2 { animation: float-slow 9s ease-in-out infinite 1.5s; }
-      .float-slow-3 { animation: float-slow 8s ease-in-out infinite 3.5s; }
-
-      /* Password strength bar */
-      .strength-bar {
-        height: 4px;
-        border-radius: 9999px;
-        transition: width 0.4s ease, background-color 0.4s ease;
       }
     </style>
   </head>
@@ -111,64 +103,53 @@
     </script>
 
     <!-- NAVBAR -->
-    <nav class="w-full border-b-2 border-slate-200 dark:border-slate-800 bg-paperBg/80 dark:bg-darkBg/80 backdrop-blur-sm">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <a href="/" class="flex items-center gap-2 group">
-          <div class="w-8 h-8 rounded-xl bg-accent text-white flex items-center justify-center chunky-border pop-shadow group-hover:rotate-12 bouncy">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 8V5a2 2 0 0 1 2-2h3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
-              <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/>
-              <path d="M8 12s2.5-4 4-4 4 4 4 4-2.5 4-4 4-4-4-4-4z"/><circle cx="12" cy="12" r="2"/>
-            </svg>
+    <nav class="w-full border-b-4 border-black dark:border-white bg-paperBg dark:bg-darkBg">
+      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3 group">
+          <div class="w-8 h-8 bg-accent text-white flex items-center justify-center border-2 border-black dark:border-white snappy group-hover:-translate-y-0.5">
+            <span class="font-extrabold text-base uppercase">A</span>
           </div>
-          <span class="font-heading font-extrabold text-xl text-slateFg dark:text-white">Aetheris</span>
+          <span class="font-heading font-black text-xl uppercase tracking-wider text-slateFg dark:text-white">Aetheris</span>
         </a>
-        <div class="flex items-center gap-4">
-          <button id="theme-toggle" class="w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-900 chunky-border rounded-lg pop-shadow bouncy hover:-translate-y-0.5" aria-label="Toggle theme">
-            <svg class="w-4 h-4 hidden dark:block text-tertiary" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            <svg class="w-4 h-4 block dark:hidden text-slateFg" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <div class="flex items-center gap-6">
+          <button id="theme-toggle" class="w-10 h-10 flex items-center justify-center bg-white dark:bg-black border-2 border-black dark:border-white snappy hover:bg-accent hover:text-white" aria-label="Toggle theme">
+            <svg class="w-4 h-4 hidden dark:block" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           </button>
-          <a href="/login/" class="font-heading font-bold text-sm text-slateFg dark:text-slate-300 hover:text-accent bouncy">Sign in →</a>
+          <a href="/login/" class="font-heading font-black text-sm uppercase tracking-widest text-slateFg dark:text-slate-300 hover:text-accent snappy">Sign in →</a>
         </div>
       </div>
     </nav>
 
     <!-- MAIN -->
-    <main class="flex-1 dot-grid flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <main class="flex-1 swiss-dots flex items-center justify-center px-6 py-12 relative overflow-hidden">
 
-      <!-- Floating Ornaments -->
-      <div class="absolute top-[8%] right-[8%] w-14 h-14 rounded-full border-4 border-dashed border-secondary/30 float-slow hidden lg:block"></div>
-      <div class="absolute bottom-[12%] left-[8%] w-12 h-12 bg-accent/15 rounded-xl rotate-12 float-slow-2 hidden lg:block"></div>
-      <div class="absolute top-[45%] left-[5%] w-10 h-10 bg-tertiary/25 rounded-full float-slow-3 hidden lg:block"></div>
-      <div class="absolute bottom-[35%] right-[7%] w-9 h-9 border-4 border-quaternary/30 rotate-45 float-slow hidden lg:block" style="animation-delay:2s"></div>
-
-      <!-- Card -->
       <div class="relative z-10 w-full max-w-md">
 
         <!-- Access badge -->
         <div class="flex justify-center mb-5">
-          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-tertiary text-slateFg font-heading font-extrabold text-xs uppercase tracking-wider chunky-border pop-shadow select-none">
-            <span class="w-2 h-2 bg-slateFg rounded-full animate-ping"></span>
-            Free · No credit card needed
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white font-heading font-black text-xs uppercase tracking-widest border-2 border-black dark:border-white">
+            <span class="w-2 h-2 bg-white rounded-full animate-ping"></span>
+            Free early access
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-900 chunky-border pop-shadow rounded-2xl p-8 sm:p-10">
+        <div class="bg-white dark:bg-black border-4 border-black dark:border-white p-8 sm:p-10 rounded-none">
 
-          <!-- Icon + title -->
+          <!-- Header -->
           <div class="mb-7 text-center">
-            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-quaternary/15 dark:bg-quaternary/20 chunky-border pop-shadow mb-5" style="box-shadow: 4px 4px 0px 0px #34D399;">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-quaternary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <div class="inline-flex items-center justify-center w-14 h-14 bg-accent border-2 border-black dark:border-white text-white mb-5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                 <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
               </svg>
             </div>
-            <h1 class="font-heading font-extrabold text-2xl text-slateFg dark:text-white">Create your account</h1>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 font-medium">Start tracking competitors in 60 seconds</p>
+            <h1 class="font-heading font-black text-2xl uppercase tracking-widest text-slateFg dark:text-white">Create Account</h1>
+            <p class="mt-2 text-xs font-black text-slate-500 uppercase tracking-widest">Get reports in 60 seconds</p>
           </div>
 
           <!-- Google -->
-          <button onclick="handleSocialSignup()" class="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl chunky-border pop-shadow bg-white dark:bg-slate-800 text-slateFg dark:text-slate-200 font-heading font-bold text-sm hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#1E293B] dark:hover:shadow-[6px_6px_0px_0px_#cbd5e1] bouncy mb-6">
+          <button onclick="handleSocialSignup()" class="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-none border-2 border-black dark:border-white bg-white dark:bg-black text-slateFg dark:text-white font-heading font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black snappy mb-6">
             <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -180,9 +161,9 @@
 
           <!-- Divider -->
           <div class="flex items-center gap-3 mb-6">
-            <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">or</span>
-            <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
+            <div class="flex-1 h-0.5 bg-black dark:bg-white"></div>
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">or</span>
+            <div class="flex-1 h-0.5 bg-black dark:bg-white"></div>
           </div>
 
           <!-- Form -->
@@ -190,32 +171,32 @@
 
             <!-- Full name -->
             <div>
-              <label for="name" class="block text-sm font-heading font-bold text-slateFg dark:text-slate-300 mb-1.5">Full name</label>
+              <label for="name" class="block text-xs font-black text-slateFg dark:text-slate-300 uppercase tracking-widest mb-1.5">Full name</label>
               <input id="name" name="name" type="text" autocomplete="name"
                 placeholder="Alex Johnson" required
-                class="geo-input w-full px-4 py-3 rounded-xl text-sm bg-white dark:bg-slate-900 text-slateFg dark:text-white placeholder:text-slate-400" />
-              <p id="name-error" class="hidden mt-1.5 text-xs font-bold text-red-500">Please enter your full name.</p>
+                class="geo-input w-full px-4 py-3 text-sm bg-white dark:bg-black text-slateFg dark:text-white placeholder:text-slate-400" />
+              <p id="name-error" class="hidden mt-1.5 text-xs font-bold text-accent uppercase tracking-wider">Please enter your full name.</p>
             </div>
 
             <!-- Work email -->
             <div>
-              <label for="email" class="block text-sm font-heading font-bold text-slateFg dark:text-slate-300 mb-1.5">Work email</label>
+              <label for="email" class="block text-xs font-black text-slateFg dark:text-slate-300 uppercase tracking-widest mb-1.5">Work email</label>
               <input id="email" name="email" type="email" autocomplete="email"
                 placeholder="you@company.com" required
-                class="geo-input w-full px-4 py-3 rounded-xl text-sm bg-white dark:bg-slate-900 text-slateFg dark:text-white placeholder:text-slate-400" />
-              <p id="email-error" class="hidden mt-1.5 text-xs font-bold text-red-500">Please enter a valid email address.</p>
+                class="geo-input w-full px-4 py-3 text-sm bg-white dark:bg-black text-slateFg dark:text-white placeholder:text-slate-400" />
+              <p id="email-error" class="hidden mt-1.5 text-xs font-bold text-accent uppercase tracking-wider">Please enter a valid email address.</p>
             </div>
 
             <!-- Password -->
             <div>
-              <label for="password" class="block text-sm font-heading font-bold text-slateFg dark:text-slate-300 mb-1.5">Password</label>
+              <label for="password" class="block text-xs font-black text-slateFg dark:text-slate-300 uppercase tracking-widest mb-1.5">Password</label>
               <div class="relative">
                 <input id="password" name="password" type="password" autocomplete="new-password"
                   placeholder="Create a strong password" required
                   oninput="checkStrength(this.value)"
-                  class="geo-input w-full px-4 py-3 pr-12 rounded-xl text-sm bg-white dark:bg-slate-900 text-slateFg dark:text-white placeholder:text-slate-400" />
-                <button type="button" onclick="togglePw('password','eye1')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slateFg dark:hover:text-white bouncy" aria-label="Toggle password">
-                  <svg id="eye1" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  class="geo-input w-full px-4 py-3 pr-12 text-sm bg-white dark:bg-black text-slateFg dark:text-white placeholder:text-slate-400" />
+                <button type="button" onclick="togglePw('password','eye1')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slateFg dark:hover:text-white snappy" aria-label="Toggle password">
+                  <svg id="eye1" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                   </svg>
                 </button>
@@ -227,37 +208,37 @@
                 <div id="bar3" class="strength-bar flex-1 bg-slate-200 dark:bg-slate-700"></div>
                 <div id="bar4" class="strength-bar flex-1 bg-slate-200 dark:bg-slate-700"></div>
               </div>
-              <p id="strength-label" class="hidden mt-1 text-xs font-bold text-slate-500"></p>
-              <p id="password-error" class="hidden mt-1.5 text-xs font-bold text-red-500">Password must be at least 8 characters.</p>
+              <p id="strength-label" class="hidden mt-1 text-xs font-bold text-slate-500 uppercase tracking-wider"></p>
+              <p id="password-error" class="hidden mt-1.5 text-xs font-bold text-accent uppercase tracking-wider">Password must be at least 8 characters.</p>
             </div>
 
             <!-- Terms -->
             <div class="flex items-start gap-3">
               <input id="terms" name="terms" type="checkbox"
-                class="mt-0.5 w-4 h-4 rounded border-2 border-slate-300 dark:border-slate-600 accent-[#8B5CF6] cursor-pointer shrink-0" />
-              <label for="terms" class="text-sm text-slate-500 dark:text-slate-400 leading-snug cursor-pointer">
-                I agree to the <a href="#" class="font-bold text-accent hover:underline">Terms of Service</a> and
-                <a href="#" class="font-bold text-accent hover:underline">Privacy Policy</a>
+                class="mt-0.5 w-4 h-4 rounded-none border-2 border-black dark:border-white accent-[#FF3000] cursor-pointer shrink-0" />
+              <label for="terms" class="text-xs font-black text-slate-500 uppercase tracking-widest leading-snug cursor-pointer">
+                I agree to the <a href="#" class="underline text-accent">Terms</a> and
+                <a href="#" class="underline text-accent">Privacy Policy</a>
               </label>
             </div>
-            <p id="terms-error" class="hidden -mt-3 text-xs font-bold text-red-500">You must agree to the terms to continue.</p>
+            <p id="terms-error" class="hidden -mt-3 text-xs font-bold text-accent uppercase tracking-wider">You must agree to the terms to continue.</p>
 
             <!-- Submit -->
             <button id="submit-btn" type="submit"
-              class="w-full flex items-center justify-center gap-2 bg-accent text-white font-heading font-extrabold text-base py-3.5 rounded-xl chunky-border pop-shadow hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#1E293B] dark:hover:shadow-[6px_6px_0px_0px_#cbd5e1] active:translate-x-0.5 active:translate-y-0.5 bouncy mt-1">
+              class="w-full flex items-center justify-center gap-2 bg-black text-white dark:bg-white dark:text-black font-heading font-black text-sm uppercase tracking-widest py-4 border-2 border-black dark:border-white hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white snappy mt-1 rounded-none">
               <span id="btn-text">Create free account</span>
               <span id="btn-spinner" class="hidden spinner"></span>
             </button>
           </form>
 
-          <p class="mt-7 text-center text-sm text-slate-500 dark:text-slate-400">
+          <p class="mt-7 text-center text-sm text-slate-500">
             Already have an account?
-            <a href="/login/" class="font-heading font-bold text-accent hover:underline ml-1">Sign in →</a>
+            <a href="/login/" class="font-heading font-black text-accent hover:underline ml-1 uppercase">Sign in →</a>
           </p>
         </div>
 
-        <p class="mt-4 text-center text-xs text-slate-400 dark:text-slate-600">
-          No credit card · Cancel anytime · Your data stays yours
+        <p class="mt-4 text-center text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-600">
+          No credit card required · Free early access
         </p>
       </div>
     </main>
@@ -295,8 +276,8 @@
         if (/[0-9]/.test(val)) score++;
         if (/[^A-Za-z0-9]/.test(val)) score++;
 
-        const colors = ['#EF4444', '#F97316', '#FBBF24', '#34D399'];
-        const labels = ['Weak', 'Fair', 'Good', 'Strong 💪'];
+        const colors = ['#FF3000', '#FF3000', '#000000', '#000000'];
+        const labels = ['Weak', 'Fair', 'Good', 'Strong'];
 
         bars.forEach((b, i) => {
           b.style.backgroundColor = i < score ? colors[score - 1] : '';
@@ -306,7 +287,7 @@
         if (val.length > 0) {
           label.classList.remove('hidden');
           label.textContent = labels[score - 1] || 'Weak';
-          label.style.color = colors[score - 1] || '#EF4444';
+          label.style.color = colors[score - 1] || '#FF3000';
         } else {
           label.classList.add('hidden');
         }
