@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { Plus, Trash2, Sparkles, Globe, Building2, Users, Search } from 'lucide-react';
 import { FOCUS_OPTIONS } from '../constants';
 
-export default function InputForm({ onSubmit }) {
+export default function InputForm({ 
+  onSubmit, 
+  title = "Configure Scan Parameters",
+  subtitle = "Enter competitor details below to initialize automated web scraping and SWOT synthesis.",
+  companyLabel = "Company Name",
+  companyPlaceholder = "e.g. Nike, Shopify, Notion...",
+  submitLabel = "Analyze Competitor"
+}) {
   const [form, setForm] = useState({
     company_name: '',
     website_url: '',
@@ -60,38 +67,37 @@ export default function InputForm({ onSubmit }) {
 
   /* ── Shared input styles ───────────────────────────────── */
   const inputClass = (field) =>
-    `w-full px-4 py-3 bg-white dark:bg-black border-2 font-sans text-sm text-black dark:text-white
-     placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-accent
-     transition-colors ${errors[field] ? 'border-accent' : 'border-black dark:border-white'}`;
+    `w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-sans text-sm text-slate-900 dark:text-white
+     placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+     transition-all ${errors[field] ? 'border-red-500 ring-1 ring-red-500' : ''}`;
 
   return (
-    <div className="animate-fade-in-up">
+    <div className="animate-fade-in-up max-w-3xl">
       {/* ── Hero ─────────────────────────────────────────── */}
-      <div className="text-left mb-12 relative border-b-4 border-black dark:border-white pb-8">
-        <span className="font-mono font-black text-accent text-sm block mb-2">[ 01.1 // CONFIGURE_RUN ]</span>
-        <h1 className="font-heading text-4xl md:text-5xl font-black text-black dark:text-white uppercase tracking-tighter leading-none mb-3">
-          Configure Scan Parameters
+      <div className="text-left mb-10">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+          {title}
         </h1>
-        <p className="font-sans text-base text-slate-600 dark:text-slate-400 max-w-xl">
-          Enter competitor details below to initialize automated web scraping and SWOT synthesis.
+        <p className="text-sm text-slate-500">
+          {subtitle}
         </p>
       </div>
 
       {/* ── Form Card ────────────────────────────────────── */}
       <form onSubmit={handleSubmit}>
-        <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 md:p-10 relative">
-          <div className="space-y-8">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 md:p-8">
+          <div className="space-y-6">
             
             {/* ── Company Name ──────────────────────────── */}
             <div>
               <label className="font-heading text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-2">
-                <Building2 size={14} strokeWidth={3} /> Company Name *
+                <Building2 size={14} strokeWidth={3} /> {companyLabel} *
               </label>
               <input
                 type="text"
                 value={form.company_name}
                 onChange={e => update('company_name', e.target.value)}
-                placeholder="e.g. Nike, Shopify, Notion..."
+                placeholder={companyPlaceholder}
                 className={inputClass('company_name')}
               />
               {errors.company_name && <span className="text-accent text-xs font-mono uppercase tracking-wider mt-1.5 block">Error: {errors.company_name}</span>}
@@ -160,21 +166,21 @@ export default function InputForm({ onSubmit }) {
                         value={pair.platform}
                         onChange={e => updateSocialPair(i, 'platform', e.target.value)}
                         placeholder="platform"
-                        className="w-1/3 px-3 py-2 bg-white dark:bg-black border-2 border-black dark:border-white font-sans text-sm focus:outline-none focus:border-accent"
+                        className="w-1/3 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <input
                         type="url"
                         value={pair.url}
                         onChange={e => updateSocialPair(i, 'url', e.target.value)}
                         placeholder="https://instagram.com/company"
-                        className="flex-1 px-3 py-2 bg-white dark:bg-black border-2 border-black dark:border-white font-sans text-sm focus:outline-none focus:border-accent"
+                        className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <button
                         type="button"
                         onClick={() => removeSocialPair(i)}
-                        className="p-2.5 border-2 border-black dark:border-white text-accent hover:bg-accent hover:text-white dark:hover:text-white snappy shrink-0"
+                        className="p-2.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
                       >
-                        <Trash2 size={16} strokeWidth={3} />
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   ))}
@@ -184,16 +190,16 @@ export default function InputForm({ onSubmit }) {
               <button
                 type="button"
                 onClick={addSocialPair}
-                className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-black dark:border-white
-                           text-black dark:text-white font-heading font-black text-xs uppercase tracking-widest
-                           hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg
+                           text-slate-600 dark:text-slate-400 text-sm font-medium
+                           hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
-                <Plus size={14} strokeWidth={3} /> Add Social URL
+                <Plus size={16} /> Add Social URL
               </button>
             </div>
 
             {/* ── Divider ──────────────────────────────── */}
-            <hr className="border-t-2 border-black dark:border-white" />
+            <hr className="border-t border-slate-100 dark:border-slate-800" />
 
             {/* ── Focus Areas ──────────────────────────── */}
             <div>
@@ -208,10 +214,10 @@ export default function InputForm({ onSubmit }) {
                       key={area}
                       type="button"
                       onClick={() => toggleFocus(area)}
-                      className={`px-4 py-2 border-2 font-heading text-xs uppercase tracking-widest font-black snappy
+                      className={`px-4 py-2 text-xs font-medium rounded-lg capitalize transition-colors
                                   ${active
-                                    ? 'bg-accent text-white border-black dark:border-white'
-                                    : 'bg-white text-black border-black dark:bg-black dark:text-white dark:border-white hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                                   }`}
                     >
                       {area}
@@ -219,17 +225,17 @@ export default function InputForm({ onSubmit }) {
                   );
                 })}
               </div>
-              {errors.focus && <span className="text-accent text-xs font-mono uppercase tracking-wider mt-2 block">Error: {errors.focus}</span>}
+              {errors.focus && <span className="text-red-500 text-xs mt-2 block">{errors.focus}</span>}
             </div>
           </div>
 
           {/* ── Submit Button ──────────────────────────── */}
-          <div className="mt-10 border-t-2 border-black dark:border-white pt-8 text-left">
+          <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-6">
             <button
               type="submit"
-              className="inline-flex items-center gap-3 px-8 py-4 bg-accent text-white font-heading font-black text-base uppercase tracking-widest border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black snappy shrink-0"
+              className="inline-flex items-center justify-center w-full md:w-auto gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium shadow-sm hover:bg-blue-700 transition-colors"
             >
-              <Sparkles size={18} strokeWidth={3} /> Analyze Competitor
+              <Sparkles size={18} /> {submitLabel}
             </button>
           </div>
         </div>

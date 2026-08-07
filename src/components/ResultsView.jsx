@@ -56,12 +56,12 @@ function StatsBar({ result }) {
       {stats.map(s => (
         <div
           key={s.label}
-          className={`text-left p-4 border-2 border-black dark:border-white animate-fade-in-up snappy hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:border-black group ${s.isAccent ? 'bg-accent text-white border-accent' : 'bg-white dark:bg-black'}`}
+          className={`text-left p-4 rounded-xl border transition-colors ${s.isAccent ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-blue-500'}`}
         >
-          <div className={`font-heading text-3xl font-black ${s.isAccent ? 'text-white' : 'text-black dark:text-white group-hover:text-white dark:group-hover:text-black'}`}>
+          <div className={`text-3xl font-bold ${s.isAccent ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
             <AnimatedCount to={s.value} />
           </div>
-          <div className={`font-heading text-[10px] font-black uppercase tracking-widest mt-1 ${s.isAccent ? 'text-white/80' : 'text-slate-500 dark:text-slate-400 group-hover:text-white/80 dark:group-hover:text-black/80'}`}>
+          <div className={`text-xs font-semibold uppercase tracking-wider mt-1 ${s.isAccent ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
             {s.label}
           </div>
         </div>
@@ -71,19 +71,14 @@ function StatsBar({ result }) {
 }
 
 /* ── Section Card wrapper ───────────────────────────────── */
-function SectionCard({ title, icon: Icon, children, className = '', bgColor = 'bg-white dark:bg-black', sectionNum = '' }) {
+function SectionCard({ title, icon: Icon, children, className = '', bgColor = 'bg-white dark:bg-slate-900', sectionNum = '' }) {
   return (
     <div
-      className={`${bgColor} border-4 border-black dark:border-white p-6 relative animate-fade-in-up rounded-none ${className}`}
+      className={`${bgColor} border border-slate-200 dark:border-slate-800 shadow-sm p-6 relative animate-fade-in-up rounded-2xl ${className}`}
     >
-      {sectionNum && (
-        <div className="absolute -top-3.5 left-6 bg-accent border-2 border-black dark:border-white text-white px-2 py-0.5 font-mono text-[9px] tracking-widest font-black uppercase">
-          {sectionNum}
-        </div>
-      )}
       {title && (
-        <h3 className="font-heading text-base md:text-lg font-black mb-6 flex items-center gap-2 text-black dark:text-white uppercase tracking-wider">
-          {Icon && <Icon size={18} strokeWidth={3} className="text-accent" />} {title}
+        <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white">
+          {Icon && <Icon size={20} className={bgColor.includes('bg-blue-600') ? 'text-blue-200' : 'text-blue-600'} />} {title}
         </h3>
       )}
       {children}
@@ -92,15 +87,15 @@ function SectionCard({ title, icon: Icon, children, className = '', bgColor = 'b
 }
 
 /* ── Bullet List ────────────────────────────────────────── */
-function BulletList({ items, bulletColor = '#FF3000' }) {
+function BulletList({ items, bulletColor = '#3B82F6' }) {
   return (
     <ul className="space-y-4 stagger">
       {items.map((item, i) => (
         <li
           key={i}
-          className="flex items-start gap-3 font-sans text-sm md:text-base leading-relaxed animate-fade-in-up text-black dark:text-white"
+          className="flex items-start gap-3 font-sans text-sm md:text-base leading-relaxed animate-fade-in-up text-slate-700 dark:text-slate-300"
         >
-          <ChevronRight size={16} className="shrink-0 mt-0.5" strokeWidth={3} style={{ color: bulletColor }} />
+          <ChevronRight size={20} className="shrink-0 mt-0.5" style={{ color: bulletColor }} />
           <span>{item}</span>
         </li>
       ))}
@@ -111,26 +106,26 @@ function BulletList({ items, bulletColor = '#FF3000' }) {
 /* ── SWOT Matrix ────────────────────────────────────────── */
 function SwotMatrix({ swot }) {
   const quadrants = [
-    { key: 'Strengths',     label: 'Strengths',     bg: 'bg-white dark:bg-black', color: '#FF3000', icon: Award },
-    { key: 'Weaknesses',    label: 'Weaknesses',    bg: 'bg-tertiary dark:bg-slate-900', color: '#000000', icon: AlertTriangle },
-    { key: 'Opportunities', label: 'Opportunities', bg: 'bg-tertiary dark:bg-slate-900', color: '#000000', icon: TrendingUp },
-    { key: 'Threats',       label: 'Threats',        bg: 'bg-white dark:bg-black', color: '#FF3000', icon: Shield },
+    { key: 'Strengths',     label: 'Strengths',     bg: 'bg-white dark:bg-slate-900', color: '#3B82F6', icon: Award },
+    { key: 'Weaknesses',    label: 'Weaknesses',    bg: 'bg-slate-50 dark:bg-slate-800/50', color: '#64748B', icon: AlertTriangle },
+    { key: 'Opportunities', label: 'Opportunities', bg: 'bg-slate-50 dark:bg-slate-800/50', color: '#64748B', icon: TrendingUp },
+    { key: 'Threats',       label: 'Threats',        bg: 'bg-white dark:bg-slate-900', color: '#3B82F6', icon: Shield },
   ];
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {quadrants.map(q => (
         <div
           key={q.key}
-          className={`border-2 border-black dark:border-white p-5 rounded-none hover:bg-accent hover:text-white group transition-colors ${q.bg}`}
+          className={`border border-slate-200 dark:border-slate-800 p-5 rounded-xl hover:shadow-md transition-shadow ${q.bg}`}
         >
-          <h4 className="font-heading text-xs font-black mb-3 flex items-center gap-2 uppercase tracking-wider" style={{ color: q.color }}>
-            <q.icon size={14} strokeWidth={3} className="group-hover:text-white" />
-            <span className="group-hover:text-white">{q.label}</span>
+          <h4 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: q.color }}>
+            <q.icon size={16} />
+            <span>{q.label}</span>
           </h4>
           <ul className="space-y-2">
             {(swot[q.key] || []).map((item, i) => (
-              <li key={i} className="font-sans text-xs md:text-sm flex items-start gap-2 leading-relaxed text-black dark:text-white group-hover:text-white">
-                <span className="text-accent group-hover:text-white">•</span>
+              <li key={i} className="font-sans text-sm flex items-start gap-2 leading-relaxed text-slate-700 dark:text-slate-300">
+                <span className="text-blue-500">•</span>
                 <span>{item}</span>
               </li>
             ))}
@@ -145,18 +140,18 @@ function SwotMatrix({ swot }) {
 function NextStepsTable({ steps }) {
   const priorityStyle = (p) => {
     const lower = (p || '').toLowerCase();
-    if (lower.includes('p0')) return { border: '#FF3000', badge: 'P0' };
-    if (lower.includes('p1')) return { border: '#000000', badge: 'P1' };
-    return { border: '#000000', badge: 'P2' };
+    if (lower.includes('p0')) return { border: '#EF4444', badge: 'P0', text: 'text-red-600' };
+    if (lower.includes('p1')) return { border: '#F59E0B', badge: 'P1', text: 'text-amber-600' };
+    return { border: '#3B82F6', badge: 'P2', text: 'text-blue-600' };
   };
 
   return (
     <div className="overflow-x-auto -mx-1">
-      <table className="w-full border-collapse font-sans text-sm border-2 border-black dark:border-white">
+      <table className="w-full border-collapse font-sans text-sm border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hidden md:table">
         <thead>
-          <tr className="bg-black text-white dark:bg-white dark:text-black">
+          <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             {['Priority', 'Action', 'Owner', 'Impact', 'Rationale'].map(h => (
-              <th key={h} className="font-heading text-[10px] font-black tracking-widest text-left px-4 py-3 uppercase">
+              <th key={h} className="text-xs font-semibold text-slate-500 text-left px-4 py-3 uppercase">
                 {h}
               </th>
             ))}
@@ -168,25 +163,49 @@ function NextStepsTable({ steps }) {
             return (
               <tr
                 key={i}
-                className="border-b-2 border-black dark:border-white hover:bg-accent hover:text-white dark:hover:text-black dark:hover:bg-white group transition-colors"
+                className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
               >
                 <td className="px-4 py-4">
                   <span
-                    className="inline-block px-2.5 py-1 border-2 font-mono font-black text-xs rounded-none group-hover:border-white dark:group-hover:border-black group-hover:text-white dark:group-hover:text-black"
-                    style={{ borderColor: ps.border, color: ps.border }}
+                    className={`inline-block px-2.5 py-1 font-bold text-xs rounded-md bg-opacity-10 border ${ps.text}`}
+                    style={{ borderColor: ps.border }}
                   >
                     {ps.badge}
                   </span>
                 </td>
-                <td className="px-4 py-4 font-black">{s.action}</td>
-                <td className="px-4 py-4 font-mono text-xs uppercase">{s.owner_suggestion}</td>
-                <td className="px-4 py-4 font-semibold">{s.expected_impact}</td>
-                <td className="px-4 py-4 text-xs opacity-75">{s.rationale}</td>
+                <td className="px-4 py-4 font-semibold text-slate-900 dark:text-white">{s.action}</td>
+                <td className="px-4 py-4 text-xs uppercase text-slate-500">{s.owner_suggestion}</td>
+                <td className="px-4 py-4 font-medium text-slate-700 dark:text-slate-300">{s.expected_impact}</td>
+                <td className="px-4 py-4 text-xs text-slate-500">{s.rationale}</td>
               </tr>
             );
           })}
         </tbody>
       </table>
+      <div className="md:hidden space-y-4">
+        {/* Mobile card view for table fallback */}
+        {steps.map((s, i) => {
+            const ps = priorityStyle(s.priority);
+            return (
+              <div key={i} className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900">
+                <div className="flex items-center gap-3 mb-2">
+                   <span
+                    className={`inline-block px-2.5 py-1 font-bold text-xs rounded-md bg-opacity-10 border ${ps.text}`}
+                    style={{ borderColor: ps.border }}
+                  >
+                    {ps.badge}
+                  </span>
+                  <span className="font-bold text-slate-900 dark:text-white">{s.action}</span>
+                </div>
+                <div className="text-sm text-slate-700 dark:text-slate-300 mb-2">{s.expected_impact}</div>
+                <div className="text-xs text-slate-500 flex justify-between">
+                  <span className="uppercase">{s.owner_suggestion}</span>
+                  <span>{s.rationale}</span>
+                </div>
+              </div>
+            );
+        })}
+      </div>
     </div>
   );
 }
@@ -199,10 +218,10 @@ function SnapshotGrid({ snapshot }) {
       {Object.entries(snapshot).map(([key, value]) => (
         <div
           key={key}
-          className="bg-tertiary dark:bg-slate-900 border-2 border-black dark:border-white p-4 rounded-none hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white group transition-colors"
+          className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-4 rounded-xl"
         >
-          <div className="font-heading text-[10px] font-black tracking-widest text-slate-500 dark:text-slate-400 group-hover:text-white/80 uppercase">{key}</div>
-          <div className="font-sans text-sm font-semibold mt-2 text-black dark:text-white group-hover:text-white">{value}</div>
+          <div className="text-xs font-semibold text-slate-500 uppercase">{key}</div>
+          <div className="text-sm font-medium mt-1 text-slate-900 dark:text-white">{value}</div>
         </div>
       ))}
     </div>
@@ -243,14 +262,14 @@ export default function ResultsView({ result, onNewAnalysis }) {
   return (
     <div ref={topRef} className="space-y-8">
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b-4 border-black dark:border-white animate-fade-in-up">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200 dark:border-slate-800 animate-fade-in-up">
         <div>
-          <span className="font-mono text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 block mb-1">02 // SCAN_RESULTS</span>
-          <h2 className="font-heading text-4xl sm:text-5xl font-black uppercase tracking-tighter text-black dark:text-white leading-none">
+          <span className="text-xs font-bold text-blue-600 uppercase tracking-wider block mb-1">Analysis Complete</span>
+          <h2 className="text-4xl font-bold text-slate-900 dark:text-white">
             {result.company_name}
           </h2>
-          <p className="font-mono text-xs opacity-60 mt-3">
-            RUN_TIMESTAMP: {new Date(result.generated_at).toISOString()}
+          <p className="text-xs text-slate-500 mt-2">
+            Generated: {new Date(result.generated_at).toLocaleString()}
           </p>
         </div>
 
@@ -264,11 +283,11 @@ export default function ResultsView({ result, onNewAnalysis }) {
             <button
               key={btn.label}
               onClick={btn.action}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-black border-2 border-black dark:border-white
-                         font-heading text-xs uppercase tracking-widest font-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black
-                         transition-colors rounded-none"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                         text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700
+                         transition-colors rounded-lg shadow-sm"
             >
-              <btn.icon size={12} strokeWidth={3} className="text-accent" /> {btn.label}
+              <btn.icon size={16} className="text-blue-600 dark:text-blue-400" /> {btn.label}
             </button>
           ))}
         </div>
@@ -318,14 +337,14 @@ export default function ResultsView({ result, onNewAnalysis }) {
       </SectionCard>
 
       {/* ── Differentiation Strategy ────────────────────── */}
-      <SectionCard title="Recommended Brand Positioning" icon={Lightbulb} sectionNum="02.9 // REPOSITION_TARGET" bgColor="bg-accent text-white">
-        <p className="font-heading text-lg md:text-2xl font-black uppercase tracking-tight leading-tight text-white italic">
+      <SectionCard title="Recommended Brand Positioning" icon={Lightbulb} sectionNum="" bgColor="bg-blue-600 text-white">
+        <p className="text-xl md:text-2xl font-bold leading-tight text-white">
           "{result.differentiation_strategy}"
         </p>
       </SectionCard>
 
       {/* ── Full Markdown Report ────────────────────────── */}
-      <SectionCard title="Synthesized MD Document" icon={BarChart3} sectionNum="03 // COMPILED_REPORT">
+      <SectionCard title="Detailed Analysis" icon={BarChart3} sectionNum="">
         <div className="markdown-report">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {result.full_markdown_report || ''}
@@ -333,23 +352,21 @@ export default function ResultsView({ result, onNewAnalysis }) {
         </div>
 
         {/* Bottom action bar */}
-        <div className="flex gap-3 mt-8 pt-6 border-t-4 border-black dark:border-white flex-wrap">
+        <div className="flex gap-3 mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex-wrap">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-5 py-3 bg-accent text-white border-2 border-black dark:border-white
-                       font-heading text-xs uppercase tracking-widest font-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black
-                       transition-colors rounded-none"
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl
+                       text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
           >
-            {copied ? <Check size={14} strokeWidth={3} /> : <Copy size={14} strokeWidth={3} />}
+            {copied ? <Check size={18} /> : <Copy size={18} />}
             {copied ? 'Copied!' : 'Copy to Clipboard'}
           </button>
           <button
             onClick={handleDownloadMd}
-            className="flex items-center gap-2 px-5 py-3 bg-white text-black dark:bg-black dark:text-white border-2 border-black dark:border-white
-                       font-heading text-xs uppercase tracking-widest font-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black
-                       transition-colors rounded-none"
+            className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700
+                       text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors rounded-xl shadow-sm"
           >
-            <Download size={14} strokeWidth={3} /> Download as .md
+            <Download size={18} /> Download as .md
           </button>
         </div>
       </SectionCard>

@@ -26,15 +26,15 @@ export default function LoadingView() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in-up">
       {/* Main card */}
-      <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 md:p-12 w-full max-w-lg relative rounded-none">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 md:p-12 w-full max-w-lg relative rounded-2xl shadow-sm">
         
         {/* Status indicator tag */}
-        <div className="absolute -top-3.5 left-6 bg-accent border-2 border-black dark:border-white text-white px-3 py-0.5 font-mono text-[9px] tracking-widest font-black uppercase">
-          PROCESSING // ANALYTICS_PIPELINE
+        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-6">
+          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" /> Processing
         </div>
 
-        <h2 className="font-heading text-xl md:text-2xl font-black mb-8 text-black dark:text-white uppercase tracking-wider">
-          SYNTHESIZING MARKET DATA
+        <h2 className="text-xl md:text-2xl font-bold mb-8 text-slate-900 dark:text-white">
+          Synthesizing Market Data
         </h2>
 
         {/* Steps checklist */}
@@ -50,28 +50,28 @@ export default function LoadingView() {
               >
                 {/* Checkbox indicator */}
                 <div
-                  className={`shrink-0 w-6 h-6 border-2 flex items-center justify-center rounded-none snappy
-                              ${done ? 'bg-accent border-black dark:border-white' : 'bg-white dark:bg-black border-black dark:border-white'}`}
+                  className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors
+                              ${done ? 'bg-blue-500 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
                 >
                   {done && (
                     <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="animate-fade-in">
-                      <path d="M3 8.5 L6.5 12 L13 4" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M3 8.5 L6.5 12 L13 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                   {current && (
-                    <div className="w-2 h-2 bg-accent rounded-none animate-pulse" />
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                   )}
                 </div>
 
                 {/* Label & progress line */}
                 <div className="flex-1">
-                  <span className={`font-heading font-black text-sm uppercase tracking-wide ${done ? 'line-through text-slate-400 dark:text-slate-600' : 'text-black dark:text-white'}`}>
+                  <span className={`text-sm font-medium ${done ? 'text-slate-400 dark:text-slate-600' : 'text-slate-900 dark:text-white'}`}>
                     {step.emoji} {step.label}
                   </span>
                   {current && (
-                    <div className="mt-3 h-2 bg-tertiary dark:bg-slate-900 border border-black dark:border-white overflow-hidden rounded-none">
+                    <div className="mt-3 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-accent rounded-none"
+                        className="h-full bg-blue-500 rounded-full"
                         style={{
                           animation: 'draw-in linear forwards',
                           animationDuration: step.duration > 0 ? `${step.duration}ms` : '20000ms',
@@ -94,8 +94,8 @@ export default function LoadingView() {
         `}} />
 
         {/* Bottom message */}
-        <p className="font-mono text-[10px] text-slate-500 text-center mt-8 uppercase tracking-widest">
-          ESTIMATED COMPLETION: 30S - 90S [STABLE_RUN]
+        <p className="text-xs text-slate-500 text-center mt-8 font-medium">
+          Estimated completion: 30s - 90s
         </p>
       </div>
     </div>
