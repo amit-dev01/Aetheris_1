@@ -5,6 +5,8 @@ import CompetitorsSection from './components/CompetitorsSection';
 import MarketIntelligenceSection from './components/MarketIntelligenceSection';
 import AIStrategySection from './components/AIStrategySection';
 import AIAgentModal from './components/AIAgentModal';
+import OnboardingFlow from './components/OnboardingFlow';
+import { Loader2 } from 'lucide-react';
 
 // ── Mock DB Data Context ──
 export const DbContext = createContext(null);
@@ -77,6 +79,41 @@ export default function App() {
   const [activeSection, setActiveSection] = useState('overview');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isAgentOpen, setIsAgentOpen] = useState(false);
+  const [setupStatus, setSetupStatus] = useState('loading');
+
+  useEffect(() => {
+    // Helper to extract Supabase JWT token from localStorage
+    const getSupabaseToken = () => {
+      for (let key in localStorage) {
+        if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          try {
+            const data = JSON.parse(localStorage.getItem(key));
+            return data?.access_token || null;
+          } catch (e) { return null; }
+        }
+      }
+      return null;
+    };
+
+    const token = getSupabaseToken();
+    
+    fetch('/api/company/profile', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.setupCompleted) {
+          setSetupStatus('complete');
+        } else {
+          setSetupStatus('incomplete');
+        }
+      })
+      .catch(() => {
+        setSetupStatus('incomplete');
+      });
+  }, []);
 
   // Initialize theme
   useEffect(() => {
@@ -119,6 +156,18 @@ export default function App() {
     { id: 'market', label: 'Market Intelligence', icon: Rss },
     { id: 'strategy', label: 'AI Strategy', icon: Target },
   ];
+
+  if (setupStatus === 'loading') {
+    return (
+      <div className="flex h-screen bg-slate-100 dark:bg-black items-center justify-center">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
+
+  if (setupStatus === 'incomplete') {
+    return <OnboardingFlow onComplete={() => setSetupStatus('complete')} />;
+  }
 
   return (
     <DbContext.Provider value={dbValue}>
