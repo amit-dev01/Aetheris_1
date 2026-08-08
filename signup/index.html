@@ -293,7 +293,7 @@
         }
       }
 
-      function handleSignup(e) {
+      async function handleSignup(e) {
         e.preventDefault();
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
@@ -325,7 +325,30 @@
         btn.disabled = true;
         btn.classList.add('opacity-80', 'cursor-not-allowed');
 
-        setTimeout(() => { window.location.href = '/dashboard/'; }, 1600);
+        try {
+          const res = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('access_token', data.access_token);
+            window.location.href = '/dashboard/';
+          } else {
+            alert('Signup failed. Please try again.');
+            btn.disabled = false;
+            btn.classList.remove('opacity-80', 'cursor-not-allowed');
+            document.getElementById('btn-text').textContent = 'Create free account';
+            document.getElementById('btn-spinner').classList.add('hidden');
+          }
+        } catch (err) {
+          alert('An error occurred. Please check your connection.');
+          btn.disabled = false;
+          btn.classList.remove('opacity-80', 'cursor-not-allowed');
+          document.getElementById('btn-text').textContent = 'Create free account';
+          document.getElementById('btn-spinner').classList.add('hidden');
+        }
       }
 
       function handleSocialSignup() {

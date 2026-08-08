@@ -82,28 +82,27 @@ export default function App() {
   const [setupStatus, setSetupStatus] = useState('loading');
 
   useEffect(() => {
-    // Helper to extract Supabase JWT token from localStorage
-    const getSupabaseToken = () => {
-      for (let key in localStorage) {
-        if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
-          try {
-            const data = JSON.parse(localStorage.getItem(key));
-            return data?.access_token || null;
-          } catch (e) { return null; }
-        }
-      }
-      return null;
-    };
-
-    const token = getSupabaseToken();
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      window.location.href = '/login/';
+      return;
+    }
     
     fetch('/api/company/profile', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     })
-      .then(res => res.json())
+      .then(res => {
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem('access_token');
+          window.location.href = '/login/';
+          return null;
+        }
+        return res.json();
+      })
       .then(data => {
+        if (!data) return;
         if (data.setupCompleted) {
           setSetupStatus('complete');
         } else {

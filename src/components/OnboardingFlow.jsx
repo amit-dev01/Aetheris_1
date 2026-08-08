@@ -77,20 +77,7 @@ export default function OnboardingFlow({ onComplete }) {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Helper to extract Supabase JWT token from localStorage
-      const getSupabaseToken = () => {
-        for (let key in localStorage) {
-          if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
-            try {
-              const data = JSON.parse(localStorage.getItem(key));
-              return data?.access_token || null;
-            } catch (e) { return null; }
-          }
-        }
-        return null;
-      };
-
-      const token = getSupabaseToken();
+      const token = localStorage.getItem('access_token');
       
       const payload = {
         companyName: formData.company_name,

@@ -213,7 +213,7 @@
         }
       }
 
-      function handleLogin(e) {
+      async function handleLogin(e) {
         e.preventDefault();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
@@ -237,7 +237,30 @@
         btn.disabled = true;
         btn.classList.add('opacity-80', 'cursor-not-allowed');
 
-        setTimeout(() => { window.location.href = '/dashboard/'; }, 1400);
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('access_token', data.access_token);
+            window.location.href = '/dashboard/';
+          } else {
+            alert('Login failed. Please check your credentials.');
+            btn.disabled = false;
+            btn.classList.remove('opacity-80', 'cursor-not-allowed');
+            document.getElementById('btn-text').textContent = 'Sign in';
+            document.getElementById('btn-spinner').classList.add('hidden');
+          }
+        } catch (err) {
+          alert('An error occurred. Please check your connection.');
+          btn.disabled = false;
+          btn.classList.remove('opacity-80', 'cursor-not-allowed');
+          document.getElementById('btn-text').textContent = 'Sign in';
+          document.getElementById('btn-spinner').classList.add('hidden');
+        }
       }
 
       function handleSocialLogin() {
