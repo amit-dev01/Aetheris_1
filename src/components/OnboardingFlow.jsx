@@ -92,7 +92,7 @@ export default function OnboardingFlow({ onComplete }) {
         excludedCompetitors: formData.non_competitors.filter(c => c.name.trim() !== '').map(c => c.name.trim()),
       };
 
-      await fetch('http://localhost:8000/api/company/profile', {
+      await fetch('https://ai-backend-zfq1.onrender.com/api/company/profile', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

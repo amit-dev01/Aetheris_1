@@ -88,7 +88,7 @@ export default function App() {
       return;
     }
     
-    fetch('http://localhost:8000/api/company/profile', {
+    fetch('https://ai-backend-zfq1.onrender.com/api/company/profile', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
