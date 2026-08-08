@@ -122,7 +122,7 @@ export default function App() {
 
   return (
     <DbContext.Provider value={dbValue}>
-      <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
+      <div className="flex h-screen bg-slate-100 dark:bg-black text-slate-900 dark:text-slate-100 font-sans">
         
         {/* ── Left Sidebar ── */}
         <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col hidden md:flex shrink-0 z-10">
