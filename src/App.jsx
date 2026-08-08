@@ -88,7 +88,7 @@ export default function App() {
       return;
     }
     
-    fetch('/api/company/profile', {
+    fetch('http://localhost:8000/api/company/profile', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
