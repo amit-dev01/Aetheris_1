@@ -1,8 +1,10 @@
 import { useState, createContext, useEffect } from 'react';
-import { Building2, Users, Rss, Settings, LogOut, ChevronRight, Moon, Sun } from 'lucide-react';
-import MyCompanySection from './components/MyCompanySection';
+import { Bot, Target, Rss, Users, LayoutDashboard, Settings, LogOut, ChevronRight, Moon, Sun } from 'lucide-react';
+import OverviewSection from './components/OverviewSection';
 import CompetitorsSection from './components/CompetitorsSection';
-import UniFeed from './components/UniFeed';
+import MarketIntelligenceSection from './components/MarketIntelligenceSection';
+import AIStrategySection from './components/AIStrategySection';
+import AIAgentModal from './components/AIAgentModal';
 
 // ── Mock DB Data Context ──
 export const DbContext = createContext(null);
@@ -10,34 +12,71 @@ export const DbContext = createContext(null);
 const MOCK_DB_USER_COMPANY = {
   company_name: 'Aetheris Demo',
   website_url: 'https://aetheris.dev',
-  industry: 'Software SaaS',
+  industry: 'SaaS / AI Intelligence',
   our_company_context: 'We build AI-powered intelligence tools.',
   focus_areas: ['products', 'pricing'],
-  social_urls: { twitter: 'https://twitter.com/aetheris' }
+  revenue: '$12.4M',
+  customers: '18,400',
+  growth: '+23%',
+  competitive_score: '84/100',
+  strengths: ['Product quality', 'Enterprise integrations', 'Developer experience'],
+  weaknesses: ['Pricing', 'Brand awareness', 'International presence']
 };
 
 const MOCK_DB_COMPETITORS = [
   {
     id: 1,
     company_name: 'Stripe',
-    website_url: 'https://stripe.com',
     industry: 'Fintech Payments',
-    focus_areas: ['pricing', 'positioning'],
-    social_urls: {}
+    competitive_status: 'Direct Threat',
+    pricing_indicator: '↑ 12%',
+    growth_indicator: '+15%',
+    sentiment_indicator: '↓ 4%',
+    ai_score: '92/100',
+    recent_event: 'Launched lower-priced enterprise plan.',
+    logo: 'S'
   },
   {
     id: 2,
     company_name: 'Shopify',
-    website_url: 'https://shopify.com',
     industry: 'E-commerce Platform',
-    focus_areas: ['products', 'social'],
-    social_urls: {}
+    competitive_status: 'Market Leader',
+    pricing_indicator: 'Stable',
+    growth_indicator: '+8%',
+    sentiment_indicator: '↑ 2%',
+    ai_score: '88/100',
+    recent_event: 'Announced AWS partnership.',
+    logo: 'Sh'
+  },
+  {
+    id: 3,
+    company_name: 'Paddle',
+    industry: 'Revenue Delivery',
+    competitive_status: 'Emerging',
+    pricing_indicator: '↓ 5%',
+    growth_indicator: '+35%',
+    sentiment_indicator: 'Neutral',
+    ai_score: '76/100',
+    recent_event: 'Receiving negative customer sentiment around support.',
+    logo: 'P'
   }
 ];
 
+const MOCK_DB_FEED = [
+  { id: 1, impact: 'High', company: 'Stripe', title: 'Stripe launched Enterprise Pro', category: 'Pricing', summary: 'A new tier aimed at large volume businesses with volume discounts.', ai_interpretation: 'This directly overlaps with our enterprise offering and may increase pricing pressure.', date: new Date().toISOString(), recommended_action: 'Review enterprise pricing' },
+  { id: 2, impact: 'Medium', company: 'Shopify', title: 'Shopify announces AWS partnership', category: 'Partnerships', summary: 'Strategic alignment to use AWS for global infrastructure.', ai_interpretation: 'This could strengthen their enterprise distribution channel.', date: new Date(Date.now() - 86400000).toISOString() },
+  { id: 3, impact: 'Opportunity', company: 'Paddle', title: 'Support wait times increase', category: 'Customer Sentiment', summary: 'Multiple public complaints regarding slow support response times over the weekend.', ai_interpretation: 'This may create an opportunity for us to differentiate through customer support.', date: new Date(Date.now() - 172800000).toISOString() }
+];
+
+const MOCK_DB_STRATEGY = [
+  { id: 1, priority: 'High', title: 'Respond to Stripe pricing change', reason: 'Stripe reduced enterprise pricing via their new Pro tier.', actions: ['Review enterprise pricing', 'Emphasize our premium features', 'Target dissatisfied competitor customers'] },
+  { id: 2, priority: 'Medium', title: 'Capitalize on Paddle support issues', reason: 'Competitor is experiencing public backlash over support quality.', actions: ['Launch campaign highlighting our 24/7 support', 'Reach out to churning Paddle customers'] }
+];
+
 export default function App() {
-  const [activeSection, setActiveSection] = useState('competitors');
+  const [activeSection, setActiveSection] = useState('overview');
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isAgentOpen, setIsAgentOpen] = useState(false);
 
   // Initialize theme
   useEffect(() => {
@@ -70,12 +109,15 @@ export default function App() {
   const dbValue = {
     myCompany: MOCK_DB_USER_COMPANY,
     competitors: MOCK_DB_COMPETITORS,
+    feed: MOCK_DB_FEED,
+    strategy: MOCK_DB_STRATEGY
   };
 
   const navItems = [
-    { id: 'mycompany', label: 'My Company', icon: Building2 },
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'competitors', label: 'Competitors', icon: Users },
-    { id: 'unifeed', label: 'UniFeed News', icon: Rss },
+    { id: 'market', label: 'Market Intelligence', icon: Rss },
+    { id: 'strategy', label: 'AI Strategy', icon: Target },
   ];
 
   return (
@@ -83,7 +125,7 @@ export default function App() {
       <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
         
         {/* ── Left Sidebar ── */}
-        <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col hidden md:flex shrink-0">
+        <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col hidden md:flex shrink-0 z-10">
           <div className="p-6 border-b border-slate-200 dark:border-slate-800">
             <h1 className="font-bold text-xl flex items-center gap-2 text-slate-900 dark:text-white">
               <span className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
@@ -93,6 +135,19 @@ export default function App() {
             </h1>
           </div>
           
+          <div className="px-4 py-6 border-b border-slate-200 dark:border-slate-800">
+            <button 
+              onClick={() => setIsAgentOpen(true)}
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl hover:bg-slate-800 dark:hover:bg-white transition-colors shadow-sm font-medium"
+            >
+              <span className="flex items-center gap-2">
+                <Bot size={18} className="text-blue-400 dark:text-blue-600" />
+                Ask Agent
+              </span>
+              <ChevronRight size={16} className="opacity-50" />
+            </button>
+          </div>
+
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             {navItems.map(item => {
               const active = activeSection === item.id;
@@ -143,20 +198,27 @@ export default function App() {
                 </span>
                 <h1 className="font-bold text-lg">Aetheris</h1>
              </div>
-             <button onClick={toggleTheme} className="p-2 text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-             </button>
+             <div className="flex gap-2">
+               <button onClick={() => setIsAgentOpen(true)} className="p-2 text-white bg-slate-900 dark:bg-slate-100 dark:text-slate-900 rounded-lg">
+                  <Bot size={20} />
+               </button>
+               <button onClick={toggleTheme} className="p-2 text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                  {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+               </button>
+             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-6 md:p-10">
+          <div className="flex-1 overflow-y-auto p-6 md:p-10 relative">
             <div className="max-w-5xl mx-auto w-full">
-              {activeSection === 'mycompany' && <MyCompanySection />}
+              {activeSection === 'overview' && <OverviewSection />}
               {activeSection === 'competitors' && <CompetitorsSection />}
-              {activeSection === 'unifeed' && <UniFeed />}
+              {activeSection === 'market' && <MarketIntelligenceSection />}
+              {activeSection === 'strategy' && <AIStrategySection />}
             </div>
           </div>
         </main>
-
+        
+        <AIAgentModal isOpen={isAgentOpen} onClose={() => setIsAgentOpen(false)} />
       </div>
     </DbContext.Provider>
   );
