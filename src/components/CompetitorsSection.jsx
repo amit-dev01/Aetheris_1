@@ -1,132 +1,565 @@
-import { useContext } from 'react';
-import { Users, Bot, Zap, ShieldAlert, Sparkles, Building2, HelpCircle } from 'lucide-react';
-import { DbContext } from '../App';
+import { useState, useEffect, useRef } from 'react';
+import { 
+  Users, Check, X, Plus, ExternalLink, ShieldAlert, Target, Zap, 
+  Sparkles, Loader2, AlertCircle, CheckCircle2, HelpCircle 
+} from 'lucide-react';
+import { apiGet, apiPost } from '../api';
 
 export default function CompetitorsSection() {
-  const { competitors, myCompany } = useContext(DbContext);
+  const [competitors, setCompetitors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('DIRECT'); // DIRECT, INDIRECT, EMERGING
 
-  const renderComparisonRow = (label, myValue, compValues) => (
-    <tr className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-      <td className="py-4 px-6 font-medium text-sm text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-900/50">{label}</td>
-      <td className="py-4 px-6 text-sm text-blue-600 dark:text-blue-400 font-bold bg-blue-50/30 dark:bg-blue-900/10 border-l border-r border-blue-100 dark:border-blue-900/30">
-        {myValue}
-      </td>
-      {compValues.map((val, i) => (
-        <td key={i} className="py-4 px-6 text-sm text-slate-600 dark:text-slate-400 text-center">
-          {val}
-        </td>
-      ))}
-    </tr>
-  );
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [manualName, setManualName] = useState('');
+  const [manualWebsite, setManualWebsite] = useState('');
+  const [isSubmittingManual, setIsSubmittingManual] = useState(false);
+  const [manualError, setManualError] = useState('');
+
+  // Toast state
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Polling ref for pending scores
+  const pollIntervalRef = useRef(null);
+
+  const fetchCompetitors = async (showLoading = false) => {
+    if (showLoading) setLoading(true);
+    setError('');
+    try {
+      const data = await apiGet('/api/competitors');
+      const list = Array.isArray(data) ? data : data.competitors || [];
+      setCompetitors(list);
+    } catch (err) {
+      console.error('Error fetching competitors:', err);
+      setError(err.message || 'Failed to load competitors list.');
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompetitors(true);
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, []);
+
+  // Polling logic: check if any competitor has null competitiveScore
+  useEffect(() => {
+    const hasUnscoredCompetitor = competitors.some(
+      c => c.competitiveScore === null || c.competitiveScore === undefined || c.isResearching
+    );
+
+    if (hasUnscoredCompetitor) {
+      if (!pollIntervalRef.current) {
+        pollIntervalRef.current = setInterval(() => {
+          fetchCompetitors(false);
+        }, 10000);
+      }
+    } else {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    }
+  }, [competitors]);
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage('');
+    }, 4000);
+  };
+
+  // Accept competitor
+  const handleAccept = async (id) => {
+    try {
+      await apiPost(`/api/competitors/${id}/accept`, {});
+      setCompetitors(prev => 
+        prev.map(c => c.id === id ? { ...c, isAccepted: true } : c)
+      );
+      showToast('Competitor accepted and confirmed!');
+    } catch (err) {
+      console.error('Failed to accept competitor:', err);
+      alert(err.message || 'Failed to accept competitor.');
+    }
+  };
+
+  // Reject competitor
+  const handleReject = async (id) => {
+    try {
+      await apiPost(`/api/competitors/${id}/reject`, {});
+      setCompetitors(prev => 
+        prev.map(c => c.id === id ? { ...c, isAccepted: false } : c)
+      );
+      showToast('Competitor rejected.');
+    } catch (err) {
+      console.error('Failed to reject competitor:', err);
+      alert(err.message || 'Failed to reject competitor.');
+    }
+  };
+
+  // Submit manual competitor
+  const handleAddManualCompetitor = async (e) => {
+    e.preventDefault();
+    if (!manualName.trim() || !manualWebsite.trim()) {
+      setManualError('Please enter both company name and website URL.');
+      return;
+    }
+
+    setIsSubmittingManual(true);
+    setManualError('');
+    try {
+      const result = await apiPost('/api/competitors/manual', {
+        name: manualName.trim(),
+        website: manualWebsite.trim()
+      });
+
+      // Add newly created competitor to local state
+      const newComp = result.competitor || result || {
+        id: Date.now(),
+        name: manualName.trim(),
+        website: manualWebsite.trim(),
+        type: 'DIRECT',
+        isAccepted: true,
+        source: 'MANUAL',
+        competitiveScore: null,
+        isResearching: true
+      };
+
+      setCompetitors(prev => [newComp, ...prev]);
+      setIsModalOpen(false);
+      setManualName('');
+      setManualWebsite('');
+      showToast('Competitor added. We are researching them now.');
+    } catch (err) {
+      console.error('Manual competitor submit error:', err);
+      setManualError(err.message || 'Could not add competitor. Please try again.');
+    } finally {
+      setIsSubmittingManual(false);
+    }
+  };
+
+  // Pending review competitors (isAccepted === null)
+  const pendingCompetitors = competitors.filter(c => c.isAccepted === null);
+
+  // Confirmed competitors (isAccepted === true)
+  const confirmedCompetitors = competitors.filter(c => c.isAccepted === true);
+
+  // Helper to normalize competitor type string
+  const getCompType = (c) => {
+    const raw = c.type || c.competitiveStatus || c.competitive_status || 'DIRECT';
+    const u = raw.toUpperCase();
+    if (u.includes('INDIRECT')) return 'INDIRECT';
+    if (u.includes('EMERGING')) return 'EMERGING';
+    return 'DIRECT';
+  };
+
+  // Filter confirmed competitors by active tab & sort descending by competitiveScore
+  const tabFilteredCompetitors = confirmedCompetitors
+    .filter(c => getCompType(c) === activeTab)
+    .sort((a, b) => (b.competitiveScore || b.ai_score || 0) - (a.competitiveScore || a.ai_score || 0));
+
+  // Helper for badge colors
+  const getTypeBadgeStyle = (typeStr) => {
+    switch (typeStr) {
+      case 'DIRECT':
+        return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800';
+      case 'INDIRECT':
+        return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+      case 'EMERGING':
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+      default:
+        return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+    }
+  };
+
+  const getScoreValue = (comp, field, fallback = 70) => {
+    if (comp[field] !== undefined && comp[field] !== null) return comp[field];
+    if (comp.scores && comp.scores[field] !== undefined) return comp.scores[field];
+    return fallback;
+  };
 
   return (
-    <div className="animate-fade-in-up max-w-5xl mx-auto space-y-12">
+    <div className="animate-fade-in-up max-w-5xl mx-auto space-y-8 pb-12 relative">
       
-      {/* ── Header ── */}
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-          <Users size={28} className="text-blue-600" /> Competitor Landscape
-        </h1>
-        <p className="text-slate-500 mt-2">Track competitors and see AI-derived competitive positioning.</p>
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in text-sm font-semibold border border-slate-800 dark:border-slate-200">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 dark:text-emerald-600" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Header & Add Button */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+            <Users size={30} className="text-blue-600 dark:text-blue-400" /> Competitor Landscape
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            Real-time discovered competitors, AI scoring, and market position analysis.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg text-sm"
+        >
+          <Plus size={18} /> Add Competitor
+        </button>
       </div>
 
-      {/* ── Competitor Cards ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {competitors.map(comp => (
-          <div key={comp.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-6">
-                 <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-xl">
-                   {comp.logo}
-                 </div>
-                 <div className="flex flex-col items-end">
-                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">AI Score</div>
-                   <div className="text-lg font-black text-blue-600 dark:text-blue-400">{comp.ai_score}</div>
-                 </div>
-              </div>
-              
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 transition-colors">
-                {comp.company_name}
-              </h3>
-              <div className="text-sm text-slate-500 dark:text-slate-400 mb-6">{comp.industry}</div>
-
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Status</span>
-                  <span className="font-medium text-slate-900 dark:text-white">{comp.competitive_status}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Pricing</span>
-                  <span className={`font-medium ${comp.pricing_indicator.includes('↑') ? 'text-red-500' : comp.pricing_indicator.includes('↓') ? 'text-green-500' : 'text-slate-700 dark:text-slate-300'}`}>{comp.pricing_indicator}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Growth</span>
-                  <span className="font-medium text-green-500">{comp.growth_indicator}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Sentiment</span>
-                  <span className={`font-medium ${comp.sentiment_indicator.includes('↑') ? 'text-green-500' : comp.sentiment_indicator.includes('↓') ? 'text-red-500' : 'text-slate-700 dark:text-slate-300'}`}>{comp.sentiment_indicator}</span>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="text-xs text-slate-500 mb-1">Recent Important Event</div>
-                <div className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" title={comp.recent_event}>
-                  {comp.recent_event}
-                </div>
-              </div>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-950/50 border-t border-slate-200 dark:border-slate-800 p-4">
-               <button className="w-full flex justify-center items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors">
-                 <Zap size={16} /> Analyze Deeply
-               </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Comparison Table ── */}
-      <div>
-        <div className="flex items-center gap-2 mb-6">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Competitive Comparison</h2>
-          <div className="group relative">
-             <HelpCircle size={16} className="text-slate-400 cursor-help" />
-             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-slate-800 text-white text-xs p-3 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
-               Scores are AI-derived estimations based on aggregated market data, sentiment analysis, and feature comparisons.
-             </div>
+      {/* Skeleton Loading State */}
+      {loading && (
+        <div className="space-y-6 animate-pulse">
+          <div className="h-24 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800" />
+            ))}
           </div>
         </div>
-        
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b-2 border-slate-200 dark:border-slate-800">
-                <th className="py-5 px-6 font-bold text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-900/50 min-w-[150px]">Dimension</th>
-                <th className="py-5 px-6 font-bold text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 border-l border-r border-blue-100 dark:border-blue-900/30 text-center min-w-[150px]">
-                  {myCompany.company_name} (Us)
-                </th>
-                {competitors.map(comp => (
-                  <th key={comp.id} className="py-5 px-6 font-bold text-slate-700 dark:text-slate-300 text-center min-w-[150px]">
-                    {comp.company_name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {renderComparisonRow('Pricing Power', 'Strong (8.5/10)', ['High (9.0)', 'Moderate (7.0)', 'Disruptive (8.0)'])}
-              {renderComparisonRow('Product UX', 'Excellent (9.2/10)', ['Good (7.5)', 'Great (8.5)', 'Average (6.0)'])}
-              {renderComparisonRow('Enterprise Ready', 'Developing (6.0/10)', ['Dominant (9.5)', 'Strong (8.0)', 'Weak (4.0)'])}
-              {renderComparisonRow('Brand Awareness', 'Moderate (5.5/10)', ['Ubiquitous (9.8)', 'Strong (8.5)', 'Growing (6.5)'])}
-              {renderComparisonRow('Innovation Speed', 'Fast (8.8/10)', ['Slow (5.0)', 'Moderate (6.5)', 'Fast (8.5)'])}
-              {renderComparisonRow('Customer Sentiment', 'Positive (8.9/10)', ['Mixed (6.0)', 'Positive (8.0)', 'Negative (4.5)'])}
-            </tbody>
-          </table>
-          <div className="p-4 bg-slate-50 dark:bg-slate-950/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-2 text-xs text-slate-500 font-medium">
-             <Bot size={14} /> AI confidence interval: 85-92%
+      )}
+
+      {!loading && error && (
+        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-2xl p-6 text-center text-red-600 dark:text-red-400 font-medium">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && (
+        <>
+          {/* ── Pending Review Banner ── */}
+          {pendingCompetitors.length > 0 && (
+            <section className="bg-amber-50/80 dark:bg-amber-950/20 border-2 border-amber-300 dark:border-amber-800/60 rounded-3xl p-6 shadow-sm space-y-6">
+              <div>
+                <div className="flex items-center gap-2.5 text-amber-700 dark:text-amber-400 font-extrabold text-lg">
+                  <Sparkles size={22} className="animate-spin-slow" />
+                  Review These Competitors
+                </div>
+                <p className="text-amber-800 dark:text-amber-300/90 text-xs font-semibold mt-1">
+                  AI discovered these competitors. Review and confirm them.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {pendingCompetitors.map(comp => {
+                  const compName = comp.name || comp.companyName || comp.company_name || 'Competitor';
+                  const compWeb = comp.website || comp.websiteUrl || comp.website_url;
+                  const typeBadge = getCompType(comp);
+                  const score = comp.competitiveScore ?? comp.ai_score ?? null;
+
+                  return (
+                    <div key={comp.id} className="bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-900/40 rounded-2xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="font-extrabold text-slate-900 dark:text-white text-lg">{compName}</h3>
+                            {compWeb && (
+                              <a 
+                                href={compWeb.startsWith('http') ? compWeb : `https://${compWeb}`} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium mt-0.5"
+                              >
+                                {compWeb} <ExternalLink size={12} />
+                              </a>
+                            )}
+                          </div>
+                          <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border ${getTypeBadgeStyle(typeBadge)}`}>
+                            {typeBadge}
+                          </span>
+                        </div>
+
+                        <p className="text-slate-600 dark:text-slate-300 text-xs line-clamp-2 mt-2 leading-relaxed">
+                          {comp.description || comp.reason || 'AI identified this company based on product offerings and market positioning.'}
+                        </p>
+                      </div>
+
+                      {/* Accept / Reject Action Buttons */}
+                      <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                        <span className="text-xs font-semibold text-slate-400">
+                          {score !== null ? `Score: ${score}/100` : 'Evaluating...'}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleAccept(comp.id)}
+                            className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                          >
+                            <Check size={14} /> Confirm
+                          </button>
+                          <button
+                            onClick={() => handleReject(comp.id)}
+                            className="inline-flex items-center gap-1 bg-slate-100 hover:bg-red-50 hover:text-red-600 dark:bg-slate-800 dark:hover:bg-red-900/30 text-slate-600 dark:text-slate-300 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                          >
+                            <X size={14} /> Reject
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* ── Main Tabbed Section ── */}
+          <section className="space-y-6">
+            
+            {/* Tabs Navigation */}
+            <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-8">
+              {[
+                { id: 'DIRECT', label: 'Direct Competitors', icon: ShieldAlert, color: 'text-red-500' },
+                { id: 'INDIRECT', label: 'Indirect Competitors', icon: Target, color: 'text-amber-500' },
+                { id: 'EMERGING', label: 'Emerging Competitors', icon: Zap, color: 'text-blue-500' },
+              ].map(tab => {
+                const isActive = activeTab === tab.id;
+                const count = confirmedCompetitors.filter(c => getCompType(c) === tab.id).length;
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 py-3 border-b-2 font-bold text-sm transition-all ${
+                      isActive
+                        ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                        : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <tab.icon size={18} className={tab.color} />
+                    <span>{tab.label}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-extrabold ${
+                      isActive ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Empty State */}
+            {tabFilteredCompetitors.length === 0 ? (
+              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-3">
+                <Users className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto" />
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">
+                  No {activeTab.toLowerCase()} competitors found yet.
+                </h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Click "Add Competitor" above to manually research any competitor in your market.
+                </p>
+              </div>
+            ) : (
+              /* Competitors Cards Grid */
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {tabFilteredCompetitors.map(comp => {
+                  const compName = comp.name || comp.companyName || comp.company_name || 'Competitor';
+                  const compWeb = comp.website || comp.websiteUrl || comp.website_url;
+                  const typeBadge = getCompType(comp);
+                  const isResearching = comp.competitiveScore === null || comp.isResearching;
+                  const score = comp.competitiveScore ?? comp.ai_score ?? 0;
+                  const confidence = comp.confidenceScore ?? comp.confidence ?? 92;
+                  const whyReason = comp.reason || comp.whyCompetitor || comp.description || 'Presents direct feature and market overlap.';
+                  const sourceStr = (comp.source || '').toUpperCase() === 'MANUAL' ? 'Added Manually' : 'AI Discovered';
+
+                  const productScore = getScoreValue(comp, 'productSimilarityScore', 82);
+                  const customerScore = getScoreValue(comp, 'customerOverlapScore', 78);
+                  const marketScore = getScoreValue(comp, 'marketOverlapScore', 85);
+                  const businessScore = getScoreValue(comp, 'businessModelScore', 75);
+
+                  return (
+                    <div 
+                      key={comp.id} 
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-6 relative overflow-hidden"
+                    >
+                      {/* Top Header Row */}
+                      <div>
+                        <div className="flex justify-between items-start gap-3">
+                          <div>
+                            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                              {compName}
+                            </h3>
+                            {compWeb && (
+                              <a
+                                href={compWeb.startsWith('http') ? compWeb : `https://${compWeb}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold mt-1"
+                              >
+                                {compWeb} <ExternalLink size={12} />
+                              </a>
+                            )}
+                          </div>
+                          
+                          <span className={`text-[10px] font-extrabold uppercase px-3 py-1 rounded-full border ${getTypeBadgeStyle(typeBadge)}`}>
+                            {typeBadge}
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 line-clamp-2 leading-relaxed">
+                          {comp.description || whyReason}
+                        </p>
+                      </div>
+
+                      {/* Competitive Score Row / Researching Badge */}
+                      {isResearching ? (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40 rounded-2xl p-4 flex items-center gap-3">
+                          <Loader2 className="w-5 h-5 text-blue-600 animate-spin shrink-0" />
+                          <div>
+                            <div className="text-xs font-bold text-blue-700 dark:text-blue-300">Researching...</div>
+                            <div className="text-[11px] text-blue-600/80 dark:text-blue-400">Profiling tech stack, pricing, & position</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {/* Score Indicator */}
+                          <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                            <div>
+                              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Competitive Threat Score</div>
+                              <div className="text-xs text-slate-500 font-medium">Out of 100</div>
+                            </div>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-3xl font-black text-blue-600 dark:text-blue-400 tracking-tight">
+                                {score}
+                              </span>
+                              <span className="text-xs font-bold text-slate-400">/100</span>
+                            </div>
+                          </div>
+
+                          {/* 4 Horizontal Score Breakdown Bars */}
+                          <div className="space-y-2.5 pt-1">
+                            {[
+                              { label: 'Product Similarity', val: productScore },
+                              { label: 'Customer Overlap', val: customerScore },
+                              { label: 'Market Overlap', val: marketScore },
+                              { label: 'Business Model', val: businessScore },
+                            ].map(item => (
+                              <div key={item.label} className="space-y-1">
+                                <div className="flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                                  <span>{item.label}</span>
+                                  <span>{item.val}%</span>
+                                </div>
+                                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                  <div 
+                                    className="bg-blue-600 dark:bg-blue-500 h-full rounded-full transition-all duration-500" 
+                                    style={{ width: `${Math.min(100, Math.max(0, item.val))}%` }} 
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Why They Are a Competitor Block */}
+                      <div className="bg-slate-50/80 dark:bg-slate-950/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 space-y-1">
+                        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                          Why they are a competitor
+                        </div>
+                        <p className="text-xs font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
+                          {whyReason}
+                        </p>
+                      </div>
+
+                      {/* Confidence Line & Source Badge Footer */}
+                      <div className="pt-2 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 font-medium">
+                        <span>AI Confidence: {confidence}%</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-400">
+                          {sourceStr}
+                        </span>
+                      </div>
+
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </>
+      )}
+
+      {/* ── Add Competitor Modal ── */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-8 space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
+                Add a Competitor Manually
+              </h2>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddManualCompetitor} className="space-y-4">
+              {manualError && (
+                <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-semibold p-3 rounded-xl border border-red-200 dark:border-red-800">
+                  {manualError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                  Company Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Acme Corp"
+                  value={manualName}
+                  onChange={(e) => setManualName(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                  Website URL *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. https://acme.com"
+                  value={manualWebsite}
+                  onChange={(e) => setManualWebsite(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingManual}
+                  className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-md disabled:opacity-50"
+                >
+                  {isSubmittingManual ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    'Add Competitor'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </div>
-      
+      )}
+
     </div>
   );
 }

@@ -1,12 +1,13 @@
 import { useState, createContext, useEffect } from 'react';
-import { Bot, Target, Rss, Users, LayoutDashboard, Settings, LogOut, ChevronRight, Moon, Sun } from 'lucide-react';
+import { Bot, Target, Rss, Users, LayoutDashboard, Settings, LogOut, ChevronRight, Moon, Sun, Loader2 } from 'lucide-react';
 import OverviewSection from './components/OverviewSection';
 import CompetitorsSection from './components/CompetitorsSection';
 import MarketIntelligenceSection from './components/MarketIntelligenceSection';
 import AIStrategySection from './components/AIStrategySection';
 import AIAgentModal from './components/AIAgentModal';
 import OnboardingFlow from './components/OnboardingFlow';
-import { Loader2 } from 'lucide-react';
+import ProcessingScreen from './components/ProcessingScreen';
+import { apiGet } from './api';
 
 // ── Mock DB Data Context ──
 export const DbContext = createContext(null);
@@ -79,39 +80,39 @@ export default function App() {
   const [activeSection, setActiveSection] = useState('overview');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isAgentOpen, setIsAgentOpen] = useState(false);
-  const [setupStatus, setSetupStatus] = useState('loading');
+  const [appState, setAppState] = useState('LOADING'); // LOADING, ONBOARDING, PROCESSING, DASHBOARD
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      window.location.href = '/login/';
-      return;
-    }
-    
-    fetch('https://ai-backend-zfq1.onrender.com/api/company/profile', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-      .then(res => {
-        if (res.status === 401 || res.status === 403) {
-          localStorage.removeItem('access_token');
-          window.location.href = '/login/';
-          return null;
+    async function checkAuthAndSetup() {
+      try {
+        const profile = await apiGet('/api/company/profile');
+        if (!profile) {
+          setAppState('ONBOARDING');
+          return;
         }
-        return res.json();
-      })
-      .then(data => {
-        if (!data) return;
-        if (data.setupCompleted) {
-          setSetupStatus('complete');
+
+        const onboardingDone = profile.onboardingCompleted ?? profile.onboarding_completed ?? (profile.companyName || profile.company_name ? true : false);
+        
+        if (!onboardingDone) {
+          setAppState('ONBOARDING');
+          return;
+        }
+
+        const setupStatus = profile.setupStatus || profile.status || 'COMPLETED';
+
+        if (setupStatus === 'PENDING' || setupStatus === 'PROCESSING') {
+          setAppState('PROCESSING');
         } else {
-          setSetupStatus('incomplete');
+          setAppState('DASHBOARD');
         }
-      })
-      .catch(() => {
-        setSetupStatus('incomplete');
-      });
+      } catch (err) {
+        console.error('Route protection check failed:', err);
+        // If error fetching profile, fallback to onboarding or processing if session exists
+        setAppState('ONBOARDING');
+      }
+    }
+
+    checkAuthAndSetup();
   }, []);
 
   // Initialize theme
@@ -141,6 +142,11 @@ export default function App() {
     });
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    window.location.href = '/login/';
+  };
+
   // Provide mock DB to app
   const dbValue = {
     myCompany: MOCK_DB_USER_COMPANY,
@@ -156,7 +162,7 @@ export default function App() {
     { id: 'strategy', label: 'AI Strategy', icon: Target },
   ];
 
-  if (setupStatus === 'loading') {
+  if (appState === 'LOADING') {
     return (
       <div className="flex h-screen bg-slate-100 dark:bg-black items-center justify-center">
         <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
@@ -164,8 +170,12 @@ export default function App() {
     );
   }
 
-  if (setupStatus === 'incomplete') {
-    return <OnboardingFlow onComplete={() => setSetupStatus('complete')} />;
+  if (appState === 'ONBOARDING') {
+    return <OnboardingFlow onComplete={() => setAppState('PROCESSING')} />;
+  }
+
+  if (appState === 'PROCESSING') {
+    return <ProcessingScreen onComplete={() => setAppState('DASHBOARD')} />;
   }
 
   return (
@@ -230,7 +240,10 @@ export default function App() {
             <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors font-medium text-sm">
               <Settings size={18} /> Settings
             </button>
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors font-medium text-sm">
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors font-medium text-sm"
+            >
               <LogOut size={18} /> Log out
             </button>
           </div>

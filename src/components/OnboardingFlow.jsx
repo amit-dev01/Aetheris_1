@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronRight, ChevronLeft, Check, Plus, X, Building, Target, Users, Loader2 } from 'lucide-react';
+import { apiPost } from '../api';
 
 const MULTI_SELECT_OPTIONS = {
   customer_segments: ['Startups', 'SMBs', 'Mid-market', 'Enterprise', 'Consumers', 'Government', 'Developers', 'Other'],
@@ -77,8 +78,6 @@ export default function OnboardingFlow({ onComplete }) {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem('access_token');
-      
       const payload = {
         companyName: formData.company_name,
         website: formData.website_url,
@@ -92,21 +91,15 @@ export default function OnboardingFlow({ onComplete }) {
         excludedCompetitors: formData.non_competitors.filter(c => c.name.trim() !== '').map(c => c.name.trim()),
       };
 
-      await fetch('https://ai-backend-zfq1.onrender.com/api/company/profile', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload),
-      });
-      
-      setTimeout(() => {
-        onComplete();
-      }, 1500);
+      const resData = await apiPost('/api/company/profile', payload);
+      if (resData?.id) {
+        sessionStorage.setItem('company_id', resData.id);
+      }
+      onComplete(resData);
     } catch (err) {
       console.error(err);
       setIsSubmitting(false);
+      alert(err.message || 'Failed to submit onboarding form. Please try again.');
     }
   };
 
