@@ -10,6 +10,7 @@ import GlobalAlertBanner from './components/GlobalAlertBanner';
 import AIAgentModal from './components/AIAgentModal';
 import OnboardingFlow from './components/OnboardingFlow';
 import ProcessingScreen from './components/ProcessingScreen';
+import SettingsSection from './components/SettingsSection';
 import { 
   getCompanyProfile, 
   clearAuthSession, 
@@ -404,7 +405,14 @@ export default function App() {
                 {isDarkMode ? 'Light Mode' : 'Dark Mode'}
               </span>
             </button>
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors font-medium text-sm">
+            <button 
+              onClick={() => setActiveSection('settings')}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors font-medium text-sm
+                ${activeSection === 'settings' 
+                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                }`}
+            >
               <Settings size={18} /> Settings
             </button>
             <button 
@@ -445,6 +453,7 @@ export default function App() {
               {activeSection === 'strategy' && <AIStrategySection />}
               {activeSection === 'alerts' && <AlertsSection />}
               {activeSection === 'trends' && <TrendsSection />}
+              {activeSection === 'settings' && <SettingsSection />}
             </div>
           </div>
         </main>

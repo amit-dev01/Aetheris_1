@@ -134,6 +134,88 @@ export async function apiPost(endpoint, body, requireAuth = true) {
   return await res.json();
 }
 
+/**
+ * Generic API PUT helper attaching Authorization Bearer header
+ */
+export async function apiPut(endpoint, body, requireAuth = true) {
+  const url = buildUrl(endpoint);
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  if (requireAuth) {
+    const token = getAccessToken();
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(body || {}),
+  });
+
+  if (res.status === 401 || res.status === 403) {
+    clearAuthSession();
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login/';
+    }
+    throw new Error('Unauthorized access. Please log in again.');
+  }
+
+  if (!res.ok) {
+    let errorMessage = `Request failed with status ${res.status}`;
+    try {
+      const errorData = await res.json();
+      errorMessage = errorData.detail || errorData.message || errorMessage;
+    } catch (_) {}
+    throw new Error(errorMessage);
+  }
+
+  return await res.json();
+}
+
+/**
+ * Generic API DELETE helper attaching Authorization Bearer header
+ */
+export async function apiDelete(endpoint, requireAuth = true) {
+  const url = buildUrl(endpoint);
+  const headers = {};
+
+  if (requireAuth) {
+    const token = getAccessToken();
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers,
+  });
+
+  if (res.status === 401 || res.status === 403) {
+    clearAuthSession();
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login/';
+    }
+    throw new Error('Unauthorized access. Please log in again.');
+  }
+
+  if (!res.ok) {
+    let errorMessage = `Request failed with status ${res.status}`;
+    try {
+      const errorData = await res.json();
+      errorMessage = errorData.detail || errorData.message || errorMessage;
+    } catch (_) {}
+    throw new Error(errorMessage);
+  }
+
+  // DELETE might not always return JSON
+  try {
+    return await res.json();
+  } catch (err) {
+    return { success: true };
+  }
+}
+
 // ── Authentication Endpoints ──
 
 export async function authSignup({ email, password }) {
@@ -158,14 +240,19 @@ export async function submitCompanyProfile(payload) {
   return await apiPost('/api/company/profile', payload);
 }
 
+export async function updateCompanyProfile(payload) {
+  return await apiPut('/api/company/profile', payload);
+}
+
 export async function getSetupStatus() {
   return await apiGet('/api/company/setup-status');
 }
 
 // ── Competitors Intelligence Endpoints ──
 
-export async function getCompetitors() {
-  return await apiGet('/api/competitors');
+export async function getCompetitors(status = 'active') {
+  const query = status === 'all' || status === 'archived' ? `?status=${status}` : '';
+  return await apiGet(`/api/competitors${query}`);
 }
 
 export async function acceptCompetitor(competitorId) {
@@ -178,6 +265,26 @@ export async function rejectCompetitor(competitorId) {
 
 export async function addManualCompetitor({ name, website }) {
   return await apiPost('/api/competitors/manual', { name, website });
+}
+
+export async function updateCompetitor(competitorId, payload) {
+  return await apiPut(`/api/competitors/${competitorId}`, payload);
+}
+
+export async function deleteCompetitor(competitorId) {
+  return await apiDelete(`/api/competitors/${competitorId}`);
+}
+
+export async function researchCompetitor(competitorId) {
+  return await apiPost(`/api/competitors/${competitorId}/research`, {});
+}
+
+export async function archiveCompetitor(competitorId) {
+  return await apiPost(`/api/competitors/${competitorId}/archive`, {});
+}
+
+export async function restoreCompetitor(competitorId) {
+  return await apiPost(`/api/competitors/${competitorId}/restore`, {});
 }
 
 // ── Phase 2: Intelligence & Strategy Endpoints ──
@@ -265,4 +372,22 @@ export async function getIntelligenceMetrics(competitorId, days = 30) {
  */
 export async function acknowledgeAnomaly(anomalyId) {
   return await apiPost(`/api/intelligence/anomalies/${anomalyId}/acknowledge`, {});
+}
+
+// ── Phase 5: Settings & Activity Endpoints ──
+
+export async function getCompanySettings() {
+  return await apiGet('/api/company/settings');
+}
+
+export async function updateCompanySettings(payload) {
+  return await apiPut('/api/company/settings', payload);
+}
+
+export async function triggerRediscovery() {
+  return await apiPost('/api/company/rediscovery', {});
+}
+
+export async function getCompanyActivity(limit = 20, offset = 0) {
+  return await apiGet(`/api/company/activity?limit=${limit}&offset=${offset}`);
 }
