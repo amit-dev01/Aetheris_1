@@ -120,5 +120,5 @@ This frontend is designed to be highly reactive to the backend state:
 <br />
 
 <div align="center">
-  <i>Designed for the future of competitive intelligence.</i>
+  <i>Made with ❤️ by Amit</i>
 </div>
