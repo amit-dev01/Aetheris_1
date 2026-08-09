@@ -4,7 +4,7 @@ import {
   AlertCircle, AlertTriangle, Lightbulb, ShieldAlert, Users, Target, Zap, Clock, RefreshCw, 
   Activity, TrendingUp, Loader2 
 } from 'lucide-react';
-import { getCompanyProfile, getCompetitors } from '../api';
+import { getCompanyProfile, getCompetitors, getIntelligenceJobs } from '../api';
 import { formatMonitoredTimestamp, getEventTypeBadgeStyle } from '../constants';
 
 export default function OverviewSection() {
@@ -25,6 +25,28 @@ export default function OverviewSection() {
   const [competitorsData, setCompetitorsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Jobs State
+  const [showJobsModal, setShowJobsModal] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(false);
+  
+  const fetchJobs = async () => {
+    setJobsLoading(true);
+    try {
+      const data = await getIntelligenceJobs();
+      setJobs(Array.isArray(data) ? data : data.jobs || []);
+    } catch (err) {
+      console.error('Failed to load jobs:', err);
+    } finally {
+      setJobsLoading(false);
+    }
+  };
+
+  const handleOpenJobs = () => {
+    setShowJobsModal(true);
+    fetchJobs();
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -334,9 +356,17 @@ export default function OverviewSection() {
 
       {/* ── Phase 2: Footer Last Monitored Timestamp & Refresh Button ── */}
       <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-          <Clock size={18} className="text-slate-400 shrink-0" />
-          <span>{lastMonitoredText}</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
+            <Clock size={18} className="text-slate-400 shrink-0" />
+            <span>{lastMonitoredText}</span>
+          </div>
+          <button 
+            onClick={handleOpenJobs}
+            className="text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold transition-all"
+          >
+            View Sync History
+          </button>
         </div>
 
         <button
@@ -362,6 +392,57 @@ export default function OverviewSection() {
           )}
         </button>
       </section>
+
+      {/* ── JOBS MODAL ── */}
+      {showJobsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 max-w-xl w-full shadow-2xl space-y-6 relative border border-slate-200 dark:border-slate-800 flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">System Jobs History</h2>
+              <button 
+                onClick={() => setShowJobsModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                Close
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto flex-1 pr-2 space-y-3">
+              {jobsLoading ? (
+                <div className="flex justify-center p-8">
+                  <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                </div>
+              ) : jobs.length === 0 ? (
+                <div className="text-center p-8 text-slate-500 text-sm">
+                  No sync jobs found.
+                </div>
+              ) : (
+                jobs.map((job, idx) => (
+                  <div key={job.id || idx} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-1 text-sm">
+                    <div className="flex justify-between font-bold">
+                      <span className="text-slate-900 dark:text-white">{job.type || 'Monitoring Sync'}</span>
+                      <span className={`${job.status === 'COMPLETED' ? 'text-emerald-600' : job.status === 'FAILED' ? 'text-red-600' : 'text-blue-600'}`}>
+                        {job.status}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      Started: {new Date(job.startedAt || job.createdAt).toLocaleString()}
+                    </div>
+                    {job.completedAt && (
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Completed: {new Date(job.completedAt).toLocaleString()}
+                      </div>
+                    )}
+                    {job.error && (
+                      <div className="text-xs text-red-500 mt-1">{job.error}</div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -197,6 +197,13 @@ export async function triggerMonitoring() {
 }
 
 /**
+ * GET /api/intelligence/jobs
+ */
+export async function getIntelligenceJobs() {
+  return await apiGet('/api/intelligence/jobs');
+}
+
+/**
  * GET /api/intelligence/feed
  * Params: { competitorId, eventType, impact, limit, offset }
  */
