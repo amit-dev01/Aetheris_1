@@ -1,9 +1,12 @@
 import { useState, createContext, useEffect, useRef } from 'react';
-import { Bot, Target, Rss, Users, LayoutDashboard, Settings, LogOut, ChevronRight, Moon, Sun, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Bot, Target, Rss, Users, LayoutDashboard, Settings, LogOut, ChevronRight, Moon, Sun, Loader2, CheckCircle2, AlertCircle, TrendingUp, Bell } from 'lucide-react';
 import OverviewSection from './components/OverviewSection';
 import CompetitorsSection from './components/CompetitorsSection';
 import MarketIntelligenceSection from './components/MarketIntelligenceSection';
 import AIStrategySection from './components/AIStrategySection';
+import AlertsSection from './components/AlertsSection';
+import TrendsSection from './components/TrendsSection';
+import GlobalAlertBanner from './components/GlobalAlertBanner';
 import AIAgentModal from './components/AIAgentModal';
 import OnboardingFlow from './components/OnboardingFlow';
 import ProcessingScreen from './components/ProcessingScreen';
@@ -13,7 +16,9 @@ import {
   getStoredToken, 
   getIntelligenceStats, 
   triggerMonitoring, 
-  getCompetitors 
+  getCompetitors,
+  getIntelligenceAlerts,
+  getIntelligenceTrends
 } from './api';
 
 // ── DbContext / IntelligenceContext for App State ──
@@ -28,6 +33,8 @@ export default function App() {
 
   // Global Intelligence State
   const [intelligenceStats, setIntelligenceStats] = useState(null);
+  const [intelligenceAlerts, setIntelligenceAlerts] = useState(null);
+  const [intelligenceTrends, setIntelligenceTrends] = useState(null);
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
   const [acceptedCompetitors, setAcceptedCompetitors] = useState([]);
   const [monitoringTriggered, setMonitoringTriggered] = useState(false);
@@ -58,6 +65,19 @@ export default function App() {
       }
     } catch (err) {
       console.warn('Unable to fetch intelligence stats:', err);
+    }
+  };
+
+  const fetchAlertsAndTrends = async () => {
+    try {
+      const [alerts, trends] = await Promise.all([
+        getIntelligenceAlerts().catch(() => null),
+        getIntelligenceTrends().catch(() => null)
+      ]);
+      if (alerts) setIntelligenceAlerts(alerts);
+      if (trends) setIntelligenceTrends(trends);
+    } catch (err) {
+      console.warn('Unable to fetch alerts and trends:', err);
     }
   };
 
@@ -101,6 +121,7 @@ export default function App() {
         // Load initial stats & competitors for context
         fetchGlobalStats();
         fetchAcceptedCompetitors();
+        fetchAlertsAndTrends();
       }
     } catch (err) {
       console.error('Route protection check error:', err);
@@ -118,6 +139,7 @@ export default function App() {
       pollStatsIntervalRef.current = setInterval(() => {
         fetchGlobalStats();
         fetchAcceptedCompetitors();
+        fetchAlertsAndTrends();
       }, 5 * 60 * 1000);
     }
     return () => {
@@ -152,6 +174,7 @@ export default function App() {
       autoRefetchTimerRef.current = setTimeout(() => {
         fetchGlobalStats();
         fetchAcceptedCompetitors();
+        fetchAlertsAndTrends();
         setMonitoringTriggered(false);
       }, 2 * 60 * 1000);
 
@@ -212,6 +235,12 @@ export default function App() {
 
   const criticalCount = intelligenceStats?.criticalEvents || 0;
   const isNewBriefAvailable = isBriefNew(intelligenceStats?.weeklyBriefGeneratedAt);
+  const unacknowledgedAlerts = intelligenceAlerts?.totalUnacknowledged || 0;
+  
+  // Count active trends that are Critical or High
+  const activeImportantTrends = (intelligenceTrends?.trends || [])
+    .filter(t => t.isActive && (t.severity === 'CRITICAL' || t.severity === 'HIGH'))
+    .length;
 
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -221,6 +250,20 @@ export default function App() {
       label: 'Market Intelligence', 
       icon: Rss,
       badge: criticalCount > 0 ? criticalCount : null,
+      badgeColor: 'bg-red-500 text-white'
+    },
+    {
+      id: 'trends',
+      label: 'Trends',
+      icon: TrendingUp,
+      badge: activeImportantTrends > 0 ? activeImportantTrends : null,
+      badgeColor: 'bg-blue-600 text-white'
+    },
+    {
+      id: 'alerts',
+      label: 'Alerts',
+      icon: Bell,
+      badge: unacknowledgedAlerts > 0 ? unacknowledgedAlerts : null,
       badgeColor: 'bg-red-500 text-white'
     },
     { 
@@ -259,6 +302,9 @@ export default function App() {
     companyProfile,
     refreshProfile: checkAuthAndSetup,
     intelligenceStats,
+    intelligenceAlerts,
+    intelligenceTrends,
+    refreshAlertsAndTrends: fetchAlertsAndTrends,
     lastFetchedAt,
     refreshStats: fetchGlobalStats,
     acceptedCompetitors,
@@ -390,12 +436,15 @@ export default function App() {
              </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-6 md:p-10 relative">
-            <div className="max-w-5xl mx-auto w-full">
+          <div className="flex-1 overflow-y-auto relative">
+            <GlobalAlertBanner />
+            <div className="p-6 md:p-10 max-w-5xl mx-auto w-full">
               {activeSection === 'overview' && <OverviewSection />}
               {activeSection === 'competitors' && <CompetitorsSection />}
               {activeSection === 'market' && <MarketIntelligenceSection />}
               {activeSection === 'strategy' && <AIStrategySection />}
+              {activeSection === 'alerts' && <AlertsSection />}
+              {activeSection === 'trends' && <TrendsSection />}
             </div>
           </div>
         </main>

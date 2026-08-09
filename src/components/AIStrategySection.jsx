@@ -2,7 +2,8 @@ import { useState, useEffect, useContext } from 'react';
 import { DbContext } from '../App';
 import { 
   Target, ShieldAlert, Lightbulb, Eye, CheckSquare, Square, 
-  ArrowRight, Loader2, AlertCircle, RefreshCw, Sparkles, Building 
+  ArrowRight, Loader2, AlertCircle, RefreshCw, Sparkles, Building,
+  Bell, TrendingUp, TrendingDown, Clock
 } from 'lucide-react';
 import { getIntelligenceSummary } from '../api';
 import { formatBriefTimestamp } from '../constants';
@@ -115,7 +116,12 @@ export default function AIStrategySection() {
   const watchList = Array.isArray(summaryData?.watchList) ? summaryData.watchList : [];
   const recommendations = Array.isArray(summaryData?.strategicRecommendations) ? summaryData.strategicRecommendations : [];
 
-  const hasNoData = !weeklyBrief && topThreats.length === 0 && opportunities.length === 0;
+  // Phase 3 Extensions
+  const criticalAlerts = Array.isArray(summaryData?.criticalAlerts) ? summaryData.criticalAlerts : [];
+  const trendSummary = summaryData?.trendSummary;
+  const anomalySummary = summaryData?.anomalySummary;
+
+  const hasNoData = !weeklyBrief && topThreats.length === 0 && opportunities.length === 0 && criticalAlerts.length === 0;
 
   return (
     <div className="animate-fade-in-up max-w-5xl mx-auto space-y-8 pb-12">
@@ -194,6 +200,68 @@ export default function AIStrategySection() {
               <p className="text-lg md:text-xl font-medium leading-relaxed text-slate-100">
                 "{weeklyBrief}"
               </p>
+            </section>
+          )}
+
+          {/* ── PHASE 3: CRITICAL ALERTS & TRENDS SUMMARIES ── */}
+          {(criticalAlerts.length > 0 || trendSummary || anomalySummary) && (
+            <section className="space-y-6">
+              
+              {/* Critical Alerts Block */}
+              {criticalAlerts.length > 0 && (
+                <div className="bg-red-50/80 dark:bg-red-950/20 border-2 border-red-300 dark:border-red-800/60 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
+                  <div className="flex items-center gap-2.5 text-red-700 dark:text-red-400 font-extrabold text-xl">
+                    <Bell size={24} className="animate-wiggle" />
+                    Critical Strategy Alerts
+                  </div>
+                  <div className="space-y-4">
+                    {criticalAlerts.map(alert => (
+                      <div key={alert.id} className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-900/40 rounded-2xl p-4 shadow-sm">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="font-extrabold text-slate-900 dark:text-white text-lg">{alert.title}</h4>
+                          <span className="text-xs font-black bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 px-2 py-0.5 rounded uppercase">{alert.type}</span>
+                        </div>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed mb-3">
+                          {alert.description}
+                        </p>
+                        {alert.recommendedAction && (
+                          <div className="text-xs font-bold text-red-700 dark:text-red-400 flex items-start gap-1.5 pt-2 border-t border-red-100 dark:border-red-900/30">
+                            <ArrowRight size={14} className="shrink-0 mt-0.5" />
+                            <span>Action: {alert.recommendedAction}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Trend & Anomaly Summary Block */}
+              {(trendSummary || anomalySummary) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {trendSummary && (
+                    <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-3xl p-6 shadow-sm space-y-3">
+                      <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 font-extrabold text-lg">
+                        <TrendingUp size={20} /> Trend Analysis
+                      </div>
+                      <p className="text-sm text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
+                        {trendSummary}
+                      </p>
+                    </div>
+                  )}
+                  {anomalySummary && (
+                    <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/30 rounded-3xl p-6 shadow-sm space-y-3">
+                      <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400 font-extrabold text-lg">
+                        <TrendingDown size={20} /> Detected Anomalies
+                      </div>
+                      <p className="text-sm text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
+                        {anomalySummary}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
             </section>
           )}
 

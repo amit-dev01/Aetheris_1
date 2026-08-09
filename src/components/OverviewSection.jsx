@@ -12,10 +12,13 @@ export default function OverviewSection() {
   const { 
     companyProfile, 
     intelligenceStats, 
+    intelligenceAlerts,
+    intelligenceTrends,
     acceptedCompetitors, 
     handleTriggerRefresh, 
     isTriggering, 
-    refreshCooldown 
+    refreshCooldown,
+    setActiveSection
   } = context;
 
   const [profile, setProfile] = useState(companyProfile || null);
@@ -105,11 +108,14 @@ export default function OverviewSection() {
   const indirectCount = competitorsData?.indirect ?? (competitorsData?.competitors?.filter(c => (c.type || c.competitive_status)?.toUpperCase() === 'INDIRECT')?.length || 0);
   const emergingCount = competitorsData?.emerging ?? (competitorsData?.competitors?.filter(c => (c.type || c.competitive_status)?.toUpperCase() === 'EMERGING')?.length || 0);
 
-  // Phase 2 Stats Bar Data
   const documentsThisWeek = intelligenceStats?.documentsThisWeek ?? 0;
   const criticalEvents = intelligenceStats?.criticalEvents ?? 0;
   const highEvents = intelligenceStats?.highEvents ?? 0;
   const monitoredCompetitorsCount = acceptedCompetitors?.length ?? intelligenceStats?.monitoredCount ?? competitorsData?.competitors?.filter(c => c.isAccepted === true)?.length ?? 0;
+
+  // Phase 3 Stats
+  const activeTrendsCount = intelligenceTrends?.totalActive || 0;
+  const unacknowledgedAlerts = intelligenceAlerts?.totalUnacknowledged || 0;
 
   // Most Active Competitors (up to 3 ordered by documentCount descending)
   const byComp = Array.isArray(intelligenceStats?.byCompetitor) ? intelligenceStats.byCompetitor : [];
@@ -206,7 +212,7 @@ export default function OverviewSection() {
         </section>
       )}
 
-      {/* ── Phase 2: Live Monitoring Stats Bar ── */}
+      {/* ── Phase 2 & 3: Live Monitoring Stats Bar ── */}
       <section className="bg-gradient-to-r from-blue-900 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-lg space-y-4 relative overflow-hidden">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-blue-400 text-xs font-extrabold uppercase tracking-widest">
@@ -215,7 +221,7 @@ export default function OverviewSection() {
           <div className="text-xs text-blue-300/80 font-medium">Updated Real-Time</div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-2">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-6 pt-2">
           <div className="space-y-1">
             <div className="text-xs text-slate-300 font-medium">Events This Week</div>
             <div className="text-3xl font-black text-white">{documentsThisWeek}</div>
@@ -229,8 +235,16 @@ export default function OverviewSection() {
             <div className="text-3xl font-black text-orange-400">{highEvents}</div>
           </div>
           <div className="space-y-1">
-            <div className="text-xs text-blue-300 font-medium">Monitored Companies</div>
+            <div className="text-xs text-blue-300 font-medium">Monitored Cos</div>
             <div className="text-3xl font-black text-blue-300">{monitoredCompetitorsCount}</div>
+          </div>
+          <div className="space-y-1 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveSection && setActiveSection('trends')}>
+            <div className="text-xs text-purple-300 font-medium flex items-center gap-1">Active Trends <TrendingUp size={12} /></div>
+            <div className="text-3xl font-black text-purple-400">{activeTrendsCount}</div>
+          </div>
+          <div className="space-y-1 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveSection && setActiveSection('alerts')}>
+            <div className="text-xs text-red-300 font-medium flex items-center gap-1">Unread Alerts <AlertCircle size={12} /></div>
+            <div className="text-3xl font-black text-red-400">{unacknowledgedAlerts}</div>
           </div>
         </div>
       </section>

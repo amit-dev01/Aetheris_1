@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { getCompetitors, acceptCompetitor, rejectCompetitor, addManualCompetitor, getIntelligenceFeed } from '../api';
 import { getEventTypeBadgeStyle, getImpactBadgeStyle, formatRelativeTime } from '../constants';
+import CompetitorCharts from './CompetitorCharts';
 
 export default function CompetitorsSection() {
   const context = useContext(DbContext) || {};
@@ -527,56 +528,69 @@ export default function CompetitorsSection() {
                         </p>
                       </div>
 
-                      {/* ── Phase 2: Recent Activity Section Toggle ── */}
+                      {/* ── Phase 2 & 3: Recent Activity & Charts Section Toggle ── */}
                       <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
                         <button
                           onClick={() => toggleCompetitorActivity(comp.id)}
                           className="w-full flex items-center justify-between text-xs font-extrabold text-blue-600 dark:text-blue-400 hover:underline py-1"
                         >
-                          <span>Recent Activity (Last 5 events)</span>
+                          <span>Activity & Trends</span>
                           {actState.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
 
-                        {/* Recent Activity Expanded Drawer */}
+                        {/* Expanded Drawer */}
                         {actState.expanded && (
-                          <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-3 animate-fade-in">
-                            {actState.loading && (
-                              <div className="flex justify-center py-4">
-                                <Loader2 size={20} className="text-blue-600 animate-spin" />
-                              </div>
-                            )}
+                          <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-6 animate-fade-in w-full">
+                            
+                            {/* Phase 3 Charts */}
+                            <div className="w-full overflow-hidden">
+                              <CompetitorCharts competitorId={comp.id} />
+                            </div>
 
-                            {!actState.loading && actState.docs.length === 0 && (
-                              <div className="text-center py-3 text-xs text-slate-400 font-medium">
-                                No activity recorded yet
-                              </div>
-                            )}
+                            {/* Phase 2 Recent Activity */}
+                            <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
+                              <h4 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-3">
+                                Recent Events
+                              </h4>
+                              {actState.loading && (
+                                <div className="flex justify-center py-4">
+                                  <Loader2 size={20} className="text-blue-600 animate-spin" />
+                                </div>
+                              )}
 
-                            {!actState.loading && actState.docs.length > 0 && (
-                              <div className="space-y-2.5">
-                                {actState.docs.map(doc => (
-                                  <div 
-                                    key={doc.id}
-                                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm space-y-1.5"
-                                  >
-                                    <div className="flex items-center justify-between text-[10px] font-bold">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className={`px-2 py-0.5 rounded-full border ${getEventTypeBadgeStyle(doc.eventType)}`}>
-                                          {doc.eventType}
-                                        </span>
-                                        <span className={`px-2 py-0.5 rounded-full border ${getImpactBadgeStyle(doc.impact)}`}>
-                                          {doc.impact}
-                                        </span>
+                              {!actState.loading && actState.docs.length === 0 && (
+                                <div className="text-center py-3 text-xs text-slate-400 font-medium">
+                                  No activity recorded yet
+                                </div>
+                              )}
+
+                              {!actState.loading && actState.docs.length > 0 && (
+                                <div className="space-y-2.5">
+                                  {actState.docs.map(doc => (
+                                    <div 
+                                      key={doc.id}
+                                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm space-y-1.5"
+                                    >
+                                      <div className="flex items-center justify-between text-[10px] font-bold">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className={`px-2 py-0.5 rounded-full border ${getEventTypeBadgeStyle(doc.eventType)}`}>
+                                            {doc.eventType}
+                                          </span>
+                                          <span className={`px-2 py-0.5 rounded-full border ${getImpactBadgeStyle(doc.impact)}`}>
+                                            {doc.impact}
+                                          </span>
+                                        </div>
+                                        <span className="text-slate-400 font-semibold">{formatRelativeTime(doc.publishedAt || doc.date)}</span>
                                       </div>
-                                      <span className="text-slate-400 font-semibold">{formatRelativeTime(doc.publishedAt || doc.date)}</span>
+                                      <h4 className="text-xs font-extrabold text-slate-900 dark:text-white line-clamp-1">
+                                        {doc.title}
+                                      </h4>
                                     </div>
-                                    <h4 className="text-xs font-extrabold text-slate-900 dark:text-white line-clamp-1">
-                                      {doc.title}
-                                    </h4>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
                           </div>
                         )}
                       </div>

@@ -156,4 +156,80 @@ export interface IntelligenceSummaryResponse {
   opportunities: StrategyOpportunity[];
   watchList: string[];
   strategicRecommendations: string[];
+  // Phase 3 additions:
+  criticalAlerts?: AlertItem[];
+  trendSummary?: string;
+  anomalySummary?: string;
+}
+
+// ── Phase 3: Trends, Anomalies, and Alerts Types ──
+
+export interface AlertItem {
+  id: string;
+  type: 'TREND' | 'ANOMALY' | string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | string;
+  urgency: 'ACT_NOW' | 'MONITOR' | 'WATCH' | string;
+  title: string;
+  description: string;
+  competitorId: string;
+  competitorName: string;
+  detectedAt: string;
+  isAcknowledged: boolean;
+  acknowledgedAt?: string;
+  recommendedAction?: string;
+}
+
+export interface AlertsResponse {
+  totalUnacknowledged: number;
+  criticalUnacknowledged: number;
+  highUnacknowledged: number;
+  mediumUnacknowledged: number;
+  lowUnacknowledged: number;
+  alerts: AlertItem[];
+}
+
+export interface TrendItem {
+  id: string;
+  trendType: 'ACTIVITY_SPIKE' | 'ACTIVITY_DECLINE' | 'SENTIMENT_SHIFT_POSITIVE' | 'SENTIMENT_SHIFT_NEGATIVE' | 'EVENT_CLUSTER' | 'HIRING_SURGE' | 'PRODUCT_ACCELERATION' | 'MARKET_EXPANSION' | string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | string;
+  description: string;
+  competitorId: string;
+  competitorName: string;
+  changePercent: number;
+  currentValue: number;
+  baselineValue: number;
+  periodStart: string;
+  periodEnd: string;
+  strategicImplication?: string;
+  recommendedAction?: string;
+  isActive: boolean;
+}
+
+export interface TrendsResponse {
+  totalActive: number;
+  criticalCount: number;
+  highCount: number;
+  trendingCompetitorsCount: number;
+  trends: TrendItem[];
+}
+
+export interface MetricDataPoint {
+  date: string; // ISO date string (YYYY-MM-DD)
+  documentCount: number;
+  criticalCount: number;
+  highCount: number;
+  positiveSentimentCount: number;
+  negativeSentimentCount: number;
+  neutralSentimentCount: number;
+  eventTypeCounts: Record<string, number>;
+}
+
+export interface MetricsResponse {
+  competitorId: string;
+  days: number;
+  totalDocuments: number;
+  averageDailyActivity: number;
+  peakDay: string;
+  peakDayCount: number;
+  timeseries: MetricDataPoint[];
 }

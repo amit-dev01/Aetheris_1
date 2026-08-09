@@ -229,3 +229,33 @@ export async function getIntelligenceFeed(params = {}) {
 export async function getIntelligenceSummary() {
   return await apiGet('/api/intelligence/summary');
 }
+
+// ── Phase 3: Trends, Anomalies, and Alerts Endpoints ──
+
+/**
+ * GET /api/intelligence/alerts
+ */
+export async function getIntelligenceAlerts() {
+  return await apiGet('/api/intelligence/alerts');
+}
+
+/**
+ * GET /api/intelligence/trends
+ */
+export async function getIntelligenceTrends() {
+  return await apiGet('/api/intelligence/trends');
+}
+
+/**
+ * GET /api/intelligence/metrics/{competitorId}?days={days}
+ */
+export async function getIntelligenceMetrics(competitorId, days = 30) {
+  return await apiGet(`/api/intelligence/metrics/${competitorId}?days=${days}`);
+}
+
+/**
+ * POST /api/intelligence/anomalies/{anomalyId}/acknowledge
+ */
+export async function acknowledgeAnomaly(anomalyId) {
+  return await apiPost(`/api/intelligence/anomalies/${anomalyId}/acknowledge`, {});
+}

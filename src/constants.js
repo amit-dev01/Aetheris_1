@@ -163,3 +163,44 @@ export const formatBriefTimestamp = (timestamp) => {
 
   return `Generated on ${weekday} ${month} ${day} at ${hours}:${minutes} ${ampm}`;
 };
+
+// ── Phase 3: Trends, Anomalies, and Alerts Constants ──
+
+export const getUrgencyBadgeStyle = (urgency = '') => {
+  const norm = urgency.trim().toUpperCase();
+  switch (norm) {
+    case 'ACT_NOW':
+      return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 border-red-200 dark:border-red-800';
+    case 'MONITOR':
+      return 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400 border-orange-200 dark:border-orange-800';
+    case 'WATCH':
+      return 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+    default:
+      return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
+  }
+};
+
+export const getTypeBadgeStyle = (type = '') => {
+  const norm = type.trim().toUpperCase();
+  if (norm === 'TREND') {
+    return 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+  }
+  if (norm === 'ANOMALY') {
+    return 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400 border-purple-200 dark:border-purple-800';
+  }
+  return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
+};
+
+export const getTrendHumanReadableLabel = (trendType = '') => {
+  const labels = {
+    'ACTIVITY_SPIKE': 'Activity Spike',
+    'ACTIVITY_DECLINE': 'Activity Decline',
+    'SENTIMENT_SHIFT_POSITIVE': 'Positive Sentiment Shift',
+    'SENTIMENT_SHIFT_NEGATIVE': 'Negative Sentiment Shift',
+    'EVENT_CLUSTER': 'Event Cluster',
+    'HIRING_SURGE': 'Hiring Surge',
+    'PRODUCT_ACCELERATION': 'Product Acceleration',
+    'MARKET_EXPANSION': 'Market Expansion'
+  };
+  return labels[trendType.trim().toUpperCase()] || trendType.replace(/_/g, ' ') || 'Unknown Trend';
+};
