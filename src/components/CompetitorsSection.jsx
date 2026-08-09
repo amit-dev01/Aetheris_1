@@ -21,6 +21,7 @@ export default function CompetitorsSection() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('DIRECT'); // DIRECT, INDIRECT, EMERGING
   const [statusFilter, setStatusFilter] = useState('active'); // active, archived, all
+  const [summaryStats, setSummaryStats] = useState(null);
 
   // Modals / Dialogs State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -41,6 +42,7 @@ export default function CompetitorsSection() {
 
   // Toast state
   const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
 
   // Expanded Competitor Activity State
   const [activityState, setActivityState] = useState({});
@@ -56,6 +58,7 @@ export default function CompetitorsSection() {
       const data = await getCompetitors(statusFilter);
       const list = Array.isArray(data) ? data : data.competitors || [];
       setCompetitors(list);
+      if (data && data.summary) setSummaryStats(data.summary);
     } catch (err) {
       console.error('Error fetching competitors:', err);
       setError(err.message || 'Failed to load competitors list.');
@@ -99,8 +102,9 @@ export default function CompetitorsSection() {
     return () => document.removeEventListener('click', closeMenu);
   }, []);
 
-  const showToast = (msg) => {
+  const showToast = (msg, type = 'success') => {
     setToastMessage(msg);
+    setToastType(type);
     setTimeout(() => setToastMessage(''), 4000);
   };
 
@@ -108,9 +112,9 @@ export default function CompetitorsSection() {
     try {
       await acceptCompetitor(id);
       setCompetitors(prev => prev.map(c => c.id === id ? { ...c, isAccepted: true } : c));
-      showToast('Competitor accepted and confirmed!');
+      showToast('Competitor accepted and confirmed!', 'success');
     } catch (err) {
-      alert(err.message || 'Failed to accept competitor.');
+      showToast(err.message || 'Failed to accept competitor.', 'error');
     }
   };
 
@@ -118,9 +122,9 @@ export default function CompetitorsSection() {
     try {
       await rejectCompetitor(id);
       setCompetitors(prev => prev.map(c => c.id === id ? { ...c, isAccepted: false } : c));
-      showToast('Competitor rejected.');
+      showToast('Competitor rejected.', 'success');
     } catch (err) {
-      alert(err.message || 'Failed to reject competitor.');
+      showToast(err.message || 'Failed to reject competitor.', 'error');
     }
   };
 
@@ -158,9 +162,9 @@ export default function CompetitorsSection() {
       await updateCompetitor(editComp.id, editData);
       setCompetitors(prev => prev.map(c => c.id === editComp.id ? { ...c, name: editData.name, website: editData.website, notes: editData.notes } : c));
       setEditComp(null);
-      showToast('Competitor updated successfully');
+      showToast('Competitor updated successfully', 'success');
     } catch(err) {
-      alert(err.message || 'Failed to update');
+      showToast(err.message || 'Failed to update', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -171,9 +175,9 @@ export default function CompetitorsSection() {
       const payload = { customType: newType === 'AI' ? null : newType };
       await updateCompetitor(id, payload);
       setCompetitors(prev => prev.map(c => c.id === id ? { ...c, type: newType === 'AI' ? 'DIRECT' : newType, customType: payload.customType } : c));
-      showToast('Competitor type updated');
+      showToast('Competitor type updated', 'success');
     } catch(err) {
-      showToast(err.message || 'Failed to update type');
+      showToast(err.message || 'Failed to update type', 'error');
     }
   };
 
@@ -196,9 +200,9 @@ export default function CompetitorsSection() {
       await archiveCompetitor(archiveComp.id);
       setCompetitors(prev => prev.filter(c => c.id !== archiveComp.id));
       setArchiveComp(null);
-      showToast('Competitor archived. View archived to restore.');
+      showToast('Competitor archived. View archived to restore.', 'success');
     } catch(err) {
-      alert(err.message || 'Failed to archive');
+      showToast(err.message || 'Failed to archive', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -208,9 +212,9 @@ export default function CompetitorsSection() {
     try {
       await restoreCompetitor(id);
       setCompetitors(prev => prev.filter(c => c.id !== id));
-      showToast('Competitor restored');
+      showToast('Competitor restored', 'success');
     } catch(err) {
-      showToast(err.message || 'Failed to restore');
+      showToast(err.message || 'Failed to restore', 'error');
     }
   };
 
@@ -221,9 +225,11 @@ export default function CompetitorsSection() {
       await deleteCompetitor(deleteComp.id);
       setCompetitors(prev => prev.filter(c => c.id !== deleteComp.id));
       setDeleteComp(null);
-      showToast('Competitor permanently deleted');
+      showToast('Competitor permanently deleted', 'success');
     } catch(err) {
-      alert(err.message || 'Deletion not allowed');
+      showToast(err.message || 'Deletion not allowed', 'error');
+      setDeleteComp(null);
+      setDeleteConfirmText('');
     } finally {
       setActionLoading(false);
     }
@@ -290,8 +296,8 @@ export default function CompetitorsSection() {
     <div className="animate-fade-in-up max-w-5xl mx-auto space-y-8 pb-12 relative">
       
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in text-sm font-semibold border border-slate-800 dark:border-slate-200">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 dark:text-emerald-600" />
+        <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in text-sm font-semibold border ${toastType === 'error' ? 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-900' : 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-800 dark:border-slate-200'}`}>
+          {toastType === 'error' ? <AlertCircle className="w-5 h-5 text-red-500" /> : <CheckCircle2 className="w-5 h-5 text-emerald-400 dark:text-emerald-600" />}
           <span>{toastMessage}</span>
         </div>
       )}
@@ -332,6 +338,18 @@ export default function CompetitorsSection() {
 
       {!loading && !error && (
         <>
+          {/* Summary Stats */}
+          {summaryStats && (
+            <div className="flex flex-wrap items-center gap-8 py-2 mb-4">
+              <div className="flex flex-col"><span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Total</span><span className="font-black text-slate-900 dark:text-white text-xl">{summaryStats.total}</span></div>
+              <div className="flex flex-col"><span className="text-emerald-600 text-[10px] uppercase font-bold tracking-wider">Active</span><span className="font-black text-emerald-700 dark:text-emerald-400 text-xl">{summaryStats.active}</span></div>
+              <div className="flex flex-col"><span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Archived</span><span className="font-black text-slate-500 dark:text-slate-400 text-xl">{summaryStats.archived}</span></div>
+              {summaryStats.pendingReview > 0 && (
+                <div className="flex flex-col"><span className="text-amber-600 text-[10px] uppercase font-bold tracking-wider">Pending Review</span><span className="font-black text-amber-700 dark:text-amber-400 text-xl">{summaryStats.pendingReview}</span></div>
+              )}
+            </div>
+          )}
+
           {/* Filters Area */}
           <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
             <div className="flex-1 flex space-x-8">
@@ -442,38 +460,40 @@ export default function CompetitorsSection() {
                   <div key={comp.id} className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-6 relative ${isArchived ? 'opacity-80 grayscale-[20%]' : ''}`}>
                     
                     {/* Menu Button */}
-                    <div className="absolute top-4 right-4">
-                      <div className="relative">
-                        <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === comp.id ? null : comp.id); }} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                          <MoreVertical size={20} />
-                        </button>
-                        {activeMenuId === comp.id && (
-                          <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-10 py-1 overflow-hidden" onClick={e => e.stopPropagation()}>
-                            {!isArchived ? (
-                              <>
-                                <button onClick={() => { setEditComp(comp); setEditData({ name: compName, website: compWeb, notes: comp.notes || '' }); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"><Edit3 size={16} /> Edit</button>
-                                <button onClick={() => { handleResearch(comp); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2"><RefreshCw size={16} /> Re-research</button>
-                                
-                                <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
-                                <div className="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Change Type</div>
-                                <button onClick={() => handleChangeType(comp.id, 'DIRECT')} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">Set as Direct</button>
-                                <button onClick={() => handleChangeType(comp.id, 'INDIRECT')} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">Set as Indirect</button>
-                                <button onClick={() => handleChangeType(comp.id, 'EMERGING')} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">Set as Emerging</button>
-                                <button onClick={() => handleChangeType(comp.id, 'AI')} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 text-blue-600"><Sparkles size={16} /> Use AI Type</button>
-                                
-                                <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
-                                <button onClick={() => { setArchiveComp(comp); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"><Archive size={16} /> Archive</button>
-                              </>
-                            ) : (
-                              <>
-                                <button onClick={() => { handleRestore(comp.id); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center gap-2"><RotateCcw size={16} /> Restore</button>
-                                <button onClick={() => { setDeleteComp(comp); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"><Trash2 size={16} /> Delete Permanently</button>
-                              </>
-                            )}
-                          </div>
-                        )}
+                    {!isResearching && (
+                      <div className="absolute top-4 right-4">
+                        <div className="relative">
+                          <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === comp.id ? null : comp.id); }} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                            <MoreVertical size={20} />
+                          </button>
+                          {activeMenuId === comp.id && (
+                            <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-10 py-1 overflow-hidden" onClick={e => e.stopPropagation()}>
+                              {!isArchived ? (
+                                <>
+                                  <button onClick={() => { setEditComp(comp); setEditData({ name: compName, website: compWeb, notes: comp.notes || '' }); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"><Edit3 size={16} /> Edit</button>
+                                  <button onClick={() => { handleResearch(comp); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2"><RefreshCw size={16} /> Re-research</button>
+                                  
+                                  <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
+                                  <div className="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Change Type</div>
+                                  <button onClick={() => handleChangeType(comp.id, 'DIRECT')} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">Set as Direct</button>
+                                  <button onClick={() => handleChangeType(comp.id, 'INDIRECT')} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">Set as Indirect</button>
+                                  <button onClick={() => handleChangeType(comp.id, 'EMERGING')} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">Set as Emerging</button>
+                                  <button onClick={() => handleChangeType(comp.id, 'AI')} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 text-blue-600"><Sparkles size={16} /> Use AI Type</button>
+                                  
+                                  <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
+                                  <button onClick={() => { setArchiveComp(comp); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"><Archive size={16} /> Archive</button>
+                                </>
+                              ) : (
+                                <>
+                                  <button onClick={() => { handleRestore(comp.id); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center gap-2"><RotateCcw size={16} /> Restore</button>
+                                  <button onClick={() => { setDeleteComp(comp); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"><Trash2 size={16} /> Delete Permanently</button>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Top Header Row */}
                     <div className="pr-10">
