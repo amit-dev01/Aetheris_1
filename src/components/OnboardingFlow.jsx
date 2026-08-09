@@ -1,11 +1,7 @@
 import { useState } from 'react';
 import { ChevronRight, ChevronLeft, Check, Plus, X, Building, Target, Users, Loader2 } from 'lucide-react';
 import { submitCompanyProfile } from '../api';
-
-const MULTI_SELECT_OPTIONS = {
-  customer_segments: ['Startups', 'SMBs', 'Mid-market', 'Enterprise', 'Consumers', 'Government', 'Developers', 'Other'],
-  geographies: ['India', 'United States', 'Europe', 'Asia-Pacific', 'Middle East', 'Global', 'Other'],
-};
+import { MULTI_SELECT_OPTIONS } from '../constants';
 
 export default function OnboardingFlow({ onComplete }) {
   const [step, setStep] = useState(1);

@@ -204,3 +204,8 @@ export const getTrendHumanReadableLabel = (trendType = '') => {
   };
   return labels[trendType.trim().toUpperCase()] || trendType.replace(/_/g, ' ') || 'Unknown Trend';
 };
+
+export const MULTI_SELECT_OPTIONS = {
+  customer_segments: ['Startups', 'SMBs', 'Mid-market', 'Enterprise', 'Consumers', 'Government', 'Developers', 'Other'],
+  geographies: ['India', 'United States', 'Europe', 'Asia-Pacific', 'Middle East', 'Global', 'Other'],
+};
