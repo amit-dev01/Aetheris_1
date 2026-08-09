@@ -19,7 +19,8 @@ import {
   triggerMonitoring, 
   getCompetitors,
   getIntelligenceAlerts,
-  getIntelligenceTrends
+  getIntelligenceTrends,
+  getIntelligenceJobs
 } from './api';
 
 // ── DbContext / IntelligenceContext for App State ──
@@ -170,14 +171,27 @@ export default function App() {
         });
       }, 1000);
 
-      // Automatically refetch stats & feed after 2 minutes
-      if (autoRefetchTimerRef.current) clearTimeout(autoRefetchTimerRef.current);
-      autoRefetchTimerRef.current = setTimeout(() => {
-        fetchGlobalStats();
-        fetchAcceptedCompetitors();
-        fetchAlertsAndTrends();
-        setMonitoringTriggered(false);
-      }, 2 * 60 * 1000);
+      // Poll the jobs endpoint every 10 seconds to check if background scraping is complete
+      if (autoRefetchTimerRef.current) clearInterval(autoRefetchTimerRef.current);
+      autoRefetchTimerRef.current = setInterval(async () => {
+        try {
+          const jobsData = await getIntelligenceJobs();
+          const pending = Array.isArray(jobsData) 
+            ? jobsData.some(j => j.status === 'PENDING' || j.status === 'IN_PROGRESS') 
+            : (jobsData.jobs || []).some(j => j.status === 'PENDING' || j.status === 'IN_PROGRESS');
+            
+          if (!pending) {
+            clearInterval(autoRefetchTimerRef.current);
+            fetchGlobalStats();
+            fetchAcceptedCompetitors();
+            fetchAlertsAndTrends();
+            setMonitoringTriggered(false);
+            showToast('Intelligence refresh complete!', 'success');
+          }
+        } catch (err) {
+          console.error('Error checking jobs status:', err);
+        }
+      }, 10000);
 
     } catch (err) {
       console.error('Failed to trigger monitoring:', err);

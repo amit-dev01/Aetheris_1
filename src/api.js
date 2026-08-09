@@ -293,7 +293,7 @@ export async function restoreCompetitor(competitorId) {
  * GET /api/intelligence/stats
  */
 export async function getIntelligenceStats() {
-  return await apiGet('/api/intelligence/stats');
+  return await apiGet('/api/intelligence/competitor-stats');
 }
 
 /**
@@ -341,7 +341,7 @@ export async function getIntelligenceFeed(params = {}) {
  * GET /api/intelligence/summary
  */
 export async function getIntelligenceSummary() {
-  return await apiGet('/api/intelligence/summary');
+  return await apiGet('/api/intelligence/strategy-brief');
 }
 
 // ── Phase 3: Trends, Anomalies, and Alerts Endpoints ──
