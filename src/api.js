@@ -136,18 +136,12 @@ export async function apiPost(endpoint, body, requireAuth = true) {
 
 // ── Authentication Endpoints ──
 
-/**
- * POST /api/auth/signup
- */
 export async function authSignup({ email, password }) {
   const data = await apiPost('/api/auth/signup', { email, password }, false);
   setAuthSession(data);
   return data;
 }
 
-/**
- * POST /api/auth/login
- */
 export async function authLogin({ email, password }) {
   const data = await apiPost('/api/auth/login', { email, password }, false);
   setAuthSession(data);
@@ -156,53 +150,82 @@ export async function authLogin({ email, password }) {
 
 // ── Company Profile & Setup Endpoints ──
 
-/**
- * GET /api/company/profile
- */
 export async function getCompanyProfile() {
   return await apiGet('/api/company/profile');
 }
 
-/**
- * POST /api/company/profile
- */
 export async function submitCompanyProfile(payload) {
   return await apiPost('/api/company/profile', payload);
 }
 
-/**
- * GET /api/company/setup-status
- */
 export async function getSetupStatus() {
   return await apiGet('/api/company/setup-status');
 }
 
 // ── Competitors Intelligence Endpoints ──
 
-/**
- * GET /api/competitors
- */
 export async function getCompetitors() {
   return await apiGet('/api/competitors');
 }
 
-/**
- * POST /api/competitors/{competitor_id}/accept
- */
 export async function acceptCompetitor(competitorId) {
   return await apiPost(`/api/competitors/${competitorId}/accept`, {});
 }
 
-/**
- * POST /api/competitors/{competitor_id}/reject
- */
 export async function rejectCompetitor(competitorId) {
   return await apiPost(`/api/competitors/${competitorId}/reject`, {});
 }
 
-/**
- * POST /api/competitors/manual
- */
 export async function addManualCompetitor({ name, website }) {
   return await apiPost('/api/competitors/manual', { name, website });
+}
+
+// ── Phase 2: Intelligence & Strategy Endpoints ──
+
+/**
+ * GET /api/intelligence/stats
+ */
+export async function getIntelligenceStats() {
+  return await apiGet('/api/intelligence/stats');
+}
+
+/**
+ * POST /api/intelligence/trigger-monitoring
+ */
+export async function triggerMonitoring() {
+  return await apiPost('/api/intelligence/trigger-monitoring', {});
+}
+
+/**
+ * GET /api/intelligence/feed
+ * Params: { competitorId, eventType, impact, limit, offset }
+ */
+export async function getIntelligenceFeed(params = {}) {
+  const query = new URLSearchParams();
+  if (params.competitorId && params.competitorId !== 'all') {
+    query.append('competitorId', params.competitorId);
+  }
+  if (params.eventType && params.eventType !== 'All' && params.eventType !== 'All Events') {
+    query.append('eventType', params.eventType);
+  }
+  if (params.impact && params.impact !== 'All') {
+    query.append('impact', params.impact.toUpperCase());
+  }
+  if (params.limit !== undefined) {
+    query.append('limit', String(params.limit));
+  }
+  if (params.offset !== undefined) {
+    query.append('offset', String(params.offset));
+  }
+
+  const queryString = query.toString();
+  const endpoint = queryString ? `/api/intelligence/feed?${queryString}` : '/api/intelligence/feed';
+  return await apiGet(endpoint);
+}
+
+/**
+ * GET /api/intelligence/summary
+ */
+export async function getIntelligenceSummary() {
+  return await apiGet('/api/intelligence/summary');
 }

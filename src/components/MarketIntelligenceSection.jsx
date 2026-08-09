@@ -1,149 +1,502 @@
-import { useState, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { DbContext } from '../App';
-import { Filter, Bot, ExternalLink, Zap } from 'lucide-react';
+import { 
+  Rss, Filter, RefreshCw, ExternalLink, ChevronDown, ChevronUp, 
+  Loader2, AlertCircle, Newspaper, Sparkles 
+} from 'lucide-react';
+import { getIntelligenceFeed } from '../api';
+import { 
+  EVENT_TYPES, 
+  getEventTypeBadgeStyle, 
+  getImpactBadgeStyle, 
+  getSentimentDotColor, 
+  formatRelativeTime 
+} from '../constants';
 
 export default function MarketIntelligenceSection() {
-  const { feed } = useContext(DbContext);
-  const [activeFilter, setActiveFilter] = useState('All');
-  const [impactFilter, setImpactFilter] = useState('All');
+  const context = useContext(DbContext) || {};
+  const { 
+    acceptedCompetitors, 
+    intelligenceStats, 
+    handleTriggerRefresh, 
+    isTriggering, 
+    refreshCooldown,
+    monitoringTriggered,
+    selectedCompetitorFilter,
+    setSelectedCompetitorFilter
+  } = context;
 
-  const categories = ['All', 'Product', 'Pricing', 'Funding', 'Hiring', 'Marketing', 'Partnerships', 'Customer Sentiment'];
-  const impacts = ['All', 'High', 'Medium', 'Low', 'Opportunity'];
+  // Filter States
+  const [selectedCompetitor, setSelectedCompetitor] = useState(selectedCompetitorFilter || 'All Competitors');
+  const [selectedEventType, setSelectedEventType] = useState('All Events');
+  const [selectedImpact, setSelectedImpact] = useState('All');
 
-  const filteredFeed = feed.filter(item => {
-    if (activeFilter !== 'All' && item.category !== activeFilter) return false;
-    if (impactFilter !== 'All' && item.impact !== impactFilter) return false;
-    return true;
-  });
+  // Feed Data & Pagination States
+  const [documents, setDocuments] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState('');
 
-  const getImpactColor = (impact) => {
-    switch (impact) {
-      case 'High': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-900/50';
-      case 'Medium': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-500 border-amber-200 dark:border-amber-900/50';
-      case 'Low': return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
-      case 'Opportunity': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-500 border-emerald-200 dark:border-emerald-900/50';
-      default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400';
+  // Expanded Cards State (set of document IDs)
+  const [expandedCards, setExpandedCards] = useState(new Set());
+
+  // Sync selectedCompetitor with global context filter if updated externally
+  useEffect(() => {
+    if (selectedCompetitorFilter) {
+      setSelectedCompetitor(selectedCompetitorFilter);
+    }
+  }, [selectedCompetitorFilter]);
+
+  const limit = 20;
+
+  // Fetch feed with current filters
+  const fetchFeed = async (isLoadMore = false, newOffset = 0) => {
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    setError('');
+
+    try {
+      // Resolve competitor ID if an accepted competitor name is selected
+      let compIdParam = 'all';
+      if (selectedCompetitor !== 'All Competitors') {
+        const foundComp = acceptedCompetitors.find(
+          c => c.name?.toLowerCase() === selectedCompetitor.toLowerCase() || c.id === selectedCompetitor
+        );
+        compIdParam = foundComp ? foundComp.id : selectedCompetitor;
+      }
+
+      const res = await getIntelligenceFeed({
+        competitorId: compIdParam,
+        eventType: selectedEventType,
+        impact: selectedImpact,
+        limit,
+        offset: newOffset
+      });
+
+      const docsList = Array.isArray(res) ? res : res.documents || [];
+      const totalDocs = typeof res.total === 'number' ? res.total : docsList.length;
+
+      if (isLoadMore) {
+        setDocuments(prev => [...prev, ...docsList]);
+      } else {
+        setDocuments(docsList);
+      }
+      setTotalCount(totalDocs);
+    } catch (err) {
+      console.error('Error fetching intelligence feed:', err);
+      setError('Failed to load intelligence feed. Please try again.');
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  const getImpactDot = (impact) => {
-    switch (impact) {
-      case 'High': return '🔴';
-      case 'Medium': return '🟡';
-      case 'Opportunity': return '🟢';
-      default: return '⚪';
+  // Trigger fetch whenever filters change
+  useEffect(() => {
+    setOffset(0);
+    fetchFeed(false, 0);
+  }, [selectedCompetitor, selectedEventType, selectedImpact]);
+
+  // Load More handler
+  const handleLoadMore = () => {
+    const nextOffset = offset + limit;
+    setOffset(nextOffset);
+    fetchFeed(true, nextOffset);
+  };
+
+  // Toggle Card Expansion
+  const toggleExpandCard = (id) => {
+    setExpandedCards(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // Counts for Impact Level Tabs
+  const totalEventsCount = intelligenceStats?.documentsThisWeek ?? intelligenceStats?.total ?? 0;
+  const criticalCount = intelligenceStats?.criticalEvents ?? 0;
+  const highCount = intelligenceStats?.highEvents ?? 0;
+  const mediumCount = intelligenceStats?.mediumEvents ?? 0;
+  const lowCount = intelligenceStats?.lowEvents ?? 0;
+
+  const getImpactTabBadge = (lvl) => {
+    switch (lvl) {
+      case 'Critical': return criticalCount;
+      case 'High': return highCount;
+      case 'Medium': return mediumCount;
+      case 'Low': return lowCount;
+      default: return totalEventsCount;
     }
   };
+
+  // Check if completely empty state for new users
+  const isNewUserEmpty = (intelligenceStats?.documentsThisWeek === 0 || intelligenceStats?.total === 0) && documents.length === 0 && !loading;
 
   return (
-    <div className="animate-fade-in-up max-w-5xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
+    <div className="animate-fade-in-up max-w-5xl mx-auto space-y-8 pb-12">
+      
+      {/* ── HEADER SECTION ── */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Market Intelligence</h1>
-          <p className="text-slate-500 mt-2">AI-curated events and signals from your competitors and industry.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+            <Rss size={30} className="text-blue-600 dark:text-blue-400" /> Market Intelligence
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            Real-time competitive activity across your market.
+          </p>
+        </div>
+
+        <button
+          onClick={handleTriggerRefresh}
+          disabled={isTriggering || refreshCooldown > 0}
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md text-sm disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+        >
+          {isTriggering ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Refreshing...
+            </>
+          ) : refreshCooldown > 0 ? (
+            <>
+              <RefreshCw size={16} />
+              Refresh ({refreshCooldown}s)
+            </>
+          ) : (
+            <>
+              <RefreshCw size={16} />
+              Refresh Intelligence
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* ── FILTERS BAR ── */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          {/* Competitor Dropdown */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <Filter size={14} /> Competitor
+            </label>
+            <select
+              value={selectedCompetitor}
+              onChange={(e) => {
+                setSelectedCompetitor(e.target.value);
+                if (setSelectedCompetitorFilter) setSelectedCompetitorFilter(e.target.value);
+              }}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-blue-600"
+            >
+              <option value="All Competitors">All Competitors</option>
+              {acceptedCompetitors.map(c => (
+                <option key={c.id} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Event Type Dropdown */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <Sparkles size={14} /> Event Type
+            </label>
+            <select
+              value={selectedEventType}
+              onChange={(e) => setSelectedEventType(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-blue-600"
+            >
+              {EVENT_TYPES.map(type => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Impact Level Tabs */}
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+            Impact Level
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {['All', 'Critical', 'High', 'Medium', 'Low'].map(lvl => {
+              const isActive = selectedImpact.toLowerCase() === lvl.toLowerCase();
+              const badgeCount = getImpactTabBadge(lvl);
+
+              return (
+                <button
+                  key={lvl}
+                  onClick={() => setSelectedImpact(lvl)}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                    isActive
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white shadow-sm'
+                      : 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700/60'
+                  }`}
+                >
+                  <span>{lvl}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                    isActive
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                  }`}>
+                    {badgeCount}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <Filter size={16} className="text-slate-400 shrink-0" />
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-            {categories.map(c => (
-              <button 
-                key={c}
-                onClick={() => setActiveFilter(c)}
-                className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                  activeFilter === c 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Zap size={16} className="text-slate-400 shrink-0" />
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-            {impacts.map(i => (
-              <button 
-                key={i}
-                onClick={() => setImpactFilter(i)}
-                className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                  impactFilter === i 
-                  ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900' 
-                  : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                }`}
-              >
-                {i}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Feed */}
-      <div className="space-y-4">
-        {filteredFeed.map(item => (
-          <div key={item.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-            
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center gap-3">
-                <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${getImpactColor(item.impact)}`}>
-                  {getImpactDot(item.impact)} {item.impact} IMPACT
-                </span>
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
-                  {item.company}
-                </span>
-                <span className="text-sm text-slate-500 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-md">
-                  {item.category}
-                </span>
+      {/* ── LOADING STATE: SKELETON CARDS ── */}
+      {loading && (
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm animate-pulse space-y-4">
+              <div className="flex justify-between items-center">
+                <div className="flex gap-2">
+                  <div className="h-6 w-24 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                  <div className="h-6 w-28 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                </div>
+                <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded" />
               </div>
-              <div className="text-xs text-slate-400 font-medium">
-                {new Date(item.date).toLocaleDateString()}
+              <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded w-3/4" />
+              <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded w-full" />
+              <div className="flex justify-between items-center pt-2">
+                <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded" />
+                <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded" />
               </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{item.title}</h3>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mb-6">{item.summary}</p>
+      {/* ── ERROR STATE ── */}
+      {!loading && error && (
+        <div className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-900/40 rounded-3xl p-8 text-center space-y-4">
+          <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">{error}</h3>
+          <button
+            onClick={() => fetchFeed(false, 0)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-all shadow-md"
+          >
+            <RefreshCw size={16} /> Retry Loading
+          </button>
+        </div>
+      )}
 
-            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 rounded-xl p-4">
-               <div className="flex items-start gap-3">
-                 <div className="mt-0.5 text-blue-600 dark:text-blue-400">
-                   <Bot size={18} />
-                 </div>
-                 <div className="flex-1">
-                   <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-1">AI Interpretation</h4>
-                   <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                     {item.ai_interpretation}
-                   </p>
-                   
-                   {item.recommended_action && (
-                     <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                          <Zap size={16} className="text-amber-500" /> Action: {item.recommended_action}
-                        </span>
-                        <button className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg font-medium transition-colors">
-                          Generate Strategy
-                        </button>
-                     </div>
-                   )}
-                 </div>
-               </div>
-            </div>
-
+      {/* ── EMPTY STATE FOR NEW USERS ── */}
+      {!loading && !error && isNewUserEmpty && (
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-6 max-w-2xl mx-auto shadow-sm">
+          <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center">
+            <Newspaper size={32} />
           </div>
-        ))}
+          
+          <div className="space-y-2">
+            <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+              Intelligence collection starts tomorrow
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-md mx-auto">
+              We discovered your competitors. Now we will monitor them daily. Your first intelligence report will be ready tomorrow morning at 8 AM. Or you can trigger a manual refresh now to start immediately.
+            </p>
+          </div>
 
-        {filteredFeed.length === 0 && (
-           <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-             <Filter size={32} className="mx-auto text-slate-300 dark:text-slate-700 mb-3" />
-             <p className="text-slate-500 font-medium">No events match the current filters.</p>
-           </div>
-        )}
-      </div>
+          <button
+            onClick={handleTriggerRefresh}
+            disabled={isTriggering || monitoringTriggered}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-md disabled:opacity-80"
+          >
+            {isTriggering || monitoringTriggered ? (
+              <>
+                <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
+                Monitoring in progress. Check back in a few minutes.
+              </>
+            ) : (
+              'Start Monitoring Now'
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* ── STANDARD EMPTY STATE ── */}
+      {!loading && !error && !isNewUserEmpty && documents.length === 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-4 max-w-xl mx-auto">
+          <Newspaper size={40} className="text-slate-300 dark:text-slate-700 mx-auto" />
+          <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
+            No intelligence collected yet
+          </h3>
+          <p className="text-slate-500 text-xs leading-relaxed">
+            Monitoring runs daily. Your first results will appear tomorrow, or you can trigger a manual refresh now.
+          </p>
+          <button
+            onClick={handleTriggerRefresh}
+            disabled={isTriggering || refreshCooldown > 0}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-sm"
+          >
+            <RefreshCw size={14} /> Refresh Intelligence
+          </button>
+        </div>
+      )}
+
+      {/* ── INTELLIGENCE FEED CARDS ── */}
+      {!loading && !error && documents.length > 0 && (
+        <div className="space-y-5">
+          {documents.map((doc) => {
+            const isExpanded = expandedCards.has(doc.id);
+            const impactStyle = getImpactBadgeStyle(doc.impact);
+            const typeStyle = getEventTypeBadgeStyle(doc.eventType);
+            const sentimentDot = getSentimentDotColor(doc.sentiment);
+            const relTime = formatRelativeTime(doc.publishedAt || doc.date);
+
+            const relevanceScore = doc.relevanceScore ?? 85;
+            const impactScore = doc.impactScore ?? 88;
+
+            return (
+              <div
+                key={doc.id}
+                onClick={() => toggleExpandCard(doc.id)}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-7 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-4 relative overflow-hidden"
+              >
+                {/* Top Row */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`text-[10px] font-extrabold uppercase px-3 py-1 rounded-full border ${impactStyle}`}>
+                      {doc.impact || 'MEDIUM'}
+                    </span>
+                    <span className={`text-[10px] font-extrabold uppercase px-3 py-1 rounded-full border ${typeStyle}`}>
+                      {doc.eventType || 'Other'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    <span className="text-slate-900 dark:text-white font-extrabold bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg">
+                      {doc.competitorName}
+                    </span>
+                    <span>{relTime}</span>
+                  </div>
+                </div>
+
+                {/* Middle Section */}
+                <div className="space-y-2">
+                  <h3 className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    {doc.title}
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {doc.summary}
+                  </p>
+                </div>
+
+                {/* Bottom Row */}
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-slate-500">
+                  <div className="flex items-center gap-4">
+                    {/* Sentiment */}
+                    <div className="flex items-center gap-1.5">
+                      <span className={`w-2.5 h-2.5 rounded-full ${sentimentDot}`} />
+                      <span className="uppercase text-slate-700 dark:text-slate-300">{doc.sentiment || 'NEUTRAL'}</span>
+                    </div>
+
+                    {/* Scores */}
+                    <span className="text-slate-500">Relevance: <strong className="text-slate-900 dark:text-white">{relevanceScore}/100</strong></span>
+                    <span className="text-slate-500">Impact: <strong className="text-blue-600 dark:text-blue-400">{impactScore}/100</strong></span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {doc.sourceUrl && (
+                      <a
+                        href={doc.sourceUrl.startsWith('http') ? doc.sourceUrl : `https://${doc.sourceUrl}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline font-bold"
+                      >
+                        Read source <ExternalLink size={12} />
+                      </a>
+                    )}
+                    <div className="text-slate-400">
+                      {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded Detail Panel */}
+                {isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-5 space-y-3 animate-fade-in">
+                    {doc.relevanceReason && (
+                      <div>
+                        <div className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">
+                          Relevance Reason
+                        </div>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-relaxed">
+                          {doc.relevanceReason}
+                        </p>
+                      </div>
+                    )}
+
+                    {doc.eventTypeExplanation && (
+                      <div>
+                        <div className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">
+                          Event Explanation
+                        </div>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-relaxed">
+                          {doc.eventTypeExplanation}
+                        </p>
+                      </div>
+                    )}
+
+                    {doc.additionalContext && (
+                      <div>
+                        <div className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">
+                          Additional Market Context
+                        </div>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-relaxed">
+                          {doc.additionalContext}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── PAGINATION ── */}
+      {!loading && !error && documents.length > 0 && (
+        <div className="pt-4 flex flex-col items-center gap-3">
+          <div className="text-xs font-semibold text-slate-500">
+            Showing {documents.length} of {totalCount} intelligence events
+          </div>
+
+          {documents.length < totalCount && (
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="inline-flex items-center gap-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:bg-slate-800 font-extrabold px-6 py-3 rounded-xl text-sm transition-all shadow-md disabled:opacity-50"
+            >
+              {loadingMore ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Loading more...
+                </>
+              ) : (
+                'Load More'
+              )}
+            </button>
+          )}
+        </div>
+      )}
+
     </div>
   );
 }

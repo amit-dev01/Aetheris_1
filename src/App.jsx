@@ -1,5 +1,5 @@
-import { useState, createContext, useEffect } from 'react';
-import { Bot, Target, Rss, Users, LayoutDashboard, Settings, LogOut, ChevronRight, Moon, Sun, Loader2 } from 'lucide-react';
+import { useState, createContext, useEffect, useRef } from 'react';
+import { Bot, Target, Rss, Users, LayoutDashboard, Settings, LogOut, ChevronRight, Moon, Sun, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import OverviewSection from './components/OverviewSection';
 import CompetitorsSection from './components/CompetitorsSection';
 import MarketIntelligenceSection from './components/MarketIntelligenceSection';
@@ -7,9 +7,16 @@ import AIStrategySection from './components/AIStrategySection';
 import AIAgentModal from './components/AIAgentModal';
 import OnboardingFlow from './components/OnboardingFlow';
 import ProcessingScreen from './components/ProcessingScreen';
-import { getCompanyProfile, clearAuthSession, getStoredToken } from './api';
+import { 
+  getCompanyProfile, 
+  clearAuthSession, 
+  getStoredToken, 
+  getIntelligenceStats, 
+  triggerMonitoring, 
+  getCompetitors 
+} from './api';
 
-// ── DbContext for App State ──
+// ── DbContext / IntelligenceContext for App State ──
 export const DbContext = createContext(null);
 
 export default function App() {
@@ -18,6 +25,51 @@ export default function App() {
   const [isAgentOpen, setIsAgentOpen] = useState(false);
   const [appState, setAppState] = useState('LOADING'); // LOADING, ONBOARDING, PROCESSING, DASHBOARD
   const [companyProfile, setCompanyProfile] = useState(null);
+
+  // Global Intelligence State
+  const [intelligenceStats, setIntelligenceStats] = useState(null);
+  const [lastFetchedAt, setLastFetchedAt] = useState(null);
+  const [acceptedCompetitors, setAcceptedCompetitors] = useState([]);
+  const [monitoringTriggered, setMonitoringTriggered] = useState(false);
+  const [isTriggering, setIsTriggering] = useState(false);
+  const [refreshCooldown, setRefreshCooldown] = useState(0);
+  const [selectedCompetitorFilter, setSelectedCompetitorFilter] = useState('All Competitors');
+
+  // Global Toast State
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  const cooldownTimerRef = useRef(null);
+  const autoRefetchTimerRef = useRef(null);
+  const pollStatsIntervalRef = useRef(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 4000);
+  };
+
+  const fetchGlobalStats = async () => {
+    try {
+      const stats = await getIntelligenceStats();
+      if (stats) {
+        setIntelligenceStats(stats);
+        setLastFetchedAt(Date.now());
+      }
+    } catch (err) {
+      console.warn('Unable to fetch intelligence stats:', err);
+    }
+  };
+
+  const fetchAcceptedCompetitors = async () => {
+    try {
+      const res = await getCompetitors();
+      const list = Array.isArray(res) ? res : res.competitors || [];
+      setAcceptedCompetitors(list.filter(c => c.isAccepted === true));
+    } catch (err) {
+      console.warn('Unable to fetch competitors for context:', err);
+    }
+  };
 
   const checkAuthAndSetup = async () => {
     try {
@@ -32,33 +84,91 @@ export default function App() {
       const res = await getCompanyProfile();
       setCompanyProfile(res?.company || res);
 
-      // Check setupCompleted flag and company details
       const setupCompleted = res?.setupCompleted ?? (res?.company ? true : false);
       const company = res?.company;
 
       if (setupCompleted === false || !company) {
-        // Redirect to One-Time Onboarding Screen
         setAppState('ONBOARDING');
         return;
       }
 
-      // If setupCompleted === true, check setup status
       const setupStatus = company.setupStatus || res?.setupStatus || 'COMPLETED';
 
       if (setupStatus === 'PROCESSING' || setupStatus === 'PENDING') {
         setAppState('PROCESSING');
       } else {
         setAppState('DASHBOARD');
+        // Load initial stats & competitors for context
+        fetchGlobalStats();
+        fetchAcceptedCompetitors();
       }
     } catch (err) {
       console.error('Route protection check error:', err);
-      // Fallback to onboarding if profile check fails (e.g. 404 setup missing)
       setAppState('ONBOARDING');
     }
   };
 
   useEffect(() => {
     checkAuthAndSetup();
+  }, []);
+
+  // Automatic stats refresh every 5 minutes
+  useEffect(() => {
+    if (appState === 'DASHBOARD') {
+      pollStatsIntervalRef.current = setInterval(() => {
+        fetchGlobalStats();
+        fetchAcceptedCompetitors();
+      }, 5 * 60 * 1000);
+    }
+    return () => {
+      if (pollStatsIntervalRef.current) clearInterval(pollStatsIntervalRef.current);
+    };
+  }, [appState]);
+
+  // Handle Refresh Intelligence Trigger
+  const handleTriggerRefresh = async () => {
+    if (isTriggering || refreshCooldown > 0) return;
+    setIsTriggering(true);
+
+    try {
+      await triggerMonitoring();
+      setMonitoringTriggered(true);
+      showToast('Intelligence refresh started. Check back in a few minutes.', 'success');
+
+      // Start 60-second cooldown timer
+      setRefreshCooldown(60);
+      cooldownTimerRef.current = setInterval(() => {
+        setRefreshCooldown(prev => {
+          if (prev <= 1) {
+            clearInterval(cooldownTimerRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Automatically refetch stats & feed after 2 minutes
+      if (autoRefetchTimerRef.current) clearTimeout(autoRefetchTimerRef.current);
+      autoRefetchTimerRef.current = setTimeout(() => {
+        fetchGlobalStats();
+        fetchAcceptedCompetitors();
+        setMonitoringTriggered(false);
+      }, 2 * 60 * 1000);
+
+    } catch (err) {
+      console.error('Failed to trigger monitoring:', err);
+      showToast(err.message || 'Something went wrong. Please try again.', 'error');
+    } finally {
+      setIsTriggering(false);
+    }
+  };
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+      if (autoRefetchTimerRef.current) clearTimeout(autoRefetchTimerRef.current);
+    };
   }, []);
 
   // Initialize theme
@@ -93,11 +203,33 @@ export default function App() {
     window.location.href = '/login/';
   };
 
+  // Helper to check if brief generated within 24 hours
+  const isBriefNew = (generatedAt) => {
+    if (!generatedAt) return false;
+    const diff = Date.now() - new Date(generatedAt).getTime();
+    return diff >= 0 && diff <= 24 * 60 * 60 * 1000;
+  };
+
+  const criticalCount = intelligenceStats?.criticalEvents || 0;
+  const isNewBriefAvailable = isBriefNew(intelligenceStats?.weeklyBriefGeneratedAt);
+
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'competitors', label: 'Competitors', icon: Users },
-    { id: 'market', label: 'Market Intelligence', icon: Rss },
-    { id: 'strategy', label: 'AI Strategy', icon: Target },
+    { 
+      id: 'market', 
+      label: 'Market Intelligence', 
+      icon: Rss,
+      badge: criticalCount > 0 ? criticalCount : null,
+      badgeColor: 'bg-red-500 text-white'
+    },
+    { 
+      id: 'strategy', 
+      label: 'AI Strategy', 
+      icon: Target,
+      badge: isNewBriefAvailable ? 'NEW' : null,
+      badgeColor: 'bg-blue-600 text-white'
+    },
   ];
 
   if (appState === 'LOADING') {
@@ -123,10 +255,44 @@ export default function App() {
     );
   }
 
+  const contextValue = {
+    companyProfile,
+    refreshProfile: checkAuthAndSetup,
+    intelligenceStats,
+    lastFetchedAt,
+    refreshStats: fetchGlobalStats,
+    acceptedCompetitors,
+    refreshCompetitors: fetchAcceptedCompetitors,
+    handleTriggerRefresh,
+    isTriggering,
+    refreshCooldown,
+    monitoringTriggered,
+    showToast,
+    selectedCompetitorFilter,
+    setSelectedCompetitorFilter,
+    setActiveSection
+  };
+
   return (
-    <DbContext.Provider value={{ companyProfile, refreshProfile: checkAuthAndSetup }}>
+    <DbContext.Provider value={contextValue}>
       <div className="flex h-screen bg-slate-100 dark:bg-black text-slate-900 dark:text-slate-100 font-sans">
         
+        {/* Global Toast Message */}
+        {toast.show && (
+          <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in text-sm font-semibold border ${
+            toast.type === 'error'
+              ? 'bg-red-900 text-white border-red-700'
+              : 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-800 dark:border-slate-200'
+          }`}>
+            {toast.type === 'error' ? (
+              <AlertCircle className="w-5 h-5 text-red-400" />
+            ) : (
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 dark:text-emerald-600" />
+            )}
+            <span>{toast.message}</span>
+          </div>
+        )}
+
         {/* ── Left Sidebar ── */}
         <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col hidden md:flex shrink-0 z-10">
           <div className="p-6 border-b border-slate-200 dark:border-slate-800">
@@ -158,15 +324,25 @@ export default function App() {
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium text-sm
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors font-medium text-sm
                     ${active 
                       ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
                       : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/50'
                     }`}
                 >
-                  <item.icon size={18} />
-                  {item.label}
-                  {active && <ChevronRight size={16} className="ml-auto opacity-50" />}
+                  <span className="flex items-center gap-3">
+                    <item.icon size={18} />
+                    {item.label}
+                  </span>
+                  
+                  <div className="flex items-center gap-1.5">
+                    {item.badge && (
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${item.badgeColor}`}>
+                        {item.badge}
+                      </span>
+                    )}
+                    {active && <ChevronRight size={16} className="opacity-50" />}
+                  </div>
                 </button>
               );
             })}

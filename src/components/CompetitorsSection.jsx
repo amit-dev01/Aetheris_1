@@ -1,11 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
+import { DbContext } from '../App';
 import { 
   Users, Check, X, Plus, ExternalLink, ShieldAlert, Target, Zap, 
-  Sparkles, Loader2, AlertCircle, CheckCircle2, HelpCircle 
+  Sparkles, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Newspaper 
 } from 'lucide-react';
-import { getCompetitors, acceptCompetitor, rejectCompetitor, addManualCompetitor } from '../api';
+import { getCompetitors, acceptCompetitor, rejectCompetitor, addManualCompetitor, getIntelligenceFeed } from '../api';
+import { getEventTypeBadgeStyle, getImpactBadgeStyle, formatRelativeTime } from '../constants';
 
 export default function CompetitorsSection() {
+  const context = useContext(DbContext) || {};
+  const { intelligenceStats } = context;
+
   const [competitors, setCompetitors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -21,10 +26,13 @@ export default function CompetitorsSection() {
   // Toast state
   const [toastMessage, setToastMessage] = useState('');
 
+  // Expanded Competitor Activity State: { [competitorId]: { loading: boolean, docs: [], expanded: boolean } }
+  const [activityState, setActivityState] = useState({});
+
   // Polling ref for pending scores
   const pollIntervalRef = useRef(null);
 
-  const fetchCompetitors = async (showLoading = false) => {
+  const fetchCompetitorsList = async (showLoading = false) => {
     if (showLoading) setLoading(true);
     setError('');
     try {
@@ -40,7 +48,7 @@ export default function CompetitorsSection() {
   };
 
   useEffect(() => {
-    fetchCompetitors(true);
+    fetchCompetitorsList(true);
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
@@ -55,7 +63,7 @@ export default function CompetitorsSection() {
     if (hasUnscoredCompetitor) {
       if (!pollIntervalRef.current) {
         pollIntervalRef.current = setInterval(() => {
-          fetchCompetitors(false);
+          fetchCompetitorsList(false);
         }, 10000);
       }
     } else {
@@ -117,7 +125,6 @@ export default function CompetitorsSection() {
         website: manualWebsite.trim()
       });
 
-      // Add newly created competitor to local state
       const newComp = result.competitor || result || {
         id: Date.now().toString(),
         name: manualName.trim(),
@@ -140,6 +147,49 @@ export default function CompetitorsSection() {
     } finally {
       setIsSubmittingManual(false);
     }
+  };
+
+  // Toggle Recent Activity for a competitor card
+  const toggleCompetitorActivity = async (compId) => {
+    const currentState = activityState[compId] || { expanded: false, docs: [], loading: false };
+    const nextExpanded = !currentState.expanded;
+
+    setActivityState(prev => ({
+      ...prev,
+      [compId]: { ...currentState, expanded: nextExpanded }
+    }));
+
+    if (nextExpanded && (!currentState.docs || currentState.docs.length === 0)) {
+      setActivityState(prev => ({
+        ...prev,
+        [compId]: { ...prev[compId], loading: true }
+      }));
+
+      try {
+        const res = await getIntelligenceFeed({ competitorId: compId, limit: 5 });
+        const docsList = Array.isArray(res) ? res : res.documents || [];
+        setActivityState(prev => ({
+          ...prev,
+          [compId]: { ...prev[compId], docs: docsList, loading: false }
+        }));
+      } catch (err) {
+        console.error('Failed to fetch recent activity:', err);
+        setActivityState(prev => ({
+          ...prev,
+          [compId]: { ...prev[compId], docs: [], loading: false }
+        }));
+      }
+    }
+  };
+
+  // Helper to get competitor activity count from stats.byCompetitor
+  const getEventCountThisWeek = (comp) => {
+    if (!intelligenceStats?.byCompetitor) return 0;
+    const compNameNorm = (comp.name || comp.companyName || comp.company_name || '').toLowerCase();
+    const found = intelligenceStats.byCompetitor.find(
+      b => b.competitorId === comp.id || (b.competitorName && b.competitorName.toLowerCase() === compNameNorm)
+    );
+    return found?.documentCount || 0;
   };
 
   // Pending review competitors (isAccepted === null)
@@ -365,10 +415,13 @@ export default function CompetitorsSection() {
                   const whyReason = comp.reason || comp.whyCompetitor || comp.description || 'Presents direct feature and market overlap.';
                   const sourceStr = (comp.source || '').toUpperCase() === 'MANUAL' ? 'Added Manually' : 'AI Discovered';
 
-                  const productScore = getScoreValue(comp, 'productSimilarityScore', 82);
-                  const customerScore = getScoreValue(comp, 'customerOverlapScore', 78);
-                  const marketScore = getScoreValue(comp, 'marketOverlapScore', 85);
-                  const businessScore = getScoreValue(comp, 'businessModelScore', 75);
+                  const eventCountThisWeek = getEventCountThisWeek(comp);
+                  const actState = activityState[comp.id] || { expanded: false, docs: [], loading: false };
+
+                  const productScore = getScoreValue(comp, 'productSimilarity', getScoreValue(comp, 'productSimilarityScore', 82));
+                  const customerScore = getScoreValue(comp, 'customerOverlap', getScoreValue(comp, 'customerOverlapScore', 78));
+                  const marketScore = getScoreValue(comp, 'marketOverlap', getScoreValue(comp, 'marketOverlapScore', 85));
+                  const businessScore = getScoreValue(comp, 'businessModelOverlap', getScoreValue(comp, 'businessModelScore', 75));
 
                   return (
                     <div 
@@ -379,9 +432,19 @@ export default function CompetitorsSection() {
                       <div>
                         <div className="flex justify-between items-start gap-3">
                           <div>
-                            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                              {compName}
-                            </h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                                {compName}
+                              </h3>
+
+                              {/* Activity Indicator Badge (if eventCountThisWeek > 0) */}
+                              {eventCountThisWeek > 0 && (
+                                <span className="text-[10px] font-black bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
+                                  {eventCountThisWeek} event{eventCountThisWeek !== 1 ? 's' : ''} this week
+                                </span>
+                              )}
+                            </div>
+
                             {compWeb && (
                               <a
                                 href={compWeb.startsWith('http') ? compWeb : `https://${compWeb}`}
@@ -462,6 +525,60 @@ export default function CompetitorsSection() {
                         <p className="text-xs font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
                           {whyReason}
                         </p>
+                      </div>
+
+                      {/* ── Phase 2: Recent Activity Section Toggle ── */}
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                        <button
+                          onClick={() => toggleCompetitorActivity(comp.id)}
+                          className="w-full flex items-center justify-between text-xs font-extrabold text-blue-600 dark:text-blue-400 hover:underline py-1"
+                        >
+                          <span>Recent Activity (Last 5 events)</span>
+                          {actState.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+
+                        {/* Recent Activity Expanded Drawer */}
+                        {actState.expanded && (
+                          <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-3 animate-fade-in">
+                            {actState.loading && (
+                              <div className="flex justify-center py-4">
+                                <Loader2 size={20} className="text-blue-600 animate-spin" />
+                              </div>
+                            )}
+
+                            {!actState.loading && actState.docs.length === 0 && (
+                              <div className="text-center py-3 text-xs text-slate-400 font-medium">
+                                No activity recorded yet
+                              </div>
+                            )}
+
+                            {!actState.loading && actState.docs.length > 0 && (
+                              <div className="space-y-2.5">
+                                {actState.docs.map(doc => (
+                                  <div 
+                                    key={doc.id}
+                                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm space-y-1.5"
+                                  >
+                                    <div className="flex items-center justify-between text-[10px] font-bold">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className={`px-2 py-0.5 rounded-full border ${getEventTypeBadgeStyle(doc.eventType)}`}>
+                                          {doc.eventType}
+                                        </span>
+                                        <span className={`px-2 py-0.5 rounded-full border ${getImpactBadgeStyle(doc.impact)}`}>
+                                          {doc.impact}
+                                        </span>
+                                      </div>
+                                      <span className="text-slate-400 font-semibold">{formatRelativeTime(doc.publishedAt || doc.date)}</span>
+                                    </div>
+                                    <h4 className="text-xs font-extrabold text-slate-900 dark:text-white line-clamp-1">
+                                      {doc.title}
+                                    </h4>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {/* Confidence Line & Source Badge Footer */}

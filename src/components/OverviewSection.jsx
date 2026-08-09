@@ -1,10 +1,23 @@
 import { useState, useEffect, useContext } from 'react';
 import { DbContext } from '../App';
-import { AlertCircle, AlertTriangle, Lightbulb, ShieldAlert, Users, Target, Zap, Clock, RefreshCw } from 'lucide-react';
+import { 
+  AlertCircle, AlertTriangle, Lightbulb, ShieldAlert, Users, Target, Zap, Clock, RefreshCw, 
+  Activity, TrendingUp, Loader2 
+} from 'lucide-react';
 import { getCompanyProfile, getCompetitors } from '../api';
+import { formatMonitoredTimestamp, getEventTypeBadgeStyle } from '../constants';
 
 export default function OverviewSection() {
-  const { companyProfile } = useContext(DbContext) || {};
+  const context = useContext(DbContext) || {};
+  const { 
+    companyProfile, 
+    intelligenceStats, 
+    acceptedCompetitors, 
+    handleTriggerRefresh, 
+    isTriggering, 
+    refreshCooldown 
+  } = context;
+
   const [profile, setProfile] = useState(companyProfile || null);
   const [competitorsData, setCompetitorsData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -80,20 +93,34 @@ export default function OverviewSection() {
     );
   }
 
-  const companyName = profile?.companyName || profile?.company_name || myCompany?.company_name || 'Your Company';
+  const companyName = profile?.companyName || profile?.company_name || 'Your Company';
   const executiveBrief = profile?.executiveBrief;
   const mainThreats = Array.isArray(profile?.mainThreats) ? profile.mainThreats : [];
   const keyOpportunity = profile?.keyOpportunity;
   const briefGeneratedAt = profile?.briefGeneratedAt;
 
   // Counts from GET /api/competitors
-  const totalCount = competitorsData?.total ?? (competitorsData?.competitors?.length || mockCompetitors?.length || 0);
+  const totalCount = competitorsData?.total ?? (competitorsData?.competitors?.length || 0);
   const directCount = competitorsData?.direct ?? (competitorsData?.competitors?.filter(c => (c.type || c.competitive_status)?.toUpperCase() === 'DIRECT')?.length || 0);
   const indirectCount = competitorsData?.indirect ?? (competitorsData?.competitors?.filter(c => (c.type || c.competitive_status)?.toUpperCase() === 'INDIRECT')?.length || 0);
   const emergingCount = competitorsData?.emerging ?? (competitorsData?.competitors?.filter(c => (c.type || c.competitive_status)?.toUpperCase() === 'EMERGING')?.length || 0);
 
+  // Phase 2 Stats Bar Data
+  const documentsThisWeek = intelligenceStats?.documentsThisWeek ?? 0;
+  const criticalEvents = intelligenceStats?.criticalEvents ?? 0;
+  const highEvents = intelligenceStats?.highEvents ?? 0;
+  const monitoredCompetitorsCount = acceptedCompetitors?.length ?? intelligenceStats?.monitoredCount ?? competitorsData?.competitors?.filter(c => c.isAccepted === true)?.length ?? 0;
+
+  // Most Active Competitors (up to 3 ordered by documentCount descending)
+  const byComp = Array.isArray(intelligenceStats?.byCompetitor) ? intelligenceStats.byCompetitor : [];
+  const mostActiveCompetitors = [...byComp]
+    .sort((a, b) => (b.documentCount || 0) - (a.documentCount || 0))
+    .slice(0, 3);
+
+  const lastMonitoredText = formatMonitoredTimestamp(intelligenceStats?.lastMonitoredCompletedAt);
+
   return (
-    <div className="animate-fade-in-up max-w-5xl space-y-8">
+    <div className="animate-fade-in-up max-w-5xl space-y-8 pb-12">
       
       {/* ── Main Overview Heading ── */}
       <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 relative overflow-hidden">
@@ -106,7 +133,7 @@ export default function OverviewSection() {
               {companyName} <span className="font-normal text-slate-500">Competitive Intelligence</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-              {profile?.industry || profile?.description || myCompany?.industry || 'Real-time market surveillance'}
+              {profile?.industry || profile?.description || 'Real-time market surveillance'}
             </p>
           </div>
 
@@ -179,6 +206,80 @@ export default function OverviewSection() {
         </section>
       )}
 
+      {/* ── Phase 2: Live Monitoring Stats Bar ── */}
+      <section className="bg-gradient-to-r from-blue-900 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-lg space-y-4 relative overflow-hidden">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-blue-400 text-xs font-extrabold uppercase tracking-widest">
+            <Activity size={16} className="animate-pulse" /> Live Monitoring Pulse
+          </div>
+          <div className="text-xs text-blue-300/80 font-medium">Updated Real-Time</div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-2">
+          <div className="space-y-1">
+            <div className="text-xs text-slate-300 font-medium">Events This Week</div>
+            <div className="text-3xl font-black text-white">{documentsThisWeek}</div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-xs text-red-300 font-medium">Critical Events</div>
+            <div className="text-3xl font-black text-red-400">{criticalEvents}</div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-xs text-orange-300 font-medium">High Priority</div>
+            <div className="text-3xl font-black text-orange-400">{highEvents}</div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-xs text-blue-300 font-medium">Monitored Companies</div>
+            <div className="text-3xl font-black text-blue-300">{monitoredCompetitorsCount}</div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Phase 2: Most Active Competitors Section ── */}
+      {mostActiveCompetitors.length > 0 && (
+        <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-white font-extrabold text-lg">
+              <TrendingUp size={22} className="text-blue-600 dark:text-blue-400" />
+              Most Active Competitors This Week
+            </div>
+            <span className="text-xs text-slate-400 font-medium">Top 3 by document volume</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            {mostActiveCompetitors.map((comp, idx) => (
+              <div 
+                key={comp.competitorId || idx}
+                className="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
+                      {comp.competitorName}
+                    </h3>
+                    <span className="text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 rounded-full">
+                      {comp.documentCount} event{comp.documentCount !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Activity detected across media & public sources.
+                  </p>
+                </div>
+
+                {comp.latestEventType && (
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Latest Signal</span>
+                    <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-md border uppercase ${getEventTypeBadgeStyle(comp.latestEventType)}`}>
+                      {comp.latestEventType}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ── Main Threats & Key Opportunity Grid ── */}
       {(mainThreats.length > 0 || keyOpportunity) && (
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -216,6 +317,37 @@ export default function OverviewSection() {
 
         </section>
       )}
+
+      {/* ── Phase 2: Footer Last Monitored Timestamp & Refresh Button ── */}
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
+          <Clock size={18} className="text-slate-400 shrink-0" />
+          <span>{lastMonitoredText}</span>
+        </div>
+
+        <button
+          onClick={handleTriggerRefresh}
+          disabled={isTriggering || refreshCooldown > 0}
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isTriggering ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Refreshing...
+            </>
+          ) : refreshCooldown > 0 ? (
+            <>
+              <RefreshCw size={16} />
+              Refresh ({refreshCooldown}s)
+            </>
+          ) : (
+            <>
+              <RefreshCw size={16} />
+              Refresh Intelligence
+            </>
+          )}
+        </button>
+      </section>
 
     </div>
   );

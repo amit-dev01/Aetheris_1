@@ -81,3 +81,79 @@ export interface ManualCompetitorPayload {
   name: string;
   website: string;
 }
+
+// ── Phase 2: Live Competitor Monitoring Types ──
+
+export interface CompetitorStat {
+  competitorId: string;
+  competitorName: string;
+  documentCount: number;
+  latestEventType?: string;
+}
+
+export interface IntelligenceStats {
+  documentsThisWeek: number;
+  criticalEvents: number;
+  highEvents: number;
+  mediumEvents: number;
+  lowEvents: number;
+  total?: number;
+  byCompetitor: CompetitorStat[];
+  lastMonitoredCompletedAt?: string | null;
+  weeklyBriefGeneratedAt?: string | null;
+  monitoredCount?: number;
+}
+
+export interface IntelligenceFeedItem {
+  id: string;
+  title: string;
+  summary: string;
+  competitorId?: string;
+  competitorName: string;
+  eventType: string;
+  impact: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | string;
+  sentiment: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL' | string;
+  relevanceScore: number;
+  impactScore: number;
+  sourceUrl: string;
+  publishedAt?: string;
+  date?: string;
+  relevanceReason?: string;
+  eventTypeExplanation?: string;
+  additionalContext?: string;
+}
+
+export interface IntelligenceFeedResponse {
+  total: number;
+  documents: IntelligenceFeedItem[];
+}
+
+export interface FeedQueryParams {
+  competitorId?: string;
+  eventType?: string;
+  impact?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface StrategyThreat {
+  urgency: 'HIGH' | 'MEDIUM' | 'LOW' | string;
+  description: string;
+  competitorName: string;
+  recommendedAction: string;
+}
+
+export interface StrategyOpportunity {
+  description: string;
+  basis: string;
+  recommendedAction: string;
+}
+
+export interface IntelligenceSummaryResponse {
+  weeklyBrief: string;
+  weeklyBriefGeneratedAt: string;
+  topThreats: StrategyThreat[];
+  opportunities: StrategyOpportunity[];
+  watchList: string[];
+  strategicRecommendations: string[];
+}
