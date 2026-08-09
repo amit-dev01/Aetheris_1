@@ -5,7 +5,7 @@ import {
   ArrowRight, Loader2, AlertCircle, RefreshCw, Sparkles, Building,
   Bell, TrendingUp, TrendingDown, Clock
 } from 'lucide-react';
-import { getIntelligenceSummary } from '../api';
+import { getIntelligenceSummary, generateIntelligenceSummary } from '../api';
 import { formatBriefTimestamp } from '../constants';
 
 export default function AIStrategySection() {
@@ -16,12 +16,14 @@ export default function AIStrategySection() {
     isTriggering, 
     refreshCooldown, 
     setSelectedCompetitorFilter, 
-    setActiveSection 
+    setActiveSection,
+    showToast
   } = context;
 
   const [summaryData, setSummaryData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Checkbox State for Strategic Recommendations (localStorage keyed by companyId & weeklyBriefGeneratedAt)
   const [checkedRecs, setCheckedRecs] = useState({});
@@ -71,6 +73,35 @@ export default function AIStrategySection() {
   const handleWatchListClick = (compName) => {
     if (setSelectedCompetitorFilter) setSelectedCompetitorFilter(compName);
     if (setActiveSection) setActiveSection('market');
+  };
+
+  const handleGenerateSummary = async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    showToast('Generating AI Strategy Brief... this may take a few seconds.', 'success');
+    
+    try {
+      await generateIntelligenceSummary();
+      
+      // Poll/wait and refetch
+      setTimeout(async () => {
+        await fetchSummary();
+        setIsGenerating(false);
+        showToast('New AI Strategy Brief is ready!', 'success');
+      }, 10000);
+      
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Failed to generate AI brief', 'error');
+      setIsGenerating(false);
+    }
+  };
+
+  const getSeverityColor = (severity) => {
+    const norm = severity?.toUpperCase();
+    if (norm === 'HIGH') return 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400 border-red-300 dark:border-red-800';
+    if (norm === 'MEDIUM') return 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400 border-orange-300 dark:border-orange-800';
+    return 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 border-amber-300 dark:border-amber-800';
   };
 
   // Urgency badge helper (HIGH red, MEDIUM orange, LOW yellow)
@@ -142,28 +173,48 @@ export default function AIStrategySection() {
           )}
         </div>
 
-        <button
-          onClick={handleTriggerRefresh}
-          disabled={isTriggering || refreshCooldown > 0}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md text-sm disabled:opacity-50 shrink-0"
-        >
-          {isTriggering ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              Refreshing...
-            </>
-          ) : refreshCooldown > 0 ? (
-            <>
-              <RefreshCw size={16} />
-              Refresh ({refreshCooldown}s)
-            </>
-          ) : (
-            <>
-              <RefreshCw size={16} />
-              Refresh Intelligence
-            </>
-          )}
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleGenerateSummary}
+            disabled={isGenerating || loading}
+            className="inline-flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md text-sm disabled:opacity-50 shrink-0"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles size={16} />
+                Generate Fresh AI Brief
+              </>
+            )}
+          </button>
+          
+          <button
+            onClick={handleTriggerRefresh}
+            disabled={isTriggering || refreshCooldown > 0}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md text-sm disabled:opacity-50 shrink-0"
+          >
+            {isTriggering ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Refreshing...
+              </>
+            ) : refreshCooldown > 0 ? (
+              <>
+                <RefreshCw size={16} />
+                Refresh ({refreshCooldown}s)
+              </>
+            ) : (
+              <>
+                <RefreshCw size={16} />
+                Refresh Intelligence
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ── NO SUMMARY EMPTY STATE ── */}

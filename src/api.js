@@ -344,6 +344,13 @@ export async function getIntelligenceSummary() {
   return await apiGet('/api/intelligence/strategy-brief');
 }
 
+/**
+ * POST /api/intelligence/generate-summary
+ */
+export async function generateIntelligenceSummary() {
+  return await apiPost('/api/intelligence/generate-summary', {});
+}
+
 // ── Phase 3: Trends, Anomalies, and Alerts Endpoints ──
 
 /**
