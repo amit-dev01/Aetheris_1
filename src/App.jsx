@@ -253,20 +253,20 @@ export default function App() {
       badge: criticalCount > 0 ? criticalCount : null,
       badgeColor: 'bg-red-500 text-white'
     },
-    {
-      id: 'trends',
-      label: 'Trends',
-      icon: TrendingUp,
-      badge: activeImportantTrends > 0 ? activeImportantTrends : null,
-      badgeColor: 'bg-blue-600 text-white'
-    },
-    {
-      id: 'alerts',
-      label: 'Alerts',
-      icon: Bell,
-      badge: unacknowledgedAlerts > 0 ? unacknowledgedAlerts : null,
-      badgeColor: 'bg-red-500 text-white'
-    },
+    // {
+    //   id: 'trends',
+    //   label: 'Trends',
+    //   icon: TrendingUp,
+    //   badge: activeImportantTrends > 0 ? activeImportantTrends : null,
+    //   badgeColor: 'bg-blue-600 text-white'
+    // },
+    // {
+    //   id: 'alerts',
+    //   label: 'Alerts',
+    //   icon: Bell,
+    //   badge: unacknowledgedAlerts > 0 ? unacknowledgedAlerts : null,
+    //   badgeColor: 'bg-red-500 text-white'
+    // },
     { 
       id: 'strategy', 
       label: 'AI Strategy', 

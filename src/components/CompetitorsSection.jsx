@@ -58,7 +58,7 @@ export default function CompetitorsSection() {
       const data = await getCompetitors(statusFilter);
       const list = Array.isArray(data) ? data : data.competitors || [];
       setCompetitors(list);
-      if (data && data.summary) setSummaryStats(data.summary);
+      if (data && typeof data.total !== 'undefined') setSummaryStats(data);
     } catch (err) {
       console.error('Error fetching competitors:', err);
       setError(err.message || 'Failed to load competitors list.');
