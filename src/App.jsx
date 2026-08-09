@@ -7,111 +7,57 @@ import AIStrategySection from './components/AIStrategySection';
 import AIAgentModal from './components/AIAgentModal';
 import OnboardingFlow from './components/OnboardingFlow';
 import ProcessingScreen from './components/ProcessingScreen';
-import { apiGet } from './api';
+import { getCompanyProfile, clearAuthSession, getStoredToken } from './api';
 
-// ── Mock DB Data Context ──
+// ── DbContext for App State ──
 export const DbContext = createContext(null);
-
-const MOCK_DB_USER_COMPANY = {
-  company_name: 'Aetheris Demo',
-  website_url: 'https://aetheris.dev',
-  industry: 'SaaS / AI Intelligence',
-  our_company_context: 'We build AI-powered intelligence tools.',
-  focus_areas: ['products', 'pricing'],
-  revenue: '$12.4M',
-  customers: '18,400',
-  growth: '+23%',
-  competitive_score: '84/100',
-  strengths: ['Product quality', 'Enterprise integrations', 'Developer experience'],
-  weaknesses: ['Pricing', 'Brand awareness', 'International presence']
-};
-
-const MOCK_DB_COMPETITORS = [
-  {
-    id: 1,
-    company_name: 'Stripe',
-    industry: 'Fintech Payments',
-    competitive_status: 'Direct Threat',
-    pricing_indicator: '↑ 12%',
-    growth_indicator: '+15%',
-    sentiment_indicator: '↓ 4%',
-    ai_score: '92/100',
-    recent_event: 'Launched lower-priced enterprise plan.',
-    logo: 'S'
-  },
-  {
-    id: 2,
-    company_name: 'Shopify',
-    industry: 'E-commerce Platform',
-    competitive_status: 'Market Leader',
-    pricing_indicator: 'Stable',
-    growth_indicator: '+8%',
-    sentiment_indicator: '↑ 2%',
-    ai_score: '88/100',
-    recent_event: 'Announced AWS partnership.',
-    logo: 'Sh'
-  },
-  {
-    id: 3,
-    company_name: 'Paddle',
-    industry: 'Revenue Delivery',
-    competitive_status: 'Emerging',
-    pricing_indicator: '↓ 5%',
-    growth_indicator: '+35%',
-    sentiment_indicator: 'Neutral',
-    ai_score: '76/100',
-    recent_event: 'Receiving negative customer sentiment around support.',
-    logo: 'P'
-  }
-];
-
-const MOCK_DB_FEED = [
-  { id: 1, impact: 'High', company: 'Stripe', title: 'Stripe launched Enterprise Pro', category: 'Pricing', summary: 'A new tier aimed at large volume businesses with volume discounts.', ai_interpretation: 'This directly overlaps with our enterprise offering and may increase pricing pressure.', date: new Date().toISOString(), recommended_action: 'Review enterprise pricing' },
-  { id: 2, impact: 'Medium', company: 'Shopify', title: 'Shopify announces AWS partnership', category: 'Partnerships', summary: 'Strategic alignment to use AWS for global infrastructure.', ai_interpretation: 'This could strengthen their enterprise distribution channel.', date: new Date(Date.now() - 86400000).toISOString() },
-  { id: 3, impact: 'Opportunity', company: 'Paddle', title: 'Support wait times increase', category: 'Customer Sentiment', summary: 'Multiple public complaints regarding slow support response times over the weekend.', ai_interpretation: 'This may create an opportunity for us to differentiate through customer support.', date: new Date(Date.now() - 172800000).toISOString() }
-];
-
-const MOCK_DB_STRATEGY = [
-  { id: 1, priority: 'High', title: 'Respond to Stripe pricing change', reason: 'Stripe reduced enterprise pricing via their new Pro tier.', actions: ['Review enterprise pricing', 'Emphasize our premium features', 'Target dissatisfied competitor customers'] },
-  { id: 2, priority: 'Medium', title: 'Capitalize on Paddle support issues', reason: 'Competitor is experiencing public backlash over support quality.', actions: ['Launch campaign highlighting our 24/7 support', 'Reach out to churning Paddle customers'] }
-];
 
 export default function App() {
   const [activeSection, setActiveSection] = useState('overview');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isAgentOpen, setIsAgentOpen] = useState(false);
   const [appState, setAppState] = useState('LOADING'); // LOADING, ONBOARDING, PROCESSING, DASHBOARD
+  const [companyProfile, setCompanyProfile] = useState(null);
+
+  const checkAuthAndSetup = async () => {
+    try {
+      const token = getStoredToken();
+      if (!token) {
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login/';
+        }
+        return;
+      }
+
+      const res = await getCompanyProfile();
+      setCompanyProfile(res?.company || res);
+
+      // Check setupCompleted flag and company details
+      const setupCompleted = res?.setupCompleted ?? (res?.company ? true : false);
+      const company = res?.company;
+
+      if (setupCompleted === false || !company) {
+        // Redirect to One-Time Onboarding Screen
+        setAppState('ONBOARDING');
+        return;
+      }
+
+      // If setupCompleted === true, check setup status
+      const setupStatus = company.setupStatus || res?.setupStatus || 'COMPLETED';
+
+      if (setupStatus === 'PROCESSING' || setupStatus === 'PENDING') {
+        setAppState('PROCESSING');
+      } else {
+        setAppState('DASHBOARD');
+      }
+    } catch (err) {
+      console.error('Route protection check error:', err);
+      // Fallback to onboarding if profile check fails (e.g. 404 setup missing)
+      setAppState('ONBOARDING');
+    }
+  };
 
   useEffect(() => {
-    async function checkAuthAndSetup() {
-      try {
-        const profile = await apiGet('/api/company/profile');
-        if (!profile) {
-          setAppState('ONBOARDING');
-          return;
-        }
-
-        const onboardingDone = profile.onboardingCompleted ?? profile.onboarding_completed ?? (profile.companyName || profile.company_name ? true : false);
-        
-        if (!onboardingDone) {
-          setAppState('ONBOARDING');
-          return;
-        }
-
-        const setupStatus = profile.setupStatus || profile.status || 'COMPLETED';
-
-        if (setupStatus === 'PENDING' || setupStatus === 'PROCESSING') {
-          setAppState('PROCESSING');
-        } else {
-          setAppState('DASHBOARD');
-        }
-      } catch (err) {
-        console.error('Route protection check failed:', err);
-        // If error fetching profile, fallback to onboarding or processing if session exists
-        setAppState('ONBOARDING');
-      }
-    }
-
     checkAuthAndSetup();
   }, []);
 
@@ -143,16 +89,8 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
+    clearAuthSession();
     window.location.href = '/login/';
-  };
-
-  // Provide mock DB to app
-  const dbValue = {
-    myCompany: MOCK_DB_USER_COMPANY,
-    competitors: MOCK_DB_COMPETITORS,
-    feed: MOCK_DB_FEED,
-    strategy: MOCK_DB_STRATEGY
   };
 
   const navItems = [
@@ -175,11 +113,18 @@ export default function App() {
   }
 
   if (appState === 'PROCESSING') {
-    return <ProcessingScreen onComplete={() => setAppState('DASHBOARD')} />;
+    return (
+      <ProcessingScreen 
+        onComplete={() => {
+          checkAuthAndSetup();
+          setAppState('DASHBOARD');
+        }} 
+      />
+    );
   }
 
   return (
-    <DbContext.Provider value={dbValue}>
+    <DbContext.Provider value={{ companyProfile, refreshProfile: checkAuthAndSetup }}>
       <div className="flex h-screen bg-slate-100 dark:bg-black text-slate-900 dark:text-slate-100 font-sans">
         
         {/* ── Left Sidebar ── */}

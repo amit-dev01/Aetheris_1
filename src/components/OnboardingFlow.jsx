@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronRight, ChevronLeft, Check, Plus, X, Building, Target, Users, Loader2 } from 'lucide-react';
-import { apiPost } from '../api';
+import { submitCompanyProfile } from '../api';
 
 const MULTI_SELECT_OPTIONS = {
   customer_segments: ['Startups', 'SMBs', 'Mid-market', 'Enterprise', 'Consumers', 'Government', 'Developers', 'Other'],
@@ -87,15 +87,13 @@ export default function OnboardingFlow({ onComplete }) {
         targetCustomers: formData.target_customers + (formData.customer_segments.length ? ' - ' + formData.customer_segments.join(', ') : ''),
         companyStage: formData.stage,
         companySize: formData.size,
-        competitors: formData.competitors.filter(c => c.name.trim() !== '').map(c => ({ name: c.name.trim() })),
-        excludedCompetitors: formData.non_competitors.filter(c => c.name.trim() !== '').map(c => c.name.trim()),
       };
 
-      const resData = await apiPost('/api/company/profile', payload);
-      if (resData?.id) {
-        sessionStorage.setItem('company_id', resData.id);
+      const resData = await submitCompanyProfile(payload);
+      if (resData?.id || resData?.company?.id) {
+        sessionStorage.setItem('company_id', resData?.id || resData?.company?.id);
       }
-      onComplete(resData);
+      if (onComplete) onComplete(resData);
     } catch (err) {
       console.error(err);
       setIsSubmitting(false);

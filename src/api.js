@@ -1,6 +1,9 @@
-import { supabase } from './lib/supabase';
+/**
+ * API Client & Helpers for FastAPI Backend
+ * Base URL defaults to VITE_API_BASE_URL (https://ai-backend-zfq1.onrender.com)
+ */
 
-const getApiBaseUrl = () => {
+export const getApiBaseUrl = () => {
   const envUrl =
     (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_BASE_URL) ||
     (import.meta.env && import.meta.env.NEXT_PUBLIC_API_BASE_URL) ||
@@ -9,25 +12,40 @@ const getApiBaseUrl = () => {
   return envUrl.replace(/\/$/, '');
 };
 
-export async function getAccessToken() {
-  try {
-    const { data } = await supabase.auth.getSession();
-    if (data?.session?.access_token) {
-      return data.session.access_token;
+export function getStoredToken() {
+  if (typeof localStorage !== 'undefined') {
+    return localStorage.getItem('access_token');
+  }
+  return null;
+}
+
+export function setAuthSession(data) {
+  if (typeof localStorage !== 'undefined' && data) {
+    if (data.access_token) {
+      localStorage.setItem('access_token', data.access_token);
     }
-  } catch (err) {
-    console.warn('Unable to retrieve token from Supabase session:', err);
+    if (data.user_id) {
+      localStorage.setItem('user_id', data.user_id);
+    }
   }
+}
 
-  const localToken = typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null;
-  if (localToken) {
-    return localToken;
+export function clearAuthSession() {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_id');
   }
+}
 
-  if (typeof window !== 'undefined') {
+export function getAccessToken() {
+  const token = getStoredToken();
+  if (token) {
+    return token;
+  }
+  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
     window.location.href = '/login/';
   }
-  throw new Error('No active session found. Redirecting to login.');
+  throw new Error('No active session found.');
 }
 
 const buildUrl = (endpoint) => {
@@ -39,21 +57,29 @@ const buildUrl = (endpoint) => {
   return `${baseUrl}${cleanEndpoint}`;
 };
 
-export async function apiGet(endpoint) {
-  const token = await getAccessToken();
+/**
+ * Generic API GET helper attaching Authorization Bearer header
+ */
+export async function apiGet(endpoint, requireAuth = true) {
   const url = buildUrl(endpoint);
+  const headers = {};
+
+  if (requireAuth) {
+    const token = getAccessToken();
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   const res = await fetch(url, {
     method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+    headers,
   });
 
   if (res.status === 401 || res.status === 403) {
-    if (typeof localStorage !== 'undefined') localStorage.removeItem('access_token');
-    if (typeof window !== 'undefined') window.location.href = '/login/';
-    throw new Error('Unauthorized');
+    clearAuthSession();
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login/';
+    }
+    throw new Error('Unauthorized access. Please log in again.');
   }
 
   if (!res.ok) {
@@ -68,23 +94,32 @@ export async function apiGet(endpoint) {
   return await res.json();
 }
 
-export async function apiPost(endpoint, body) {
-  const token = await getAccessToken();
+/**
+ * Generic API POST helper attaching Authorization Bearer header
+ */
+export async function apiPost(endpoint, body, requireAuth = true) {
   const url = buildUrl(endpoint);
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  if (requireAuth) {
+    const token = getAccessToken();
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   const res = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify(body || {}),
   });
 
   if (res.status === 401 || res.status === 403) {
-    if (typeof localStorage !== 'undefined') localStorage.removeItem('access_token');
-    if (typeof window !== 'undefined') window.location.href = '/login/';
-    throw new Error('Unauthorized');
+    clearAuthSession();
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login/';
+    }
+    throw new Error('Unauthorized access. Please log in again.');
   }
 
   if (!res.ok) {
@@ -99,33 +134,75 @@ export async function apiPost(endpoint, body) {
   return await res.json();
 }
 
-export async function apiPut(endpoint, body) {
-  const token = await getAccessToken();
-  const url = buildUrl(endpoint);
+// ── Authentication Endpoints ──
 
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body || {}),
-  });
+/**
+ * POST /api/auth/signup
+ */
+export async function authSignup({ email, password }) {
+  const data = await apiPost('/api/auth/signup', { email, password }, false);
+  setAuthSession(data);
+  return data;
+}
 
-  if (res.status === 401 || res.status === 403) {
-    if (typeof localStorage !== 'undefined') localStorage.removeItem('access_token');
-    if (typeof window !== 'undefined') window.location.href = '/login/';
-    throw new Error('Unauthorized');
-  }
+/**
+ * POST /api/auth/login
+ */
+export async function authLogin({ email, password }) {
+  const data = await apiPost('/api/auth/login', { email, password }, false);
+  setAuthSession(data);
+  return data;
+}
 
-  if (!res.ok) {
-    let errorMessage = `Request failed with status ${res.status}`;
-    try {
-      const errorData = await res.json();
-      errorMessage = errorData.detail || errorData.message || errorMessage;
-    } catch (_) {}
-    throw new Error(errorMessage);
-  }
+// ── Company Profile & Setup Endpoints ──
 
-  return await res.json();
+/**
+ * GET /api/company/profile
+ */
+export async function getCompanyProfile() {
+  return await apiGet('/api/company/profile');
+}
+
+/**
+ * POST /api/company/profile
+ */
+export async function submitCompanyProfile(payload) {
+  return await apiPost('/api/company/profile', payload);
+}
+
+/**
+ * GET /api/company/setup-status
+ */
+export async function getSetupStatus() {
+  return await apiGet('/api/company/setup-status');
+}
+
+// ── Competitors Intelligence Endpoints ──
+
+/**
+ * GET /api/competitors
+ */
+export async function getCompetitors() {
+  return await apiGet('/api/competitors');
+}
+
+/**
+ * POST /api/competitors/{competitor_id}/accept
+ */
+export async function acceptCompetitor(competitorId) {
+  return await apiPost(`/api/competitors/${competitorId}/accept`, {});
+}
+
+/**
+ * POST /api/competitors/{competitor_id}/reject
+ */
+export async function rejectCompetitor(competitorId) {
+  return await apiPost(`/api/competitors/${competitorId}/reject`, {});
+}
+
+/**
+ * POST /api/competitors/manual
+ */
+export async function addManualCompetitor({ name, website }) {
+  return await apiPost('/api/competitors/manual', { name, website });
 }

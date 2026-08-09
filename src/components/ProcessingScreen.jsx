@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Loader2, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
-import { apiGet, apiPost } from '../api';
+import { getSetupStatus, apiPost } from '../api';
 
 export default function ProcessingScreen({ onComplete }) {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('Starting competitive analysis...');
-  const [status, setStatus] = useState('PROCESSING'); // PROCESSING, COMPLETED, FAILED
+  const [status, setStatus] = useState('PROCESSING'); // PROCESSING, PENDING, COMPLETED, FAILED
   const [errorMessage, setErrorMessage] = useState('');
   const [isRetrying, setIsRetrying] = useState(false);
   const intervalRef = useRef(null);
@@ -17,7 +17,7 @@ export default function ProcessingScreen({ onComplete }) {
 
     const checkStatus = async () => {
       try {
-        const data = await apiGet('/api/company/setup-status');
+        const data = await getSetupStatus();
         if (data) {
           if (typeof data.progress === 'number') {
             setProgress(data.progress);
@@ -31,11 +31,11 @@ export default function ProcessingScreen({ onComplete }) {
           if (currentStatus === 'COMPLETED') {
             setStatus('COMPLETED');
             setProgress(100);
-            setCurrentStep('Done');
+            setCurrentStep('Analysis Complete!');
             if (intervalRef.current) clearInterval(intervalRef.current);
             timeoutRef.current = setTimeout(() => {
               if (onComplete) onComplete();
-            }, 1500);
+            }, 1000);
           } else if (currentStatus === 'FAILED') {
             setStatus('FAILED');
             setErrorMessage(data.error || 'Something went wrong during setup.');
@@ -44,13 +44,13 @@ export default function ProcessingScreen({ onComplete }) {
         }
       } catch (err) {
         console.error('Polling setup-status error:', err);
-        // Do not crash, keep trying unless explicit status fails
+        // Keep polling even if temporary network error occurs
       }
     };
 
-    // Fetch immediately on start, then every 5 seconds
+    // Fetch immediately on start, then every 2 seconds
     checkStatus();
-    intervalRef.current = setInterval(checkStatus, 5000);
+    intervalRef.current = setInterval(checkStatus, 2000);
   };
 
   useEffect(() => {

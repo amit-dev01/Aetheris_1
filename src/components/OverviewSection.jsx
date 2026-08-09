@@ -1,11 +1,11 @@
 import { useState, useEffect, useContext } from 'react';
 import { DbContext } from '../App';
 import { AlertCircle, AlertTriangle, Lightbulb, ShieldAlert, Users, Target, Zap, Clock, RefreshCw } from 'lucide-react';
-import { apiGet } from '../api';
+import { getCompanyProfile, getCompetitors } from '../api';
 
 export default function OverviewSection() {
-  const { myCompany, competitors: mockCompetitors } = useContext(DbContext);
-  const [profile, setProfile] = useState(null);
+  const { companyProfile } = useContext(DbContext) || {};
+  const [profile, setProfile] = useState(companyProfile || null);
   const [competitorsData, setCompetitorsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -15,12 +15,13 @@ export default function OverviewSection() {
     setError('');
     try {
       const [profileRes, compRes] = await Promise.allSettled([
-        apiGet('/api/company/profile'),
-        apiGet('/api/competitors')
+        getCompanyProfile(),
+        getCompetitors()
       ]);
 
       if (profileRes.status === 'fulfilled') {
-        setProfile(profileRes.value);
+        const data = profileRes.value;
+        setProfile(data?.company || data);
       }
       if (compRes.status === 'fulfilled') {
         setCompetitorsData(compRes.value);

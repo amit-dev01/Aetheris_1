@@ -3,7 +3,7 @@ import {
   Users, Check, X, Plus, ExternalLink, ShieldAlert, Target, Zap, 
   Sparkles, Loader2, AlertCircle, CheckCircle2, HelpCircle 
 } from 'lucide-react';
-import { apiGet, apiPost } from '../api';
+import { getCompetitors, acceptCompetitor, rejectCompetitor, addManualCompetitor } from '../api';
 
 export default function CompetitorsSection() {
   const [competitors, setCompetitors] = useState([]);
@@ -28,7 +28,7 @@ export default function CompetitorsSection() {
     if (showLoading) setLoading(true);
     setError('');
     try {
-      const data = await apiGet('/api/competitors');
+      const data = await getCompetitors();
       const list = Array.isArray(data) ? data : data.competitors || [];
       setCompetitors(list);
     } catch (err) {
@@ -76,7 +76,7 @@ export default function CompetitorsSection() {
   // Accept competitor
   const handleAccept = async (id) => {
     try {
-      await apiPost(`/api/competitors/${id}/accept`, {});
+      await acceptCompetitor(id);
       setCompetitors(prev => 
         prev.map(c => c.id === id ? { ...c, isAccepted: true } : c)
       );
@@ -90,7 +90,7 @@ export default function CompetitorsSection() {
   // Reject competitor
   const handleReject = async (id) => {
     try {
-      await apiPost(`/api/competitors/${id}/reject`, {});
+      await rejectCompetitor(id);
       setCompetitors(prev => 
         prev.map(c => c.id === id ? { ...c, isAccepted: false } : c)
       );
@@ -112,14 +112,14 @@ export default function CompetitorsSection() {
     setIsSubmittingManual(true);
     setManualError('');
     try {
-      const result = await apiPost('/api/competitors/manual', {
+      const result = await addManualCompetitor({
         name: manualName.trim(),
         website: manualWebsite.trim()
       });
 
       // Add newly created competitor to local state
       const newComp = result.competitor || result || {
-        id: Date.now(),
+        id: Date.now().toString(),
         name: manualName.trim(),
         website: manualWebsite.trim(),
         type: 'DIRECT',

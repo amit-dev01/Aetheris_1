@@ -220,24 +220,31 @@
         btn.classList.add('opacity-80', 'cursor-not-allowed');
 
         try {
-          const res = await fetch('https://ai-backend-zfq1.onrender.com/api/auth/login', {
+          const apiBaseUrl = (window.VITE_API_BASE_URL || 'https://ai-backend-zfq1.onrender.com').replace(/\/$/, '');
+          const res = await fetch(`${apiBaseUrl}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
           });
           if (res.ok) {
             const data = await res.json();
-            localStorage.setItem('access_token', data.access_token);
+            if (data.access_token) localStorage.setItem('access_token', data.access_token);
+            if (data.user_id) localStorage.setItem('user_id', data.user_id);
             window.location.href = '/dashboard/';
           } else {
-            alert('Login failed. Please check your credentials.');
+            let errorMsg = 'Login failed. Please check your credentials.';
+            try {
+              const errData = await res.json();
+              errorMsg = errData.detail || errData.message || errorMsg;
+            } catch (_) {}
+            alert(errorMsg);
             btn.disabled = false;
             btn.classList.remove('opacity-80', 'cursor-not-allowed');
             document.getElementById('btn-text').textContent = 'Sign in';
             document.getElementById('btn-spinner').classList.add('hidden');
           }
         } catch (err) {
-          alert('An error occurred. Please check your connection.');
+          alert('An error occurred while signing in. Please check your connection.');
           btn.disabled = false;
           btn.classList.remove('opacity-80', 'cursor-not-allowed');
           document.getElementById('btn-text').textContent = 'Sign in';
