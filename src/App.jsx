@@ -16,11 +16,11 @@ import {
   clearAuthSession, 
   getStoredToken, 
   getIntelligenceStats, 
-  triggerMonitoring, 
+  checkNow,
+  getCheckStatus,
   getCompetitors,
   getIntelligenceAlerts,
-  getIntelligenceTrends,
-  getIntelligenceJobs
+  getIntelligenceTrends
 } from './api';
 
 // ── DbContext / IntelligenceContext for App State ──
@@ -39,17 +39,24 @@ export default function App() {
   const [intelligenceTrends, setIntelligenceTrends] = useState(null);
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
   const [acceptedCompetitors, setAcceptedCompetitors] = useState([]);
-  const [monitoringTriggered, setMonitoringTriggered] = useState(false);
-  const [isTriggering, setIsTriggering] = useState(false);
-  const [refreshCooldown, setRefreshCooldown] = useState(0);
   const [selectedCompetitorFilter, setSelectedCompetitorFilter] = useState('All Competitors');
+
+  // Check Status State
+  const [checkStatus, setCheckStatus] = useState({
+    status: 'IDLE',
+    progress: 0,
+    currentStep: '',
+    documentsFound: 0,
+    documentsProcessed: 0,
+    startedAt: null,
+    completedAt: null,
+    error: null
+  });
 
   // Global Toast State
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
-  const cooldownTimerRef = useRef(null);
-  const autoRefetchTimerRef = useRef(null);
-  const pollStatsIntervalRef = useRef(null);
+  const pollCheckStatusRef = useRef(null);
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -91,6 +98,14 @@ export default function App() {
     } catch (err) {
       console.warn('Unable to fetch competitors for context:', err);
     }
+  };
+
+  const refreshAllIntelligenceData = async () => {
+    await Promise.all([
+      fetchGlobalStats(),
+      fetchAcceptedCompetitors(),
+      fetchAlertsAndTrends()
+    ]);
   };
 
   const checkAuthAndSetup = async () => {
@@ -135,77 +150,71 @@ export default function App() {
     checkAuthAndSetup();
   }, []);
 
-  // Automatic stats refresh every 5 minutes
-  useEffect(() => {
-    if (appState === 'DASHBOARD') {
-      pollStatsIntervalRef.current = setInterval(() => {
-        fetchGlobalStats();
-        fetchAcceptedCompetitors();
-        fetchAlertsAndTrends();
-      }, 5 * 60 * 1000);
-    }
-    return () => {
-      if (pollStatsIntervalRef.current) clearInterval(pollStatsIntervalRef.current);
-    };
-  }, [appState]);
+  const pollCheckStatus = () => {
+    if (pollCheckStatusRef.current) clearInterval(pollCheckStatusRef.current);
+    
+    pollCheckStatusRef.current = setInterval(async () => {
+      try {
+        const res = await getCheckStatus();
+        setCheckStatus(prev => ({
+          ...prev,
+          status: res.status || 'RUNNING',
+          progress: res.progress || prev.progress,
+          currentStep: res.currentStep || prev.currentStep,
+          documentsFound: res.documentsFound || prev.documentsFound,
+          documentsProcessed: res.documentsProcessed || prev.documentsProcessed,
+        }));
 
-  // Handle Refresh Intelligence Trigger
-  const handleTriggerRefresh = async () => {
-    if (isTriggering || refreshCooldown > 0) return;
-    setIsTriggering(true);
-
-    try {
-      await triggerMonitoring();
-      setMonitoringTriggered(true);
-      showToast('Intelligence refresh started. Check back in a few minutes.', 'success');
-
-      // Start 60-second cooldown timer
-      setRefreshCooldown(60);
-      cooldownTimerRef.current = setInterval(() => {
-        setRefreshCooldown(prev => {
-          if (prev <= 1) {
-            clearInterval(cooldownTimerRef.current);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      // Poll the jobs endpoint every 10 seconds to check if background scraping is complete
-      if (autoRefetchTimerRef.current) clearInterval(autoRefetchTimerRef.current);
-      autoRefetchTimerRef.current = setInterval(async () => {
-        try {
-          const jobsData = await getIntelligenceJobs();
-          const pending = Array.isArray(jobsData) 
-            ? jobsData.some(j => j.status === 'PENDING' || j.status === 'IN_PROGRESS') 
-            : (jobsData.jobs || []).some(j => j.status === 'PENDING' || j.status === 'IN_PROGRESS');
-            
-          if (!pending) {
-            clearInterval(autoRefetchTimerRef.current);
-            fetchGlobalStats();
-            fetchAcceptedCompetitors();
-            fetchAlertsAndTrends();
-            setMonitoringTriggered(false);
-            showToast('Intelligence refresh complete!', 'success');
-          }
-        } catch (err) {
-          console.error('Error checking jobs status:', err);
+        if (res.status === 'COMPLETED') {
+          clearInterval(pollCheckStatusRef.current);
+          setCheckStatus(prev => ({ ...prev, completedAt: new Date().toISOString() }));
+          showToast('Check completed successfully!', 'success');
+          refreshAllIntelligenceData();
+        } else if (res.status === 'FAILED') {
+          clearInterval(pollCheckStatusRef.current);
+          setCheckStatus(prev => ({ ...prev, error: res.error || 'Check failed' }));
+          showToast(res.error || 'Check failed', 'error');
         }
-      }, 10000);
+      } catch (err) {
+        console.error('Failed to poll check status:', err);
+      }
+    }, 3000);
+  };
 
+  const startCheck = async () => {
+    if (checkStatus.status === 'RUNNING') return;
+    
+    try {
+      setCheckStatus({
+        status: 'RUNNING',
+        progress: 0,
+        currentStep: 'Starting check...',
+        documentsFound: 0,
+        documentsProcessed: 0,
+        startedAt: new Date().toISOString(),
+        completedAt: null,
+        error: null
+      });
+      
+      await checkNow();
+      pollCheckStatus();
     } catch (err) {
-      console.error('Failed to trigger monitoring:', err);
-      showToast(err.message || 'Something went wrong. Please try again.', 'error');
-    } finally {
-      setIsTriggering(false);
+      if (err.message && err.message.includes('409')) {
+        showToast('A check is already in progress', 'error');
+        setCheckStatus(prev => ({ ...prev, status: 'RUNNING' }));
+        pollCheckStatus(); // resume polling
+      } else {
+        console.error('Failed to start check:', err);
+        showToast(err.message || 'Something went wrong. Please try again.', 'error');
+        setCheckStatus(prev => ({ ...prev, status: 'FAILED', error: err.message }));
+      }
     }
   };
 
   // Cleanup timers on unmount
   useEffect(() => {
     return () => {
-      if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
-      if (autoRefetchTimerRef.current) clearTimeout(autoRefetchTimerRef.current);
+      if (pollCheckStatusRef.current) clearInterval(pollCheckStatusRef.current);
     };
   }, []);
 
@@ -324,10 +333,9 @@ export default function App() {
     refreshStats: fetchGlobalStats,
     acceptedCompetitors,
     refreshCompetitors: fetchAcceptedCompetitors,
-    handleTriggerRefresh,
-    isTriggering,
-    refreshCooldown,
-    monitoringTriggered,
+    refreshAllIntelligenceData,
+    checkStatus,
+    startCheck,
     showToast,
     selectedCompetitorFilter,
     setSelectedCompetitorFilter,

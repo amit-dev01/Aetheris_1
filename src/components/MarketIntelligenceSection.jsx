@@ -18,10 +18,8 @@ export default function MarketIntelligenceSection() {
   const { 
     acceptedCompetitors, 
     intelligenceStats, 
-    handleTriggerRefresh, 
-    isTriggering, 
-    refreshCooldown,
-    monitoringTriggered,
+    checkStatus,
+    startCheck,
     selectedCompetitorFilter,
     setSelectedCompetitorFilter
   } = context;
@@ -154,28 +152,46 @@ export default function MarketIntelligenceSection() {
         </div>
 
         <button
-          onClick={handleTriggerRefresh}
-          disabled={isTriggering || refreshCooldown > 0}
+          onClick={startCheck}
+          disabled={checkStatus?.status === 'RUNNING'}
           className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md text-sm disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
         >
-          {isTriggering ? (
+          {checkStatus?.status === 'RUNNING' ? (
             <>
               <Loader2 size={16} className="animate-spin" />
-              Refreshing...
-            </>
-          ) : refreshCooldown > 0 ? (
-            <>
-              <RefreshCw size={16} />
-              Refresh ({refreshCooldown}s)
+              Checking...
             </>
           ) : (
             <>
               <RefreshCw size={16} />
-              Refresh Intelligence
+              Check Now
             </>
           )}
         </button>
       </div>
+
+      {/* Progress Card if running */}
+      {checkStatus?.status === 'RUNNING' && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="flex justify-between items-center text-blue-700 dark:text-blue-400 font-bold text-sm">
+            <div className="flex items-center gap-2">
+              <Loader2 size={16} className="animate-spin" />
+              Checking competitor activity...
+            </div>
+            <span>{checkStatus.progress}%</span>
+          </div>
+          <div className="w-full bg-blue-200/50 dark:bg-blue-900/50 rounded-full h-2 overflow-hidden">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${checkStatus.progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-blue-600/80 dark:text-blue-400/80 font-medium">
+            <span>Current Step: {checkStatus.currentStep}</span>
+            <span>Docs Found: {checkStatus.documentsFound} | Processed: {checkStatus.documentsProcessed}</span>
+          </div>
+        </div>
+      )}
 
       {/* ── FILTERS BAR ── */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-5">
@@ -303,25 +319,25 @@ export default function MarketIntelligenceSection() {
           
           <div className="space-y-2">
             <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">
-              Intelligence collection starts tomorrow
+              No intelligence collected yet
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-md mx-auto">
-              We discovered your competitors. Now we will monitor them daily. Your first intelligence report will be ready tomorrow morning at 8 AM. Or you can trigger a manual refresh now to start immediately.
+              Click Check Now to fetch the latest competitor activity and build your intelligence feed.
             </p>
           </div>
 
           <button
-            onClick={handleTriggerRefresh}
-            disabled={isTriggering || monitoringTriggered}
+            onClick={startCheck}
+            disabled={checkStatus?.status === 'RUNNING'}
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-md disabled:opacity-80"
           >
-            {isTriggering || monitoringTriggered ? (
+            {checkStatus?.status === 'RUNNING' ? (
               <>
                 <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
-                Monitoring in progress. Check back in a few minutes.
+                Checking competitor activity...
               </>
             ) : (
-              'Start Monitoring Now'
+              'Check Now'
             )}
           </button>
         </div>
@@ -335,14 +351,14 @@ export default function MarketIntelligenceSection() {
             No intelligence collected yet
           </h3>
           <p className="text-slate-500 text-xs leading-relaxed">
-            Monitoring runs daily. Your first results will appear tomorrow, or you can trigger a manual refresh now.
+            Run a check to collect competitor intelligence.
           </p>
           <button
-            onClick={handleTriggerRefresh}
-            disabled={isTriggering || refreshCooldown > 0}
+            onClick={startCheck}
+            disabled={checkStatus?.status === 'RUNNING'}
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-sm"
           >
-            <RefreshCw size={14} /> Refresh Intelligence
+            <RefreshCw size={14} /> Check Now
           </button>
         </div>
       )}

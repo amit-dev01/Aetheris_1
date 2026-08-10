@@ -15,9 +15,8 @@ export default function OverviewSection() {
     intelligenceAlerts,
     intelligenceTrends,
     acceptedCompetitors, 
-    handleTriggerRefresh, 
-    isTriggering, 
-    refreshCooldown,
+    checkStatus,
+    startCheck,
     setActiveSection
   } = context;
 
@@ -145,10 +144,39 @@ export default function OverviewSection() {
     .sort((a, b) => (b.documentCount || 0) - (a.documentCount || 0))
     .slice(0, 3);
 
-  const lastMonitoredText = formatMonitoredTimestamp(intelligenceStats?.lastMonitoredCompletedAt);
+  // Use checkStatus.completedAt first, else fallback, else "No checks run yet"
+  let lastMonitoredText = "No checks run yet";
+  if (checkStatus?.completedAt) {
+    lastMonitoredText = "Last checked: " + formatMonitoredTimestamp(checkStatus.completedAt);
+  } else if (intelligenceStats?.lastMonitoredCompletedAt) {
+    lastMonitoredText = "Last checked: " + formatMonitoredTimestamp(intelligenceStats.lastMonitoredCompletedAt);
+  }
 
   return (
     <div className="animate-fade-in-up max-w-5xl space-y-8 pb-12">
+      
+      {/* Progress Card if running */}
+      {checkStatus?.status === 'RUNNING' && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="flex justify-between items-center text-blue-700 dark:text-blue-400 font-bold text-sm">
+            <div className="flex items-center gap-2">
+              <Loader2 size={16} className="animate-spin" />
+              Checking competitor activity...
+            </div>
+            <span>{checkStatus.progress}%</span>
+          </div>
+          <div className="w-full bg-blue-200/50 dark:bg-blue-900/50 rounded-full h-2 overflow-hidden">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${checkStatus.progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-blue-600/80 dark:text-blue-400/80 font-medium">
+            <span>Current Step: {checkStatus.currentStep}</span>
+            <span>Docs Found: {checkStatus.documentsFound} | Processed: {checkStatus.documentsProcessed}</span>
+          </div>
+        </div>
+      )}
       
       {/* ── Main Overview Heading ── */}
       <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 relative overflow-hidden">
@@ -238,9 +266,9 @@ export default function OverviewSection() {
       <section className="bg-gradient-to-r from-blue-900 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-lg space-y-4 relative overflow-hidden">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-blue-400 text-xs font-extrabold uppercase tracking-widest">
-            <Activity size={16} className="animate-pulse" /> Live Monitoring Pulse
+            <Activity size={16} className="animate-pulse" /> Intelligence Pulse
           </div>
-          <div className="text-xs text-blue-300/80 font-medium">Updated Real-Time</div>
+          <div className="text-xs text-blue-300/80 font-medium">Updated After Checks</div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-6 gap-6 pt-2">
@@ -365,29 +393,24 @@ export default function OverviewSection() {
             onClick={handleOpenJobs}
             className="text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold transition-all"
           >
-            View Sync History
+            View Check History
           </button>
         </div>
 
         <button
-          onClick={handleTriggerRefresh}
-          disabled={isTriggering || refreshCooldown > 0}
+          onClick={startCheck}
+          disabled={checkStatus?.status === 'RUNNING'}
           className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isTriggering ? (
+          {checkStatus?.status === 'RUNNING' ? (
             <>
               <Loader2 size={16} className="animate-spin" />
-              Refreshing...
-            </>
-          ) : refreshCooldown > 0 ? (
-            <>
-              <RefreshCw size={16} />
-              Refresh ({refreshCooldown}s)
+              Checking...
             </>
           ) : (
             <>
               <RefreshCw size={16} />
-              Refresh Intelligence
+              Check Now
             </>
           )}
         </button>

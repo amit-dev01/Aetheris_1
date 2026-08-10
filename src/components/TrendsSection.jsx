@@ -9,7 +9,7 @@ import { getTrendHumanReadableLabel, getImpactBadgeStyle } from '../constants';
 
 export default function TrendsSection() {
   const context = useContext(DbContext) || {};
-  const { companyProfile, intelligenceTrends, refreshAlertsAndTrends } = context;
+  const { companyProfile, intelligenceTrends, refreshAlertsAndTrends, checkStatus, startCheck } = context;
 
   const [trendsData, setTrendsData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -109,7 +109,48 @@ export default function TrendsSection() {
             Patterns detected in competitor behavior over time.
           </p>
         </div>
+        
+        <button
+          onClick={startCheck}
+          disabled={checkStatus?.status === 'RUNNING'}
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl transition-all shadow-md text-sm disabled:opacity-50 shrink-0"
+        >
+          {checkStatus?.status === 'RUNNING' ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Checking...
+            </>
+          ) : (
+            <>
+              <RefreshCw size={16} />
+              Check Now
+            </>
+          )}
+        </button>
       </div>
+
+      {/* Progress Card if running */}
+      {checkStatus?.status === 'RUNNING' && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="flex justify-between items-center text-blue-700 dark:text-blue-400 font-bold text-sm">
+            <div className="flex items-center gap-2">
+              <Loader2 size={16} className="animate-spin" />
+              Checking competitor activity...
+            </div>
+            <span>{checkStatus.progress}%</span>
+          </div>
+          <div className="w-full bg-blue-200/50 dark:bg-blue-900/50 rounded-full h-2 overflow-hidden">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${checkStatus.progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-blue-600/80 dark:text-blue-400/80 font-medium">
+            <span>Current Step: {checkStatus.currentStep}</span>
+            <span>Docs Found: {checkStatus.documentsFound} | Processed: {checkStatus.documentsProcessed}</span>
+          </div>
+        </div>
+      )}
 
       {/* ── MINIMUM DATA WARNING ── */}
       {daysRemaining > 0 && activeTrends.length === 0 && (
@@ -156,9 +197,16 @@ export default function TrendsSection() {
           <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
             No trends detected yet
           </h3>
-          <p className="text-slate-500 text-sm max-w-md mx-auto">
-            Trend detection requires at least 14 days of monitoring data to establish a baseline. Keep the system running and trends will appear automatically.
+          <p className="text-slate-500 text-sm max-w-md mx-auto mb-4">
+            Run a check to analyze recent data for emerging trends. Trend detection requires at least 14 days of historical data to establish a baseline.
           </p>
+          <button
+            onClick={startCheck}
+            disabled={checkStatus?.status === 'RUNNING'}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-sm"
+          >
+            <RefreshCw size={14} /> Check Now
+          </button>
         </div>
       )}
 

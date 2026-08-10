@@ -297,10 +297,17 @@ export async function getIntelligenceStats() {
 }
 
 /**
- * POST /api/intelligence/trigger-monitoring
+ * POST /api/intelligence/check-now
  */
-export async function triggerMonitoring() {
-  return await apiPost('/api/intelligence/trigger-monitoring', {});
+export async function checkNow() {
+  return await apiPost('/api/intelligence/check-now', {});
+}
+
+/**
+ * GET /api/intelligence/check-status
+ */
+export async function getCheckStatus() {
+  return await apiGet('/api/intelligence/check-status');
 }
 
 /**

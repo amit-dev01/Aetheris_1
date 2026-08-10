@@ -12,9 +12,8 @@ export default function AIStrategySection() {
   const context = useContext(DbContext) || {};
   const { 
     companyProfile, 
-    handleTriggerRefresh, 
-    isTriggering, 
-    refreshCooldown, 
+    checkStatus,
+    startCheck, 
     setSelectedCompetitorFilter, 
     setActiveSection,
     showToast
@@ -193,29 +192,47 @@ export default function AIStrategySection() {
           </button>
           
           <button
-            onClick={handleTriggerRefresh}
-            disabled={isTriggering || refreshCooldown > 0}
+            onClick={startCheck}
+            disabled={checkStatus?.status === 'RUNNING'}
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md text-sm disabled:opacity-50 shrink-0"
           >
-            {isTriggering ? (
+            {checkStatus?.status === 'RUNNING' ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Refreshing...
-              </>
-            ) : refreshCooldown > 0 ? (
-              <>
-                <RefreshCw size={16} />
-                Refresh ({refreshCooldown}s)
+                Checking...
               </>
             ) : (
               <>
                 <RefreshCw size={16} />
-                Refresh Intelligence
+                Check Now
               </>
             )}
           </button>
         </div>
       </div>
+      
+      {/* Progress Card if running */}
+      {checkStatus?.status === 'RUNNING' && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="flex justify-between items-center text-blue-700 dark:text-blue-400 font-bold text-sm">
+            <div className="flex items-center gap-2">
+              <Loader2 size={16} className="animate-spin" />
+              Checking competitor activity...
+            </div>
+            <span>{checkStatus.progress}%</span>
+          </div>
+          <div className="w-full bg-blue-200/50 dark:bg-blue-900/50 rounded-full h-2 overflow-hidden">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${checkStatus.progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-blue-600/80 dark:text-blue-400/80 font-medium">
+            <span>Current Step: {checkStatus.currentStep}</span>
+            <span>Docs Found: {checkStatus.documentsFound} | Processed: {checkStatus.documentsProcessed}</span>
+          </div>
+        </div>
+      )}
 
       {/* ── NO SUMMARY EMPTY STATE ── */}
       {hasNoData && (
@@ -226,15 +243,24 @@ export default function AIStrategySection() {
               No strategic brief generated yet
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-md mx-auto">
-              Your first strategic brief will be generated on Monday morning after monitoring has collected enough data. Or you can trigger manual collection now.
+              Run a check to generate your latest intelligence summary.
             </p>
           </div>
           <button
-            onClick={handleTriggerRefresh}
-            disabled={isTriggering}
+            onClick={startCheck}
+            disabled={checkStatus?.status === 'RUNNING'}
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-md"
           >
-            <RefreshCw size={16} /> Trigger Manual Collection
+            {checkStatus?.status === 'RUNNING' ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Checking...
+              </>
+            ) : (
+              <>
+                <RefreshCw size={16} /> Check Now
+              </>
+            )}
           </button>
         </div>
       )}

@@ -14,7 +14,7 @@ import {
 
 export default function AlertsSection() {
   const context = useContext(DbContext) || {};
-  const { companyProfile, intelligenceAlerts, refreshAlertsAndTrends, showToast } = context;
+  const { companyProfile, intelligenceAlerts, refreshAlertsAndTrends, showToast, checkStatus, startCheck } = context;
 
   const [alertsData, setAlertsData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -173,10 +173,53 @@ export default function AlertsSection() {
           </p>
         </div>
 
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-2 rounded-xl text-sm font-bold shadow-sm">
-          {alertsData?.totalUnacknowledged || 0} unacknowledged alert{(alertsData?.totalUnacknowledged || 0) !== 1 ? 's' : ''}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={startCheck}
+            disabled={checkStatus?.status === 'RUNNING'}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl transition-all shadow-md text-sm disabled:opacity-50 shrink-0"
+          >
+            {checkStatus?.status === 'RUNNING' ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Checking...
+              </>
+            ) : (
+              <>
+                <RefreshCw size={16} />
+                Check Now
+              </>
+            )}
+          </button>
+          
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-2 rounded-xl text-sm font-bold shadow-sm hidden sm:block">
+            {alertsData?.totalUnacknowledged || 0} unacknowledged alert{(alertsData?.totalUnacknowledged || 0) !== 1 ? 's' : ''}
+          </div>
         </div>
       </div>
+      
+      {/* Progress Card if running */}
+      {checkStatus?.status === 'RUNNING' && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="flex justify-between items-center text-blue-700 dark:text-blue-400 font-bold text-sm">
+            <div className="flex items-center gap-2">
+              <Loader2 size={16} className="animate-spin" />
+              Checking competitor activity...
+            </div>
+            <span>{checkStatus.progress}%</span>
+          </div>
+          <div className="w-full bg-blue-200/50 dark:bg-blue-900/50 rounded-full h-2 overflow-hidden">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${checkStatus.progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-blue-600/80 dark:text-blue-400/80 font-medium">
+            <span>Current Step: {checkStatus.currentStep}</span>
+            <span>Docs Found: {checkStatus.documentsFound} | Processed: {checkStatus.documentsProcessed}</span>
+          </div>
+        </div>
+      )}
 
       {/* ── MINIMUM DATA WARNING FOR ANOMALIES ── */}
       {daysRemaining > 0 && activeTab === 'ANOMALIES' && anomaliesUnack.length === 0 && (
@@ -226,11 +269,18 @@ export default function AlertsSection() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center space-y-4">
             <CheckCircle2 size={48} className="text-emerald-500 mx-auto" />
             <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              No alerts right now
+              No alerts generated yet
             </h3>
-            <p className="text-slate-500 text-sm max-w-md mx-auto">
-              Your competitive landscape looks stable. Alerts will appear here when we detect unusual competitor activity or shifts.
+            <p className="text-slate-500 text-sm max-w-md mx-auto mb-4">
+              Run a check to scan for new alerts. Your competitive landscape looks stable otherwise.
             </p>
+            <button
+              onClick={startCheck}
+              disabled={checkStatus?.status === 'RUNNING'}
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-sm"
+            >
+              <RefreshCw size={14} /> Check Now
+            </button>
           </div>
         ) : (
           displayedAlerts.map(alert => (
