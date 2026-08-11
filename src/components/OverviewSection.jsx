@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { DbContext } from '../App';
 import { 
   AlertCircle, AlertTriangle, Lightbulb, ShieldAlert, Users, Target, Zap, Clock, RefreshCw, 
-  Activity, TrendingUp, Loader2 
+  Activity, TrendingUp, Loader2, CheckSquare, ChevronRight
 } from 'lucide-react';
 import { getCompanyProfile, getCompetitors, getIntelligenceJobs } from '../api';
 import { formatMonitoredTimestamp, getEventTypeBadgeStyle } from '../constants';
@@ -17,7 +17,8 @@ export default function OverviewSection() {
     acceptedCompetitors, 
     checkStatus,
     startCheck,
-    setActiveSection
+    setActiveSection,
+    taskStats
   } = context;
 
   const [profile, setProfile] = useState(companyProfile || null);
@@ -247,6 +248,31 @@ export default function OverviewSection() {
           </div>
           <div className="text-xs text-blue-500/80 mt-1 font-medium">Fast-growing startups</div>
         </div>
+      </section>
+
+      {/* ── Action Center Summary Card ── */}
+      <section 
+        onClick={() => setActiveSection && setActiveSection('tasks')}
+        className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm cursor-pointer hover:border-blue-500 transition-colors flex items-center justify-between"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+            <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900 dark:text-white text-lg">Action Items</h3>
+            {(!taskStats || taskStats.totalActive === 0) ? (
+              <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">No open action items</p>
+            ) : (
+              <div className="flex items-center gap-4 text-sm mt-1">
+                <span className="font-medium text-slate-600 dark:text-slate-400">Total active: {taskStats.totalActive}</span>
+                {taskStats.critical > 0 && <span className="font-bold text-red-500">Critical: {taskStats.critical}</span>}
+                {taskStats.overdue > 0 && <span className="font-bold text-red-500">Overdue: {taskStats.overdue}</span>}
+              </div>
+            )}
+          </div>
+        </div>
+        <ChevronRight className="text-slate-400 shrink-0" />
       </section>
 
       {/* ── AI Executive Brief Block ── */}

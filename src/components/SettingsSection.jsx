@@ -707,6 +707,123 @@ function ActivityLogTab() {
   );
 }
 
+function IntegrationsTab({ showToast }) {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [savingField, setSavingField] = useState('');
+  const [jiraInput, setJiraInput] = useState('');
+  const [extractedDomain, setExtractedDomain] = useState('');
+  const debounceRef = useRef(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await getCompanySettings();
+        setSettings(data);
+        setJiraInput(data.jiraDomain || '');
+      } catch (err) {
+        showToast('Failed to load settings', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, [showToast]);
+
+  const saveSetting = async (field, value) => {
+    const prevValue = settings?.[field];
+    setSettings(prev => ({ ...prev, [field]: value }));
+    setSavingField(field);
+    try {
+      await updateCompanySettings({ [field]: value });
+      showToast('Setting saved', 'success');
+    } catch (err) {
+      setSettings(prev => ({ ...prev, [field]: prevValue }));
+      showToast('Failed to save setting', 'error');
+    } finally {
+      setSavingField('');
+    }
+  };
+
+  const handleJiraDomainChange = (e) => {
+    let val = e.target.value;
+    setExtractedDomain('');
+    
+    // Auto-extract subdomain if full URL is pasted
+    if (val.includes('atlassian.net')) {
+      try {
+        const url = new URL(val.startsWith('http') ? val : `https://${val}`);
+        const hostParts = url.hostname.split('.');
+        if (hostParts.length >= 3) {
+          val = hostParts[0];
+          setExtractedDomain(val);
+        }
+      } catch (err) {
+        // ignore parsing error
+      }
+    }
+    
+    // basic sanitize
+    val = val.replace(/[^a-zA-Z0-9-]/g, '');
+    
+    setJiraInput(val);
+    
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      saveSetting('jiraDomain', val);
+    }, 800);
+  };
+
+  if (loading) {
+    return <div className="animate-pulse h-32 bg-slate-200 dark:bg-slate-700 rounded-xl"></div>;
+  }
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 p-5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+          <div>
+            <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              Jira Integration
+              {savingField === 'jiraDomain' ? (
+                <Loader2 size={14} className="animate-spin text-blue-500" />
+              ) : (
+                settings?.jiraDomain === jiraInput && jiraInput !== '' && <CheckCircle2 size={14} className="text-emerald-500" />
+              )}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Enter your Jira subdomain to enable one-click task export.
+              For example if your Jira URL is acme-corp.atlassian.net enter: <strong>acme-corp</strong>
+            </p>
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Jira Domain</label>
+            <input 
+              type="text" 
+              value={jiraInput} 
+              onChange={handleJiraDomainChange}
+              placeholder="your-company"
+              className="mt-1 w-full max-w-sm px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500" 
+            />
+            
+            {extractedDomain && (
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 font-medium">
+                We extracted your subdomain: {extractedDomain}
+              </p>
+            )}
+            {jiraInput && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                Your Jira URL will be: {jiraInput}.atlassian.net
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsSection() {
   const { setAppState } = useContext(DbContext);
   const [activeTab, setActiveTab] = useState('profile');
@@ -720,6 +837,7 @@ export default function SettingsSection() {
   const tabs = [
     { id: 'profile', label: 'Company Profile' },
     { id: 'monitoring', label: 'Monitoring Preferences' },
+    { id: 'integrations', label: 'Integrations' },
     { id: 'discovery', label: 'Discovery' },
     { id: 'activity', label: 'Activity Log' }
   ];
@@ -768,6 +886,7 @@ export default function SettingsSection() {
         <div className="flex-1 p-6 md:p-8 min-h-[500px]">
           {activeTab === 'profile' && <CompanyProfileTab showToast={showToast} setAppState={setAppState} />}
           {activeTab === 'monitoring' && <MonitoringPreferencesTab showToast={showToast} />}
+          {activeTab === 'integrations' && <IntegrationsTab showToast={showToast} />}
           {activeTab === 'discovery' && <DiscoveryTab showToast={showToast} setAppState={setAppState} />}
           {activeTab === 'activity' && <ActivityLogTab />}
         </div>

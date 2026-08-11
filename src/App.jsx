@@ -1,5 +1,5 @@
 import { useState, createContext, useEffect, useRef } from 'react';
-import { Bot, Target, Rss, Users, LayoutDashboard, Settings, LogOut, ChevronRight, Moon, Sun, Loader2, CheckCircle2, AlertCircle, TrendingUp, Bell } from 'lucide-react';
+import { Bot, Target, Rss, Users, LayoutDashboard, Settings, LogOut, ChevronRight, Moon, Sun, Loader2, CheckCircle2, AlertCircle, TrendingUp, Bell, CheckSquare } from 'lucide-react';
 import OverviewSection from './components/OverviewSection';
 import CompetitorsSection from './components/CompetitorsSection';
 import MarketIntelligenceSection from './components/MarketIntelligenceSection';
@@ -11,6 +11,7 @@ import AIAgentModal from './components/AIAgentModal';
 import OnboardingFlow from './components/OnboardingFlow';
 import ProcessingScreen from './components/ProcessingScreen';
 import SettingsSection from './components/SettingsSection';
+import ActionCenterSection from './components/ActionCenterSection';
 import { 
   getCompanyProfile, 
   clearAuthSession, 
@@ -20,7 +21,8 @@ import {
   getCheckStatus,
   getCompetitors,
   getIntelligenceAlerts,
-  getIntelligenceTrends
+  getIntelligenceTrends,
+  getTaskStats
 } from './api';
 
 // ── DbContext / IntelligenceContext for App State ──
@@ -37,6 +39,7 @@ export default function App() {
   const [intelligenceStats, setIntelligenceStats] = useState(null);
   const [intelligenceAlerts, setIntelligenceAlerts] = useState(null);
   const [intelligenceTrends, setIntelligenceTrends] = useState(null);
+  const [taskStats, setTaskStats] = useState(null);
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
   const [acceptedCompetitors, setAcceptedCompetitors] = useState([]);
   const [selectedCompetitorFilter, setSelectedCompetitorFilter] = useState('All Competitors');
@@ -90,6 +93,15 @@ export default function App() {
     }
   };
 
+  const fetchTaskStats = async () => {
+    try {
+      const stats = await getTaskStats();
+      if (stats) setTaskStats(stats);
+    } catch (err) {
+      console.warn('Unable to fetch task stats:', err);
+    }
+  };
+
   const fetchAcceptedCompetitors = async () => {
     try {
       const res = await getCompetitors();
@@ -104,8 +116,10 @@ export default function App() {
     await Promise.all([
       fetchGlobalStats(),
       fetchAcceptedCompetitors(),
-      fetchAlertsAndTrends()
+      fetchAlertsAndTrends(),
+      fetchTaskStats()
     ]);
+    setLastFetchedAt(new Date().toISOString());
   };
 
   const checkAuthAndSetup = async () => {
@@ -139,6 +153,7 @@ export default function App() {
         fetchGlobalStats();
         fetchAcceptedCompetitors();
         fetchAlertsAndTrends();
+        fetchTaskStats();
       }
     } catch (err) {
       console.error('Route protection check error:', err);
@@ -261,6 +276,9 @@ export default function App() {
   const isNewBriefAvailable = isBriefNew(intelligenceStats?.weeklyBriefGeneratedAt);
   const unacknowledgedAlerts = intelligenceAlerts?.totalUnacknowledged || 0;
   
+  const activeTasksCount = taskStats?.totalActive || 0;
+  const criticalTasksCount = taskStats?.critical || 0;
+  
   // Count active trends that are Critical or High
   const activeImportantTrends = (intelligenceTrends?.trends || [])
     .filter(t => t.isActive && (t.severity === 'CRITICAL' || t.severity === 'HIGH'))
@@ -275,6 +293,13 @@ export default function App() {
       icon: Rss,
       badge: criticalCount > 0 ? criticalCount : null,
       badgeColor: 'bg-red-500 text-white'
+    },
+    {
+      id: 'tasks',
+      label: 'Action Center',
+      icon: CheckSquare,
+      badge: criticalTasksCount > 0 ? criticalTasksCount : (activeTasksCount > 0 ? activeTasksCount : null),
+      badgeColor: criticalTasksCount > 0 ? 'bg-red-500 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
     },
     // {
     //   id: 'trends',
@@ -328,6 +353,8 @@ export default function App() {
     intelligenceStats,
     intelligenceAlerts,
     intelligenceTrends,
+    taskStats,
+    refreshTaskStats: fetchTaskStats,
     refreshAlertsAndTrends: fetchAlertsAndTrends,
     lastFetchedAt,
     refreshStats: fetchGlobalStats,
@@ -472,6 +499,7 @@ export default function App() {
               {activeSection === 'overview' && <OverviewSection />}
               {activeSection === 'competitors' && <CompetitorsSection />}
               {activeSection === 'market' && <MarketIntelligenceSection />}
+              {activeSection === 'tasks' && <ActionCenterSection />}
               {activeSection === 'strategy' && <AIStrategySection />}
               {activeSection === 'alerts' && <AlertsSection />}
               {activeSection === 'trends' && <TrendsSection />}

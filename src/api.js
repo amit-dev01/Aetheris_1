@@ -405,3 +405,41 @@ export async function triggerRediscovery() {
 export async function getCompanyActivity(limit = 20, offset = 0) {
   return await apiGet(`/api/company/activity?limit=${limit}&offset=${offset}`);
 }
+
+// ── Phase 6: Action Center & Tasks Endpoints ──
+
+export async function getTaskStats() {
+  return await apiGet('/api/tasks/stats');
+}
+
+export async function getTasks(params = {}) {
+  const query = new URLSearchParams();
+  if (params.status && params.status !== 'All Active') query.append('status', params.status);
+  if (params.priority && params.priority !== 'All Priorities') query.append('priority', params.priority.toUpperCase());
+  if (params.source && params.source !== 'All') query.append('source', params.source === 'AI Generated' ? 'AI_GENERATED' : 'MANUAL');
+  if (params.competitor && params.competitor !== 'All Competitors') query.append('competitor', params.competitor);
+  
+  const queryString = query.toString();
+  const endpoint = queryString ? `/api/tasks?${queryString}` : '/api/tasks';
+  return await apiGet(endpoint);
+}
+
+export async function createTask(payload) {
+  return await apiPost('/api/tasks', payload);
+}
+
+export async function updateTask(id, payload) {
+  return await apiPut(`/api/tasks/${id}`, payload);
+}
+
+export async function updateTaskStatus(id, status) {
+  return await apiPost(`/api/tasks/${id}/status`, { status });
+}
+
+export async function getJiraLink(id) {
+  return await apiGet(`/api/tasks/${id}/jira-link`);
+}
+
+export async function deleteTask(id) {
+  return await apiDelete(`/api/tasks/${id}`);
+}
