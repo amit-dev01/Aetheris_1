@@ -88,7 +88,9 @@ export async function apiGet(endpoint, requireAuth = true) {
       const errorData = await res.json();
       errorMessage = errorData.detail || errorData.message || errorMessage;
     } catch (_) {}
-    throw new Error(errorMessage);
+    const err = new Error(errorMessage);
+    err.status = res.status;
+    throw err;
   }
 
   return await res.json();
@@ -128,7 +130,9 @@ export async function apiPost(endpoint, body, requireAuth = true) {
       const errorData = await res.json();
       errorMessage = errorData.detail || errorData.message || errorMessage;
     } catch (_) {}
-    throw new Error(errorMessage);
+    const err = new Error(errorMessage);
+    err.status = res.status;
+    throw err;
   }
 
   return await res.json();
@@ -168,7 +172,9 @@ export async function apiPut(endpoint, body, requireAuth = true) {
       const errorData = await res.json();
       errorMessage = errorData.detail || errorData.message || errorMessage;
     } catch (_) {}
-    throw new Error(errorMessage);
+    const err = new Error(errorMessage);
+    err.status = res.status;
+    throw err;
   }
 
   return await res.json();
@@ -205,7 +211,9 @@ export async function apiDelete(endpoint, requireAuth = true) {
       const errorData = await res.json();
       errorMessage = errorData.detail || errorData.message || errorMessage;
     } catch (_) {}
-    throw new Error(errorMessage);
+    const err = new Error(errorMessage);
+    err.status = res.status;
+    throw err;
   }
 
   // DELETE might not always return JSON
@@ -409,7 +417,7 @@ export async function getCompanyActivity(limit = 20, offset = 0) {
 // ── Phase 6: Action Center & Tasks Endpoints ──
 
 export async function getTaskStats() {
-  return await apiGet('/api/tasks/stats');
+  return await apiGet('/api/tasks/stats/summary');
 }
 
 export async function getTasks(params = {}) {

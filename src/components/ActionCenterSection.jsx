@@ -130,17 +130,18 @@ export default function ActionCenterSection() {
 
   const handleJiraLink = async (taskId) => {
     try {
-      // Opt UI loading could be tricky here, using a toast for now
       showToast('Generating Jira link...', 'success');
       const res = await getJiraLink(taskId);
-      if (res && res.url) {
-        window.open(res.url, '_blank', 'noopener,noreferrer');
+      if (res && res.jiraUrl) {
+        window.open(res.jiraUrl, '_blank', 'noopener,noreferrer');
       } else {
         throw new Error('No URL returned');
       }
     } catch (err) {
-      if (err.message?.includes('configured') || err.message?.includes('domain')) {
-        showToast('Add your Jira domain in Settings to use this', 'error');
+      if (err.status === 400 || err.message?.includes('configured') || err.message?.includes('domain')) {
+        showToast('Please configure your Jira domain in Settings first', 'error');
+        // Optional: route to settings
+        // setActiveSection('settings');
       } else {
         showToast('Failed to generate Jira link', 'error');
       }
@@ -655,7 +656,7 @@ function TaskDetailModal({ task, onClose, onStatusChange, onJiraLink, refresh })
                 onClick={onJiraLink}
                 className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors flex justify-center items-center gap-2"
               >
-                Open in Jira <ExternalLink size={16} />
+                Create in Jira <ExternalLink size={16} />
               </button>
               
               <div className="flex gap-2">
