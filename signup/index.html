@@ -92,7 +92,7 @@
 
     <!-- Background Video -->
     <div class="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
-        <video autoplay muted loop playsinline class="w-full h-full object-cover">
+        <video autoplay muted loop playsinline onended="this.play()" class="w-full h-full object-cover">
             <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260815_040604_b04410ba-c173-4b68-826d-212a24bccdad.mp4" type="video/mp4">
         </video>
     </div>
@@ -114,71 +114,84 @@
     <main class="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div class="w-full max-w-[480px]">
             
-            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-cards p-8 mb-8 text-center shadow-floating">
-                <h1 class="font-signifier text-heading-sm font-normal tracking-tight text-white mb-2">Create account</h1>
-                <p class="text-caption text-white/80">Get boardroom-ready reports in 60 seconds.</p>
+            <!-- Header Card Wrapper -->
+            <div class="relative w-full mb-8">
+                <!-- WebGL mesh container behind card -->
+                <div class="absolute -inset-4 z-0 pointer-events-none" id="signup-header-mesh"></div>
+                
+                <!-- The Card itself -->
+                <div id="signup-header-card" class="bg-white/10 backdrop-blur-md border border-white/20 rounded-cards p-8 text-center shadow-floating relative z-10">
+                    <h1 class="font-signifier text-heading-sm font-normal tracking-tight text-white mb-2">Create account</h1>
+                    <p class="text-caption text-white/80">Get boardroom-ready reports in 60 seconds.</p>
+                </div>
             </div>
 
-            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-cards shadow-floating p-8 md:p-10">
-                <form id="signup-form" onsubmit="handleSignup(event)" class="space-y-5" novalidate>
+            <!-- Form Card Wrapper -->
+            <div class="relative w-full">
+                <!-- WebGL mesh container behind card -->
+                <div class="absolute -inset-4 z-0 pointer-events-none" id="signup-form-mesh"></div>
                 
-                <!-- Full name -->
-                <div>
-                    <label for="name" class="block text-caption font-medium text-white mb-2">Full name</label>
-                    <input id="name" name="name" type="text" autocomplete="name" placeholder="Alex Johnson" required
-                        class="w-full px-5 py-3.5 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
-                    <p id="name-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Please enter your full name.</p>
-                </div>
-
-                <!-- Work email -->
-                <div>
-                    <label for="email" class="block text-caption font-medium text-white mb-2">Work email</label>
-                    <input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required
-                        class="w-full px-5 py-3.5 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
-                    <p id="email-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Please enter a valid email address.</p>
-                </div>
-
-                <!-- Password -->
-                <div>
-                    <label for="password" class="block text-caption font-medium text-white mb-2">Password</label>
-                    <div class="relative">
-                        <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Create a strong password" required
-                            oninput="checkStrength(this.value)"
-                            class="w-full px-5 py-3.5 pr-12 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
-                        <button type="button" onclick="togglePwLucide('password','eye1')" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white snappy-transition" aria-label="Toggle password">
-                            <i id="eye1" data-lucide="eye" class="w-5 h-5"></i>
-                        </button>
-                    </div>
+                <!-- The Card itself -->
+                <div id="signup-form-card" class="bg-white/10 backdrop-blur-md border border-white/20 rounded-cards shadow-floating p-8 md:p-10 relative z-10">
+                    <form id="signup-form" onsubmit="handleSignup(event)" class="space-y-5" novalidate>
                     
-                    <!-- Strength bars -->
-                    <div class="flex gap-1.5 mt-3">
-                        <div id="bar1" class="strength-bar flex-1 bg-white/20"></div>
-                        <div id="bar2" class="strength-bar flex-1 bg-white/20"></div>
-                        <div id="bar3" class="strength-bar flex-1 bg-white/20"></div>
-                        <div id="bar4" class="strength-bar flex-1 bg-white/20"></div>
+                    <!-- Full name -->
+                    <div>
+                        <label for="name" class="block text-caption font-medium text-white mb-2">Full name</label>
+                        <input id="name" name="name" type="text" autocomplete="name" placeholder="Alex Johnson" required
+                            class="w-full px-5 py-3.5 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
+                        <p id="name-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Please enter your full name.</p>
                     </div>
-                    <p id="strength-label" class="hidden mt-2 text-[13px] font-medium"></p>
-                    <p id="password-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Password must be at least 8 characters.</p>
-                </div>
 
-                <!-- Terms -->
-                <div class="flex items-start gap-3 mt-8">
-                    <input id="terms" name="terms" type="checkbox"
-                        class="mt-1 w-4 h-4 rounded-sm border border-white/30 accent-white cursor-pointer shrink-0" />
-                    <label for="terms" class="text-caption text-white/80 cursor-pointer">
-                        I agree to the <a href="#" class="text-white underline hover:text-white/80">Terms</a> and
-                        <a href="#" class="text-white underline hover:text-white/80">Privacy Policy</a>
-                    </label>
-                </div>
-                <p id="terms-error" class="hidden text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block mt-1">You must agree to the terms to continue.</p>
+                    <!-- Work email -->
+                    <div>
+                        <label for="email" class="block text-caption font-medium text-white mb-2">Work email</label>
+                        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required
+                            class="w-full px-5 py-3.5 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
+                        <p id="email-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Please enter a valid email address.</p>
+                    </div>
 
-                <!-- Submit -->
-                <button id="submit-btn" type="submit"
-                    class="w-full mt-4 flex items-center justify-center gap-2 bg-white text-ink font-semibold text-body rounded-pill py-4 border border-white hover:bg-white/90 snappy-transition">
-                    <span id="btn-text">Create free account</span>
-                    <span id="btn-spinner" class="hidden spinner"></span>
-                </button>
-            </form>
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="block text-caption font-medium text-white mb-2">Password</label>
+                        <div class="relative">
+                            <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Create a strong password" required
+                                oninput="checkStrength(this.value)"
+                                class="w-full px-5 py-3.5 pr-12 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
+                            <button type="button" onclick="togglePwLucide('password','eye1')" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white snappy-transition" aria-label="Toggle password">
+                                <i id="eye1" data-lucide="eye" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Strength bars -->
+                        <div class="flex gap-1.5 mt-3">
+                            <div id="bar1" class="strength-bar flex-1 bg-white/20"></div>
+                            <div id="bar2" class="strength-bar flex-1 bg-white/20"></div>
+                            <div id="bar3" class="strength-bar flex-1 bg-white/20"></div>
+                            <div id="bar4" class="strength-bar flex-1 bg-white/20"></div>
+                        </div>
+                        <p id="strength-label" class="hidden mt-2 text-[13px] font-medium"></p>
+                        <p id="password-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Password must be at least 8 characters.</p>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="flex items-start gap-3 mt-8">
+                        <input id="terms" name="terms" type="checkbox"
+                            class="mt-1 w-4 h-4 rounded-sm border border-white/30 accent-white cursor-pointer shrink-0" />
+                        <label for="terms" class="text-caption text-white/80 cursor-pointer">
+                            I agree to the <a href="#" class="text-white underline hover:text-white/80">Terms</a> and
+                            <a href="#" class="text-white underline hover:text-white/80">Privacy Policy</a>
+                        </label>
+                    </div>
+                    <p id="terms-error" class="hidden text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block mt-1">You must agree to the terms to continue.</p>
+
+                    <!-- Submit -->
+                    <button id="submit-btn" type="submit"
+                        class="w-full mt-4 flex items-center justify-center gap-2 bg-white text-ink font-semibold text-body rounded-pill py-4 border border-white hover:bg-white/90 snappy-transition">
+                        <span id="btn-text">Create free account</span>
+                        <span id="btn-spinner" class="hidden spinner"></span>
+                    </button>
+                </form>
             </div>
             
         </div>
@@ -303,6 +316,51 @@
                 document.getElementById('btn-text').textContent = 'Create free account';
                 document.getElementById('btn-spinner').classList.add('hidden');
             }
+        }
+    </script>
+    
+    <!-- ElasticMesh Background Integration -->
+    <script type="module">
+        import { initElasticMesh } from '../src/utils/elasticMesh.js';
+        
+        // Initialize for header card
+        const headerMeshContainer = document.getElementById('signup-header-mesh');
+        const headerCard = document.getElementById('signup-header-card');
+        if (headerMeshContainer && headerCard) {
+            initElasticMesh(headerMeshContainer, {
+                color1: '#fbe1d1',
+                color2: '#e5ab88',
+                highlight: '#ffffff',
+                showGrid: true,
+                gridDensity: 16,
+                gridOpacity: 0.15,
+                borderRadius: 24,
+                tilt: 10,
+                shading: 0.6,
+                interaction: 'hover',
+                opacity: 0.6,
+                eventTarget: headerCard
+            });
+        }
+
+        // Initialize for form card
+        const formMeshContainer = document.getElementById('signup-form-mesh');
+        const formCard = document.getElementById('signup-form-card');
+        if (formMeshContainer && formCard) {
+            initElasticMesh(formMeshContainer, {
+                color1: '#ffffff',
+                color2: '#d8e5ff',
+                highlight: '#ffffff',
+                showGrid: true,
+                gridDensity: 20,
+                gridOpacity: 0.12,
+                borderRadius: 24,
+                tilt: 10,
+                shading: 0.4,
+                interaction: 'hover',
+                opacity: 0.5,
+                eventTarget: formCard
+            });
         }
     </script>
 </body>

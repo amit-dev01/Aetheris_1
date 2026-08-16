@@ -85,7 +85,7 @@
 
     <!-- Background Video -->
     <div class="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
-        <video autoplay muted loop playsinline class="w-full h-full object-cover">
+        <video autoplay muted loop playsinline onended="this.play()" class="w-full h-full object-cover">
             <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260815_040604_b04410ba-c173-4b68-826d-212a24bccdad.mp4" type="video/mp4">
         </video>
     </div>
@@ -107,45 +107,58 @@
     <main class="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div class="w-full max-w-[480px]">
             
-            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-cards p-8 mb-8 text-center shadow-floating">
-                <h1 class="font-signifier text-heading-sm font-normal tracking-tight text-white mb-2">Sign in</h1>
-                <p class="text-caption text-white/80">Access your Aetheris account</p>
+            <!-- Header Card Wrapper -->
+            <div class="relative w-full mb-8">
+                <!-- WebGL mesh container behind card -->
+                <div class="absolute -inset-4 z-0 pointer-events-none" id="login-header-mesh"></div>
+                
+                <!-- The Card itself -->
+                <div id="login-header-card" class="bg-white/10 backdrop-blur-md border border-white/20 rounded-cards p-8 text-center shadow-floating relative z-10">
+                    <h1 class="font-signifier text-heading-sm font-normal tracking-tight text-white mb-2">Sign in</h1>
+                    <p class="text-caption text-white/80">Access your Aetheris account</p>
+                </div>
             </div>
 
-            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-cards shadow-floating p-8 md:p-10">
-                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5" novalidate>
+            <!-- Form Card Wrapper -->
+            <div class="relative w-full">
+                <!-- WebGL mesh container behind card -->
+                <div class="absolute -inset-4 z-0 pointer-events-none" id="login-form-mesh"></div>
                 
-                <!-- Email address -->
-                <div>
-                    <label for="email" class="block text-caption font-medium text-white mb-2">Email address</label>
-                    <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required
-                        class="w-full px-5 py-3.5 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
-                    <p id="email-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Please enter a valid email address.</p>
-                </div>
-
-                <!-- Password -->
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <label for="password" class="block text-caption font-medium text-white">Password</label>
-                        <a href="#" class="text-caption text-white/60 hover:text-white snappy-transition">Forgot?</a>
+                <!-- The Card itself -->
+                <div id="login-form-card" class="bg-white/10 backdrop-blur-md border border-white/20 rounded-cards shadow-floating p-8 md:p-10 relative z-10">
+                    <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5" novalidate>
+                    
+                    <!-- Email address -->
+                    <div>
+                        <label for="email" class="block text-caption font-medium text-white mb-2">Email address</label>
+                        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required
+                            class="w-full px-5 py-3.5 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
+                        <p id="email-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Please enter a valid email address.</p>
                     </div>
-                    <div class="relative">
-                        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required
-                            class="w-full px-5 py-3.5 pr-12 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
-                        <button type="button" onclick="togglePwLucide('password','eye1')" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white snappy-transition" aria-label="Toggle password visibility">
-                            <i id="eye1" data-lucide="eye" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                    <p id="password-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Password must be at least 6 characters.</p>
-                </div>
 
-                <!-- Submit -->
-                <button id="submit-btn" type="submit"
-                    class="w-full mt-4 flex items-center justify-center gap-2 bg-white text-ink font-semibold text-body rounded-pill py-4 border border-white hover:bg-white/90 snappy-transition">
-                    <span id="btn-text">Sign in</span>
-                    <span id="btn-spinner" class="hidden spinner"></span>
-                </button>
-            </form>
+                    <!-- Password -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="password" class="block text-caption font-medium text-white">Password</label>
+                            <a href="#" class="text-caption text-white/60 hover:text-white snappy-transition">Forgot?</a>
+                        </div>
+                        <div class="relative">
+                            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required
+                                class="w-full px-5 py-3.5 pr-12 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
+                            <button type="button" onclick="togglePwLucide('password','eye1')" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white snappy-transition" aria-label="Toggle password visibility">
+                                <i id="eye1" data-lucide="eye" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <p id="password-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Password must be at least 6 characters.</p>
+                    </div>
+
+                    <!-- Submit -->
+                    <button id="submit-btn" type="submit"
+                        class="w-full mt-4 flex items-center justify-center gap-2 bg-white text-ink font-semibold text-body rounded-pill py-4 border border-white hover:bg-white/90 snappy-transition">
+                        <span id="btn-text">Sign in</span>
+                        <span id="btn-spinner" class="hidden spinner"></span>
+                    </button>
+                </form>
             </div>
             
         </div>
@@ -230,6 +243,51 @@
                 document.getElementById('btn-text').textContent = 'Sign in';
                 document.getElementById('btn-spinner').classList.add('hidden');
             }
+        }
+    </script>
+    
+    <!-- ElasticMesh Background Integration -->
+    <script type="module">
+        import { initElasticMesh } from '../src/utils/elasticMesh.js';
+        
+        // Initialize for header card
+        const headerMeshContainer = document.getElementById('login-header-mesh');
+        const headerCard = document.getElementById('login-header-card');
+        if (headerMeshContainer && headerCard) {
+            initElasticMesh(headerMeshContainer, {
+                color1: '#fbe1d1',
+                color2: '#e5ab88',
+                highlight: '#ffffff',
+                showGrid: true,
+                gridDensity: 16,
+                gridOpacity: 0.15,
+                borderRadius: 24,
+                tilt: 10,
+                shading: 0.6,
+                interaction: 'hover',
+                opacity: 0.6,
+                eventTarget: headerCard
+            });
+        }
+
+        // Initialize for form card
+        const formMeshContainer = document.getElementById('login-form-mesh');
+        const formCard = document.getElementById('login-form-card');
+        if (formMeshContainer && formCard) {
+            initElasticMesh(formMeshContainer, {
+                color1: '#ffffff',
+                color2: '#d8e5ff',
+                highlight: '#ffffff',
+                showGrid: true,
+                gridDensity: 20,
+                gridOpacity: 0.12,
+                borderRadius: 24,
+                tilt: 10,
+                shading: 0.4,
+                interaction: 'hover',
+                opacity: 0.5,
+                eventTarget: formCard
+            });
         }
     </script>
 </body>

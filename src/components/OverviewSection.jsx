@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { getCompanyProfile, getCompetitors, getIntelligenceJobs } from '../api';
 import { formatMonitoredTimestamp, getEventTypeBadgeStyle } from '../constants';
+import BounceCards from './BounceCards/BounceCards';
 
 function KPICardCountUp({ value }) {
   const [count, setCount] = useState(0);
@@ -488,40 +489,55 @@ export default function OverviewSection() {
         </div>
       </section>
 
-      {/* ── Competitor Summary Counts ── */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard 
-          title="Total Discovered" 
-          value={totalCount} 
-          subtitle="Discovered by AI" 
-          icon={Users} 
-          type="total" 
-          index={0} 
-        />
-        <KPICard 
-          title="Direct Competitors" 
-          value={directCount} 
-          subtitle="Primary threats" 
-          icon={ShieldAlert} 
-          type="direct" 
-          index={1} 
-        />
-        <KPICard 
-          title="Indirect Competitors" 
-          value={indirectCount} 
-          subtitle="Substitutes & adjacent" 
-          icon={Target} 
-          type="indirect" 
-          index={2} 
-        />
-        <KPICard 
-          title="Emerging Threats" 
-          value={emergingCount} 
-          subtitle="Fast-growing startups" 
-          icon={Zap} 
-          type="emerging" 
-          index={3} 
-        />
+      {/* ── Competitor Summary Counts (Interactive Fan-out Deck) ── */}
+      <section className="flex justify-center items-center py-6 w-full overflow-visible">
+        <BounceCards
+          containerWidth="100%"
+          containerHeight={220}
+          animationDelay={0.4}
+          animationStagger={0.08}
+          easeType="elastic.out(1, 0.6)"
+          transformStyles={[
+            "rotate(-8deg) translate(-140px)",
+            "rotate(-3deg) translate(-45px)",
+            "rotate(3deg) translate(45px)",
+            "rotate(8deg) translate(140px)"
+          ]}
+          enableHover={true}
+        >
+          <KPICard 
+            title="Total Discovered" 
+            value={totalCount} 
+            subtitle="Discovered by AI" 
+            icon={Users} 
+            type="total" 
+            index={0} 
+          />
+          <KPICard 
+            title="Direct Competitors" 
+            value={directCount} 
+            subtitle="Primary threats" 
+            icon={ShieldAlert} 
+            type="direct" 
+            index={1} 
+          />
+          <KPICard 
+            title="Indirect Competitors" 
+            value={indirectCount} 
+            subtitle="Substitutes & adjacent" 
+            icon={Target} 
+            type="indirect" 
+            index={2} 
+          />
+          <KPICard 
+            title="Emerging Threats" 
+            value={emergingCount} 
+            subtitle="Fast-growing startups" 
+            icon={Zap} 
+            type="emerging" 
+            index={3} 
+          />
+        </BounceCards>
       </section>
 
       {/* ── Action Center Summary Card ── */}

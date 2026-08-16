@@ -1,6 +1,7 @@
 import { useState, createContext, useEffect, useRef } from 'react';
 import { Bot, Target, Rss, Users, LayoutDashboard, Settings, LogOut, ChevronRight, Moon, Sun, Loader2, CheckCircle2, AlertCircle, TrendingUp, Bell, CheckSquare } from 'lucide-react';
 import OverviewSection from './components/OverviewSection';
+import FloatingLines from './components/FloatingLines/FloatingLines';
 import CompetitorsSection from './components/CompetitorsSection';
 import MarketIntelligenceSection from './components/MarketIntelligenceSection';
 import AIStrategySection from './components/AIStrategySection';
@@ -40,7 +41,7 @@ export default function App() {
   const [videoError, setVideoError] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const videoRef = useRef(null);
-  const isVideoActive = videoLoaded && !videoError && !reducedMotion;
+  const isVideoActive = true;
 
   // Global Intelligence State
   const [intelligenceStats, setIntelligenceStats] = useState(null);
@@ -402,24 +403,26 @@ export default function App() {
     <DbContext.Provider value={contextValue}>
       <div className={`flex h-screen text-slate-900 dark:text-slate-100 font-sans relative overflow-hidden transition-colors duration-300 ${isVideoActive ? 'bg-transparent' : 'bg-[#F6F8FC] dark:bg-black'}`}>
         
-        {/* Global Background Video */}
-        <video
-          ref={videoRef}
-          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260629_021419_291eb2af-5ed4-45a0-a1d6-3ef58f4bca0b.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          onCanPlay={() => setVideoLoaded(true)}
-          onError={() => setVideoError(true)}
-          className={`fixed inset-0 w-full h-full object-cover pointer-events-none z-0 transition-opacity duration-700 ${isVideoActive ? 'opacity-100' : 'opacity-0'}`}
-        />
-        
         {/* Global Video Overlay (Subdued off-white in light mode, dark navy in dark mode) */}
         {isVideoActive && (
           <div className="fixed inset-0 bg-[#F6F8FC]/92 dark:bg-slate-950/85 pointer-events-none z-0 transition-colors duration-300" />
         )}
+
+        {/* Global Background FloatingLines */}
+        <div className="fixed inset-0 w-full h-full pointer-events-none z-0">
+          <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+            <FloatingLines
+              linesGradient={["#E945F5","#2F4BC0","#E945F5"]}
+              animationSpeed={1}
+              interactive
+              bendRadius={5}
+              bendStrength={-0.5}
+              mouseDamping={0.05}
+              parallax
+              parallaxStrength={0.2}
+            />
+          </div>
+        </div>
 
         {/* Global Toast Message */}
         {toast.show && (
