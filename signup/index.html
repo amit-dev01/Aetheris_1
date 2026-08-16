@@ -88,86 +88,93 @@
     </style>
 </head>
 
-<body class="bg-fog text-ink font-sohne text-body selection:bg-blush selection:text-sienna min-h-screen flex flex-col">
+<body class="bg-fog text-ink font-sohne text-body selection:bg-blush selection:text-sienna min-h-screen flex flex-col relative">
+
+    <!-- Background Video -->
+    <div class="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
+        <video autoplay muted loop playsinline class="w-full h-full object-cover">
+            <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260815_040604_b04410ba-c173-4b68-826d-212a24bccdad.mp4" type="video/mp4">
+        </video>
+    </div>
 
     <!-- Navbar -->
     <nav class="w-full bg-transparent sticky top-0 z-50">
         <div class="max-w-[1200px] mx-auto px-6 h-20 flex items-center justify-between">
             <a href="/" class="flex items-center gap-3">
-                <span class="font-signifier font-normal text-2xl text-ink">Aetheris</span>
+                <span class="font-signifier font-normal text-2xl text-white" style="text-shadow: 0 1px 4px rgba(0,0,0,0.4);">Aetheris</span>
             </a>
             <div class="flex items-center gap-3">
-                <span class="text-caption text-slate hidden sm:inline">Already have an account?</span>
-                <a href="/login/" class="text-caption text-ink hover:text-slate snappy-transition">Sign in <i data-lucide="arrow-right" class="w-4 h-4 inline-block -mt-0.5"></i></a>
+                <span class="text-caption text-white/90 font-semibold hidden sm:inline" style="text-shadow: 0 1px 4px rgba(0,0,0,0.4);">Already have an account?</span>
+                <a href="/login/" class="text-caption text-white font-bold hover:text-white/80 snappy-transition" style="text-shadow: 0 1px 4px rgba(0,0,0,0.4);">Sign in <i data-lucide="arrow-right" class="w-4 h-4 inline-block -mt-0.5"></i></a>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-1 flex items-center justify-center px-6 py-12 relative">
+    <main class="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div class="w-full max-w-[480px]">
             
-            <div class="bg-blush rounded-cards p-8 mb-8 text-center">
-                <h1 class="font-signifier text-heading-sm font-normal tracking-tight text-sienna mb-2">Create account</h1>
-                <p class="text-caption text-sienna">Get boardroom-ready reports in 60 seconds.</p>
+            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-cards p-8 mb-8 text-center shadow-floating">
+                <h1 class="font-signifier text-heading-sm font-normal tracking-tight text-white mb-2">Create account</h1>
+                <p class="text-caption text-white/80">Get boardroom-ready reports in 60 seconds.</p>
             </div>
 
-            <div class="bg-paper rounded-cards shadow-floating p-8 md:p-10">
+            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-cards shadow-floating p-8 md:p-10">
                 <form id="signup-form" onsubmit="handleSignup(event)" class="space-y-5" novalidate>
                 
                 <!-- Full name -->
                 <div>
-                    <label for="name" class="block text-caption font-medium text-ink mb-2">Full name</label>
+                    <label for="name" class="block text-caption font-medium text-white mb-2">Full name</label>
                     <input id="name" name="name" type="text" autocomplete="name" placeholder="Alex Johnson" required
-                        class="w-full px-5 py-3.5 bg-paper border border-mist rounded-inputs text-body text-ink placeholder-smoke focus:outline-none focus:border-slate snappy-transition" />
-                    <p id="name-error" class="hidden mt-2 text-[14px] font-medium text-sienna bg-blush px-3 py-1.5 rounded-md inline-block">Please enter your full name.</p>
+                        class="w-full px-5 py-3.5 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
+                    <p id="name-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Please enter your full name.</p>
                 </div>
 
                 <!-- Work email -->
                 <div>
-                    <label for="email" class="block text-caption font-medium text-ink mb-2">Work email</label>
+                    <label for="email" class="block text-caption font-medium text-white mb-2">Work email</label>
                     <input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required
-                        class="w-full px-5 py-3.5 bg-paper border border-mist rounded-inputs text-body text-ink placeholder-smoke focus:outline-none focus:border-slate snappy-transition" />
-                    <p id="email-error" class="hidden mt-2 text-[14px] font-medium text-sienna bg-blush px-3 py-1.5 rounded-md inline-block">Please enter a valid email address.</p>
+                        class="w-full px-5 py-3.5 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
+                    <p id="email-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Please enter a valid email address.</p>
                 </div>
 
                 <!-- Password -->
                 <div>
-                    <label for="password" class="block text-caption font-medium text-ink mb-2">Password</label>
+                    <label for="password" class="block text-caption font-medium text-white mb-2">Password</label>
                     <div class="relative">
                         <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Create a strong password" required
                             oninput="checkStrength(this.value)"
-                            class="w-full px-5 py-3.5 pr-12 bg-paper border border-mist rounded-inputs text-body text-ink placeholder-smoke focus:outline-none focus:border-slate snappy-transition" />
-                        <button type="button" onclick="togglePwLucide('password','eye1')" class="absolute right-4 top-1/2 -translate-y-1/2 text-smoke hover:text-ink snappy-transition" aria-label="Toggle password">
+                            class="w-full px-5 py-3.5 pr-12 bg-white/5 border border-white/15 rounded-inputs text-body text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:bg-white/10 snappy-transition" />
+                        <button type="button" onclick="togglePwLucide('password','eye1')" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white snappy-transition" aria-label="Toggle password">
                             <i id="eye1" data-lucide="eye" class="w-5 h-5"></i>
                         </button>
                     </div>
                     
                     <!-- Strength bars -->
                     <div class="flex gap-1.5 mt-3">
-                        <div id="bar1" class="strength-bar flex-1 bg-mist"></div>
-                        <div id="bar2" class="strength-bar flex-1 bg-mist"></div>
-                        <div id="bar3" class="strength-bar flex-1 bg-mist"></div>
-                        <div id="bar4" class="strength-bar flex-1 bg-mist"></div>
+                        <div id="bar1" class="strength-bar flex-1 bg-white/20"></div>
+                        <div id="bar2" class="strength-bar flex-1 bg-white/20"></div>
+                        <div id="bar3" class="strength-bar flex-1 bg-white/20"></div>
+                        <div id="bar4" class="strength-bar flex-1 bg-white/20"></div>
                     </div>
                     <p id="strength-label" class="hidden mt-2 text-[13px] font-medium"></p>
-                    <p id="password-error" class="hidden mt-2 text-[14px] font-medium text-sienna bg-blush px-3 py-1.5 rounded-md inline-block">Password must be at least 8 characters.</p>
+                    <p id="password-error" class="hidden mt-2 text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block">Password must be at least 8 characters.</p>
                 </div>
 
                 <!-- Terms -->
                 <div class="flex items-start gap-3 mt-8">
                     <input id="terms" name="terms" type="checkbox"
-                        class="mt-1 w-4 h-4 rounded-sm border border-slate accent-ink cursor-pointer shrink-0" />
-                    <label for="terms" class="text-caption text-slate cursor-pointer">
-                        I agree to the <a href="#" class="text-ink hover:underline">Terms</a> and
-                        <a href="#" class="text-ink hover:underline">Privacy Policy</a>
+                        class="mt-1 w-4 h-4 rounded-sm border border-white/30 accent-white cursor-pointer shrink-0" />
+                    <label for="terms" class="text-caption text-white/80 cursor-pointer">
+                        I agree to the <a href="#" class="text-white underline hover:text-white/80">Terms</a> and
+                        <a href="#" class="text-white underline hover:text-white/80">Privacy Policy</a>
                     </label>
                 </div>
-                <p id="terms-error" class="hidden text-[14px] font-medium text-sienna bg-blush px-3 py-1.5 rounded-md inline-block mt-1">You must agree to the terms to continue.</p>
+                <p id="terms-error" class="hidden text-[14px] font-medium text-red-200 bg-red-950/40 border border-red-500/30 px-3 py-1.5 rounded-md inline-block mt-1">You must agree to the terms to continue.</p>
 
                 <!-- Submit -->
                 <button id="submit-btn" type="submit"
-                    class="w-full mt-4 flex items-center justify-center gap-2 bg-ink text-paper font-medium text-body rounded-pill py-4 border border-ink hover:opacity-90 snappy-transition">
+                    class="w-full mt-4 flex items-center justify-center gap-2 bg-white text-ink font-semibold text-body rounded-pill py-4 border border-white hover:bg-white/90 snappy-transition">
                     <span id="btn-text">Create free account</span>
                     <span id="btn-spinner" class="hidden spinner"></span>
                 </button>
@@ -216,12 +223,12 @@
             if (/[0-9]/.test(val)) score++;
             if (/[^A-Za-z0-9]/.test(val)) score++;
 
-            const colors = ['#5d2a1a', '#979799', '#777b86', '#17191c'];
+            const colors = ['#fca5a5', '#fdba74', '#fde047', '#86efac'];
             const labels = ['Weak', 'Fair', 'Good', 'Strong'];
 
             bars.forEach((b, i) => {
                 b.style.backgroundColor = i < score ? colors[score - 1] : '';
-                b.className = 'strength-bar flex-1 ' + (i < score ? '' : 'bg-mist');
+                b.className = 'strength-bar flex-1 ' + (i < score ? '' : 'bg-white/20');
             });
 
             if (val.length > 0) {

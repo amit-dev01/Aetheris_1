@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { DbContext } from '../App';
 import { 
   AlertCircle, AlertTriangle, Lightbulb, ShieldAlert, Users, Target, Zap, Clock, RefreshCw, 
@@ -6,6 +6,242 @@ import {
 } from 'lucide-react';
 import { getCompanyProfile, getCompetitors, getIntelligenceJobs } from '../api';
 import { formatMonitoredTimestamp, getEventTypeBadgeStyle } from '../constants';
+
+function KPICardCountUp({ value }) {
+  const [count, setCount] = useState(0);
+  const elementRef = useRef(null);
+  const valueRef = useRef(value);
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setCount(value);
+      return;
+    }
+
+    let animated = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !animated && valueRef.current >= 0) {
+          animated = true;
+          let startTimestamp = null;
+          const duration = 1000;
+          const startVal = 0;
+          const endVal = valueRef.current;
+
+          if (endVal === 0) {
+            setCount(0);
+            return;
+          }
+
+          const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const easeProgress = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.floor(startVal + easeProgress * (endVal - startVal)));
+            if (progress < 1) {
+              window.requestAnimationFrame(step);
+            }
+          };
+          window.requestAnimationFrame(step);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [value]);
+
+  return <span ref={elementRef}>{count}</span>;
+}
+
+function KPICard({ title, value, subtitle, icon: Icon, type, index }) {
+  const { isVideoActive } = useContext(DbContext) || {};
+  const cardRef = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const target = useRef({ x: 0, y: 0 });
+  const current = useRef({ x: 0, y: 0 });
+  const rafId = useRef(null);
+
+  // Styling based on card type
+  let borderClass = '';
+  let borderHoverClass = '';
+  let titleColorClass = '';
+  let countColorClass = '';
+  let subtitleColorClass = '';
+  let iconColorClass = '';
+  let glowClass = '';
+  let iconHoverClass = '';
+
+  switch (type) {
+    case 'direct':
+      borderClass = 'border-[#E2E8F0] dark:border-red-900/30';
+      borderHoverClass = 'border-red-300/80 dark:border-red-700/50';
+      titleColorClass = 'text-red-600 dark:text-red-400';
+      countColorClass = 'text-red-600 dark:text-red-400';
+      subtitleColorClass = 'text-red-500/80';
+      iconColorClass = 'text-red-500';
+      glowClass = 'shadow-[0_12px_30px_-4px_rgba(239,68,68,0.12)]';
+      iconHoverClass = 'rotate-12 scale-105';
+      break;
+    case 'indirect':
+      borderClass = 'border-[#E2E8F0] dark:border-amber-900/30';
+      borderHoverClass = 'border-amber-300/80 dark:border-amber-700/50';
+      titleColorClass = 'text-amber-600 dark:text-amber-500';
+      countColorClass = 'text-amber-600 dark:text-amber-500';
+      subtitleColorClass = 'text-amber-500/80';
+      iconColorClass = 'text-amber-500';
+      glowClass = 'shadow-[0_12px_30px_-4px_rgba(245,158,11,0.12)]';
+      iconHoverClass = 'scale-110';
+      break;
+    case 'emerging':
+      borderClass = 'border-[#E2E8F0] dark:border-blue-900/30';
+      borderHoverClass = 'border-blue-300/80 dark:border-blue-700/50';
+      titleColorClass = 'text-blue-600 dark:text-blue-400';
+      countColorClass = 'text-blue-600 dark:text-blue-400';
+      subtitleColorClass = 'text-blue-500/80';
+      iconColorClass = 'text-blue-500';
+      glowClass = 'shadow-[0_12px_30px_-4px_rgba(59,130,246,0.12)]';
+      iconHoverClass = 'translate-y-[-2px] scale-110';
+      break;
+    case 'total':
+    default:
+      borderClass = 'border-[#E2E8F0] dark:border-slate-800';
+      borderHoverClass = 'border-slate-300 dark:border-slate-700';
+      titleColorClass = 'text-slate-500 dark:text-slate-400';
+      countColorClass = 'text-slate-900 dark:text-white';
+      subtitleColorClass = 'text-slate-400';
+      iconColorClass = 'text-slate-400';
+      glowClass = 'shadow-[0_12px_30px_-4px_rgba(148,163,184,0.12)]';
+      iconHoverClass = 'scale-110';
+      break;
+  }
+
+  const startLoop = () => {
+    if (rafId.current) return;
+    const tick = () => {
+      const dx = target.current.x - current.current.x;
+      const dy = target.current.y - current.current.y;
+
+      current.current.x += dx * 0.15;
+      current.current.y += dy * 0.15;
+
+      if (cardRef.current) {
+        cardRef.current.style.transform = `perspective(1000px) rotateX(${current.current.x}deg) rotateY(${current.current.y}deg)`;
+      }
+
+      const isCloseX = Math.abs(current.current.x - target.current.x) < 0.01;
+      const isCloseY = Math.abs(current.current.y - target.current.y) < 0.01;
+
+      if (!isHovered && isCloseX && isCloseY) {
+        current.current.x = 0;
+        current.current.y = 0;
+        if (cardRef.current) {
+          cardRef.current.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+        }
+        rafId.current = null;
+      } else {
+        rafId.current = requestAnimationFrame(tick);
+      }
+    };
+    rafId.current = requestAnimationFrame(tick);
+  };
+
+  const onMouseMove = (e) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const normX = (x / rect.width) - 0.5;
+    const normY = (y / rect.height) - 0.5;
+
+    target.current.x = normY * -3;
+    target.current.y = normX * 3;
+  };
+
+  const onMouseEnter = () => {
+    setIsHovered(true);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    startLoop();
+  };
+
+  const onMouseLeave = () => {
+    setIsHovered(false);
+    target.current.x = 0;
+    target.current.y = 0;
+  };
+
+  useEffect(() => {
+    return () => {
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+    };
+  }, []);
+
+  const delay = index * 80;
+
+  return (
+    <div 
+      className="kpi-card-entrance"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div 
+        className={`transform transition-transform duration-300 ease-out ${isHovered ? '-translate-y-1' : 'translate-y-0'}`}
+      >
+        <div
+          ref={cardRef}
+          onMouseMove={onMouseMove}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          className={`rounded-2xl p-6 border cursor-default select-none
+            transition-all duration-300 ease-out light-surface-kpi
+            ${borderClass}
+            ${isVideoActive 
+              ? 'dark:bg-slate-900/60 dark:border-slate-800/50 dark:backdrop-blur-md dark:shadow-none' 
+              : 'dark:bg-slate-900 dark:border-slate-800 dark:shadow-none'
+            }
+            ${isHovered ? `${borderHoverClass} ${glowClass}` : ''}
+          `}
+          style={{
+            transformStyle: 'preserve-3d',
+            backfaceVisibility: 'hidden',
+          }}
+        >
+          <div 
+            className="flex items-center justify-between text-xs font-bold uppercase tracking-wider mb-2"
+            style={{ transform: 'translateZ(15px)' }}
+          >
+            <span className={titleColorClass}>{title}</span>
+            <Icon 
+              size={18} 
+              className={`transition-transform duration-300 ease-out ${iconColorClass} ${isHovered ? iconHoverClass : ''}`} 
+            />
+          </div>
+          <div 
+            className={`text-3xl font-black ${countColorClass}`}
+            style={{ transform: 'translateZ(25px)' }}
+          >
+            <KPICardCountUp value={value} />
+          </div>
+          <div 
+            className={`text-xs mt-1 font-medium ${subtitleColorClass}`}
+            style={{ transform: 'translateZ(10px)' }}
+          >
+            {subtitle}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function OverviewSection() {
   const context = useContext(DbContext) || {};
@@ -18,13 +254,18 @@ export default function OverviewSection() {
     checkStatus,
     startCheck,
     setActiveSection,
-    taskStats
+    taskStats,
+    isVideoActive
   } = context;
 
   const [profile, setProfile] = useState(companyProfile || null);
   const [competitorsData, setCompetitorsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Hero Animation State
+  const [heroAnimated, setHeroAnimated] = useState(false);
+  const heroRef = useRef(null);
   
   // Jobs State
   const [showJobsModal, setShowJobsModal] = useState(false);
@@ -75,6 +316,40 @@ export default function OverviewSection() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setHeroAnimated(true);
+      return;
+    }
+
+    let timeoutId = null;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          timeoutId = setTimeout(() => {
+            setHeroAnimated(true);
+          }, 50);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    if (heroRef.current) {
+      observer.observe(heroRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [loading]);
+
+
 
   if (loading) {
     return (
@@ -180,22 +455,32 @@ export default function OverviewSection() {
       )}
       
       {/* ── Main Overview Heading ── */}
-      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <section 
+        ref={heroRef}
+        className={`hero-container rounded-2xl border p-8 relative overflow-hidden transition-all duration-300 light-surface-panel
+          ${heroAnimated ? 'hero-animated' : ''} 
+          ${isVideoActive 
+            ? 'hero-video-active dark:bg-slate-900/60 dark:border-slate-800/50 dark:backdrop-blur-md dark:shadow-none' 
+            : 'dark:bg-slate-900 dark:border-slate-800 dark:shadow-none'
+          }`}
+      >
+        <div className="hero-ambient-glow pointer-events-none" />
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">
+            <div className="hero-kicker text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">
               Market Baseline & Intelligence
             </div>
             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              {companyName} <span className="font-normal text-slate-500">Competitive Intelligence</span>
+              <span className="hero-title-part1 mr-2">{companyName}</span>
+              <span className="hero-title-part2 font-normal text-slate-500">Competitive Intelligence</span>
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            <p className="hero-subtitle text-slate-500 dark:text-slate-400 text-sm mt-1">
               {profile?.industry || profile?.description || 'Real-time market surveillance'}
             </p>
           </div>
 
           {briefGeneratedAt && (
-            <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 font-medium bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800">
+            <div className="hero-meta flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 font-medium bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800">
               <Clock size={14} />
               <span>Last updated: {new Date(briefGeneratedAt).toLocaleString()}</span>
             </div>
@@ -205,55 +490,48 @@ export default function OverviewSection() {
 
       {/* ── Competitor Summary Counts ── */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
-            <span>Total Discovered</span>
-            <Users size={18} className="text-slate-400" />
-          </div>
-          <div className="text-3xl font-black text-slate-900 dark:text-white">
-            {totalCount}
-          </div>
-          <div className="text-xs text-slate-400 mt-1 font-medium">Discovered by AI</div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-red-200/60 dark:border-red-900/30 p-6 shadow-sm">
-          <div className="flex items-center justify-between text-red-600 dark:text-red-400 text-xs font-bold uppercase tracking-wider mb-2">
-            <span>Direct Competitors</span>
-            <ShieldAlert size={18} className="text-red-500" />
-          </div>
-          <div className="text-3xl font-black text-red-600 dark:text-red-400">
-            {directCount}
-          </div>
-          <div className="text-xs text-red-500/80 mt-1 font-medium">Primary threats</div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-amber-200/60 dark:border-amber-900/30 p-6 shadow-sm">
-          <div className="flex items-center justify-between text-amber-600 dark:text-amber-500 text-xs font-bold uppercase tracking-wider mb-2">
-            <span>Indirect Competitors</span>
-            <Target size={18} className="text-amber-500" />
-          </div>
-          <div className="text-3xl font-black text-amber-600 dark:text-amber-500">
-            {indirectCount}
-          </div>
-          <div className="text-xs text-amber-500/80 mt-1 font-medium">Substitutes & adjacent</div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-blue-200/60 dark:border-blue-900/30 p-6 shadow-sm">
-          <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-2">
-            <span>Emerging Threats</span>
-            <Zap size={18} className="text-blue-500" />
-          </div>
-          <div className="text-3xl font-black text-blue-600 dark:text-blue-400">
-            {emergingCount}
-          </div>
-          <div className="text-xs text-blue-500/80 mt-1 font-medium">Fast-growing startups</div>
-        </div>
+        <KPICard 
+          title="Total Discovered" 
+          value={totalCount} 
+          subtitle="Discovered by AI" 
+          icon={Users} 
+          type="total" 
+          index={0} 
+        />
+        <KPICard 
+          title="Direct Competitors" 
+          value={directCount} 
+          subtitle="Primary threats" 
+          icon={ShieldAlert} 
+          type="direct" 
+          index={1} 
+        />
+        <KPICard 
+          title="Indirect Competitors" 
+          value={indirectCount} 
+          subtitle="Substitutes & adjacent" 
+          icon={Target} 
+          type="indirect" 
+          index={2} 
+        />
+        <KPICard 
+          title="Emerging Threats" 
+          value={emergingCount} 
+          subtitle="Fast-growing startups" 
+          icon={Zap} 
+          type="emerging" 
+          index={3} 
+        />
       </section>
 
       {/* ── Action Center Summary Card ── */}
       <section 
         onClick={() => setActiveSection && setActiveSection('tasks')}
-        className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm cursor-pointer hover:border-blue-500 transition-colors flex items-center justify-between"
+        className={`rounded-2xl p-6 cursor-pointer hover:border-blue-500 transition-all duration-300 flex items-center justify-between border light-surface-panel
+          ${isVideoActive 
+            ? 'dark:bg-slate-900/60 dark:border-slate-800/50 dark:backdrop-blur-md dark:shadow-none' 
+            : 'dark:bg-slate-900 dark:border-slate-800 dark:shadow-none'
+          }`}
       >
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
@@ -277,7 +555,12 @@ export default function OverviewSection() {
 
       {/* ── AI Executive Brief Block ── */}
       {executiveBrief && (
-        <section className="bg-white dark:bg-slate-900 rounded-2xl border border-blue-200 dark:border-blue-900/40 p-6 md:p-8 shadow-sm space-y-3">
+        <section className={`rounded-2xl p-6 md:p-8 space-y-3 border transition-all duration-300 light-surface-panel
+          ${isVideoActive 
+            ? 'dark:bg-slate-900/60 dark:border-blue-900/30 dark:backdrop-blur-md dark:shadow-none' 
+            : 'dark:bg-slate-900 dark:border-blue-900/40 dark:shadow-none'
+          }`}
+        >
           <div className="flex items-center gap-2.5 text-blue-600 dark:text-blue-400 font-extrabold text-lg">
             <span className="w-3 h-3 rounded-full bg-blue-600 animate-pulse" />
             Executive Brief
@@ -327,7 +610,7 @@ export default function OverviewSection() {
 
       {/* ── Phase 2: Most Active Competitors Section ── */}
       {mostActiveCompetitors.length > 0 && (
-        <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-sm space-y-4">
+        <section className="rounded-3xl border p-6 md:p-8 space-y-4 light-surface-panel dark:bg-slate-900 dark:border-slate-800 dark:shadow-none">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-slate-900 dark:text-white font-extrabold text-lg">
               <TrendingUp size={22} className="text-blue-600 dark:text-blue-400" />
@@ -376,7 +659,7 @@ export default function OverviewSection() {
           
           {/* Main Threats Block */}
           {mainThreats.length > 0 && (
-            <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 p-6 rounded-2xl shadow-sm space-y-4">
+            <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 p-6 rounded-2xl shadow-sm space-y-4">
               <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-base">
                 <AlertCircle size={22} />
                 Main Threats
@@ -394,7 +677,7 @@ export default function OverviewSection() {
 
           {/* Key Opportunity Block */}
           {keyOpportunity && (
-            <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 p-6 rounded-2xl shadow-sm space-y-3">
+            <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 p-6 rounded-2xl shadow-sm space-y-3">
               <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-base">
                 <Lightbulb size={22} />
                 Key Opportunity
@@ -409,7 +692,7 @@ export default function OverviewSection() {
       )}
 
       {/* ── Phase 2: Footer Last Monitored Timestamp & Refresh Button ── */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+      <section className="border rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 light-surface-panel dark:bg-slate-900 dark:border-slate-800 dark:shadow-none">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
             <Clock size={18} className="text-slate-400 shrink-0" />

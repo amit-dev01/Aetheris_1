@@ -20,7 +20,9 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ["'Nimbus Sans TW01'", "'Helvetica Neue'", 'Helvetica', 'Arial', 'sans-serif'],
+        serif: ["'Source Serif 4'", 'ui-serif', 'Georgia', 'serif'],
+        signifier: ["'Source Serif 4'", 'ui-serif', 'Georgia', 'serif'],
         kalam: ['Inter', 'sans-serif'],
         patrick: ['Inter', 'sans-serif'],
       },

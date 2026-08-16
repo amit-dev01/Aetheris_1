@@ -35,6 +35,13 @@ export default function App() {
   const [appState, setAppState] = useState('LOADING'); // LOADING, ONBOARDING, PROCESSING, DASHBOARD
   const [companyProfile, setCompanyProfile] = useState(null);
 
+  // Global Background Video State
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const videoRef = useRef(null);
+  const isVideoActive = videoLoaded && !videoError && !reducedMotion;
+
   // Global Intelligence State
   const [intelligenceStats, setIntelligenceStats] = useState(null);
   const [intelligenceAlerts, setIntelligenceAlerts] = useState(null);
@@ -246,6 +253,27 @@ export default function App() {
     }
   }, []);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(mediaQuery.matches);
+
+    const listener = (e) => setReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isVideoActive) {
+        videoRef.current.play().catch(err => {
+          console.warn('Global background video playback failed:', err);
+        });
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isVideoActive]);
+
   const toggleTheme = () => {
     setIsDarkMode(prev => {
       const next = !prev;
@@ -366,13 +394,33 @@ export default function App() {
     showToast,
     selectedCompetitorFilter,
     setSelectedCompetitorFilter,
-    setActiveSection
+    setActiveSection,
+    isVideoActive
   };
 
   return (
     <DbContext.Provider value={contextValue}>
-      <div className="flex h-screen bg-slate-100 dark:bg-black text-slate-900 dark:text-slate-100 font-sans">
+      <div className={`flex h-screen text-slate-900 dark:text-slate-100 font-sans relative overflow-hidden transition-colors duration-300 ${isVideoActive ? 'bg-transparent' : 'bg-[#F6F8FC] dark:bg-black'}`}>
         
+        {/* Global Background Video */}
+        <video
+          ref={videoRef}
+          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260629_021419_291eb2af-5ed4-45a0-a1d6-3ef58f4bca0b.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          onCanPlay={() => setVideoLoaded(true)}
+          onError={() => setVideoError(true)}
+          className={`fixed inset-0 w-full h-full object-cover pointer-events-none z-0 transition-opacity duration-700 ${isVideoActive ? 'opacity-100' : 'opacity-0'}`}
+        />
+        
+        {/* Global Video Overlay (Subdued off-white in light mode, dark navy in dark mode) */}
+        {isVideoActive && (
+          <div className="fixed inset-0 bg-[#F6F8FC]/92 dark:bg-slate-950/85 pointer-events-none z-0 transition-colors duration-300" />
+        )}
+
         {/* Global Toast Message */}
         {toast.show && (
           <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in text-sm font-semibold border ${
@@ -390,7 +438,11 @@ export default function App() {
         )}
 
         {/* ── Left Sidebar ── */}
-        <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col hidden md:flex shrink-0 z-10">
+        <aside className={`w-64 border-r border-slate-200/80 dark:border-slate-800 flex flex-col hidden md:flex shrink-0 z-10 transition-all duration-300 light-surface-sidebar ${
+          isVideoActive 
+            ? 'dark:bg-slate-900/60 dark:backdrop-blur-md' 
+            : 'dark:bg-slate-900'
+        }`}>
           <div className="p-6 border-b border-slate-200 dark:border-slate-800">
             <h1 className="font-bold text-xl flex items-center gap-2 text-slate-900 dark:text-white">
               <span className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
@@ -403,10 +455,10 @@ export default function App() {
           <div className="px-4 py-6 border-b border-slate-200 dark:border-slate-800">
             <button 
               onClick={() => setIsAgentOpen(true)}
-              className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl hover:bg-slate-800 dark:hover:bg-white transition-colors shadow-sm font-medium"
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-white border border-slate-200/80 text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.04)] hover:bg-slate-50/50 dark:bg-slate-100 dark:text-slate-900 dark:border-transparent dark:hover:bg-white transition-all duration-200 rounded-xl font-medium"
             >
               <span className="flex items-center gap-2">
-                <Bot size={18} className="text-blue-400 dark:text-blue-600" />
+                <Bot size={18} className="text-blue-500 dark:text-blue-600" />
                 Ask Agent
               </span>
               <ChevronRight size={16} className="opacity-50" />
@@ -420,10 +472,10 @@ export default function App() {
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors font-medium text-sm
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm
                     ${active 
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
-                      : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                      ? 'bg-blue-600/[0.08] text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' 
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50'
                     }`}
                 >
                   <span className="flex items-center gap-3">
@@ -447,7 +499,7 @@ export default function App() {
           <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-1">
             <button 
               onClick={toggleTheme}
-              className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors font-medium text-sm"
+              className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 transition-all duration-200 font-medium text-sm"
             >
               <span className="flex items-center gap-3">
                 {isDarkMode ? <Sun size={18} /> : <Moon size={18} />} 
@@ -456,17 +508,17 @@ export default function App() {
             </button>
             <button 
               onClick={() => setActiveSection('settings')}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors font-medium text-sm
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-medium text-sm
                 ${activeSection === 'settings' 
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                  ? 'bg-blue-600/[0.08] text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' 
+                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50'
                 }`}
             >
               <Settings size={18} /> Settings
             </button>
             <button 
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors font-medium text-sm"
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 transition-all duration-200 font-medium text-sm"
             >
               <LogOut size={18} /> Log out
             </button>
@@ -474,9 +526,13 @@ export default function App() {
         </aside>
 
         {/* ── Main Content Area ── */}
-        <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        <main className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
           {/* Mobile Header */}
-          <header className="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between gap-3">
+          <header className={`md:hidden border-b border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between gap-3 transition-all duration-300 light-surface-panel ${
+            isVideoActive 
+              ? 'dark:bg-slate-900/60 dark:backdrop-blur-md' 
+              : 'dark:bg-slate-900'
+          }`}>
              <div className="flex items-center gap-3">
                <span className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
                   Ae
