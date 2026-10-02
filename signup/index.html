@@ -286,7 +286,10 @@
             btn.classList.add('opacity-80', 'cursor-not-allowed');
 
             try {
-                const apiBaseUrl = (window.VITE_API_BASE_URL || 'https://ai-backend-zfq1.onrender.com').replace(/\/$/, '');
+                const apiBaseUrl = (
+                    window.VITE_API_BASE_URL ||
+                    ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:8000' : 'https://ai-backend-zfq1.onrender.com')
+                ).replace(/\/$/, '');
                 const res = await fetch(`${apiBaseUrl}/api/auth/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
