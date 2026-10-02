@@ -165,7 +165,20 @@ export default function App() {
       }
     } catch (err) {
       console.error('Route protection check error:', err);
-      setAppState('ONBOARDING');
+      if (err.status === 401 || err.status === 403) {
+        clearAuthSession();
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login/';
+        }
+        return;
+      }
+      showToast(err.message || 'Connecting to backend...', 'error');
+      // If companyProfile is already cached in state, stay on dashboard
+      if (companyProfile) {
+        setAppState('DASHBOARD');
+      } else {
+        setAppState('ONBOARDING');
+      }
     }
   };
 
