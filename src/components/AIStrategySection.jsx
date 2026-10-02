@@ -3,10 +3,12 @@ import { DbContext } from '../App';
 import { 
   Target, ShieldAlert, Lightbulb, Eye, CheckSquare, Square, 
   ArrowRight, Loader2, AlertCircle, RefreshCw, Sparkles, Building,
-  Bell, TrendingUp, TrendingDown, Clock
+  Bell, TrendingUp, TrendingDown, Clock, FileDown
 } from 'lucide-react';
-import { getIntelligenceSummary, generateIntelligenceSummary } from '../api';
+import { getIntelligenceSummary, generateIntelligenceSummary, downloadBoardroomPdf } from '../api';
 import { formatBriefTimestamp } from '../constants';
+import PositioningRadar from './PositioningRadar';
+import PricingMatrixWidget from './PricingMatrixWidget';
 
 export default function AIStrategySection() {
   const context = useContext(DbContext) || {};
@@ -23,6 +25,7 @@ export default function AIStrategySection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   // Checkbox State for Strategic Recommendations (localStorage keyed by companyId & weeklyBriefGeneratedAt)
   const [checkedRecs, setCheckedRecs] = useState({});
@@ -93,6 +96,21 @@ export default function AIStrategySection() {
       console.error(err);
       showToast(err.message || 'Failed to generate AI brief', 'error');
       setIsGenerating(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (isDownloadingPdf) return;
+    setIsDownloadingPdf(true);
+    showToast('Generating institutional Boardroom PDF report...', 'success');
+    try {
+      await downloadBoardroomPdf();
+      showToast('Boardroom PDF downloaded successfully!', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Failed to download Boardroom PDF.', 'error');
+    } finally {
+      setIsDownloadingPdf(false);
     }
   };
 
@@ -173,6 +191,25 @@ export default function AIStrategySection() {
         </div>
 
         <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleDownloadPdf}
+            disabled={isDownloadingPdf}
+            className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/60 border border-slate-200 dark:border-slate-700 font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm text-sm disabled:opacity-50 shrink-0"
+            title="Download executive-grade boardroom vector PDF report"
+          >
+            {isDownloadingPdf ? (
+              <>
+                <Loader2 size={16} className="animate-spin text-blue-600 dark:text-blue-400" />
+                Generating PDF...
+              </>
+            ) : (
+              <>
+                <FileDown size={16} className="text-blue-600 dark:text-blue-400" />
+                Export Boardroom PDF
+              </>
+            )}
+          </button>
+
           <button
             onClick={handleGenerateSummary}
             disabled={isGenerating || loading}
@@ -279,6 +316,12 @@ export default function AIStrategySection() {
               </p>
             </section>
           )}
+
+          {/* ── 2D Spatial Positioning Radar ── */}
+          <PositioningRadar />
+
+          {/* ── Category Pricing Matrix & Whitespace ── */}
+          <PricingMatrixWidget />
 
           {/* ── PHASE 3: CRITICAL ALERTS & TRENDS SUMMARIES ── */}
           {(criticalAlerts.length > 0 || trendSummary || anomalySummary) && (

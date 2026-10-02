@@ -451,3 +451,66 @@ export async function getJiraLink(id) {
 export async function deleteTask(id) {
   return await apiDelete(`/api/tasks/${id}`);
 }
+
+// ── Phase 7: Executive Intelligence & Reporting Endpoints ──
+
+export async function downloadBoardroomPdf() {
+  const token = getAccessToken();
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}/api/reports/boardroom-pdf`;
+
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    let errorMsg = 'Failed to generate Boardroom PDF report.';
+    try {
+      const err = await res.json();
+      errorMsg = err.detail || errorMsg;
+    } catch (_) {}
+    throw new Error(errorMsg);
+  }
+
+  const blob = await res.blob();
+  const blobUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = `Aetheris_Boardroom_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(blobUrl);
+  document.body.removeChild(a);
+  return true;
+}
+
+export async function getCompetitorBattlecard(competitorId) {
+  return await apiGet(`/api/competitors/${competitorId}/battlecard`);
+}
+
+export async function getPositioningRadar() {
+  return await apiGet('/api/competitors/positioning-radar');
+}
+
+export async function getPricingMatrix() {
+  return await apiGet('/api/competitors/pricing-matrix');
+}
+
+export async function recordDealOutcome(payload) {
+  return await apiPost('/api/deals/outcome', payload);
+}
+
+export async function getDealAnalytics() {
+  return await apiGet('/api/deals/analytics');
+}
+
+export async function getCommunitySignals(competitorId) {
+  return await apiGet(`/api/competitors/${competitorId}/community-signals`);
+}
+
+export async function getGithubSignals(competitorId) {
+  return await apiGet(`/api/competitors/${competitorId}/github-signals`);
+}

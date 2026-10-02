@@ -3,7 +3,7 @@ import { DbContext } from '../App';
 import { 
   Users, Check, X, Plus, ExternalLink, ShieldAlert, Target, Zap, 
   Sparkles, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Newspaper,
-  MoreVertical, Edit3, Archive, RefreshCw, Trash2, Tag, MessageSquare, RotateCcw
+  MoreVertical, Edit3, Archive, RefreshCw, Trash2, Tag, MessageSquare, RotateCcw, Swords
 } from 'lucide-react';
 import { 
   getCompetitors, acceptCompetitor, rejectCompetitor, addManualCompetitor, getIntelligenceFeed,
@@ -11,6 +11,7 @@ import {
 } from '../api';
 import { getEventTypeBadgeStyle, getImpactBadgeStyle, formatRelativeTime } from '../constants';
 import CompetitorCharts from './CompetitorCharts';
+import BattlecardModal from './BattlecardModal';
 
 export default function CompetitorsSection() {
   const context = useContext(DbContext) || {};
@@ -43,6 +44,9 @@ export default function CompetitorsSection() {
   // Toast state
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
+
+  // Battlecard modal state
+  const [selectedBattlecardComp, setSelectedBattlecardComp] = useState(null);
 
   // Expanded Competitor Activity State
   const [activityState, setActivityState] = useState({});
@@ -529,10 +533,22 @@ export default function CompetitorsSection() {
                     )}
 
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                      <button onClick={() => toggleCompetitorActivity(comp.id)} className="w-full flex items-center justify-between text-xs font-extrabold text-blue-600 dark:text-blue-400 hover:underline py-1">
-                        <span>Details, Activity & Trends</span>
-                        {actState.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setSelectedBattlecardComp(comp)}
+                          className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-900/40 font-bold px-3 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-[0.98]"
+                          title="Open tactical sales battlecard against this competitor"
+                        >
+                          <Swords size={14} /> Tactical Battlecard
+                        </button>
+                        <button
+                          onClick={() => toggleCompetitorActivity(comp.id)}
+                          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all"
+                        >
+                          <span>Activity</span>
+                          {actState.expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </button>
+                      </div>
 
                       {actState.expanded && (
                         <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-6 animate-fade-in w-full">
@@ -674,6 +690,14 @@ export default function CompetitorsSection() {
           </div>
         </div>
       )}
+
+      {/* ── Battlecard Modal ── */}
+      <BattlecardModal
+        isOpen={!!selectedBattlecardComp}
+        onClose={() => setSelectedBattlecardComp(null)}
+        competitor={selectedBattlecardComp}
+        showToast={context.showToast || ((msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(''), 3000); })}
+      />
 
     </div>
   );

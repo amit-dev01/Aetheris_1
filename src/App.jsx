@@ -330,20 +330,20 @@ export default function App() {
       badge: criticalTasksCount > 0 ? criticalTasksCount : (activeTasksCount > 0 ? activeTasksCount : null),
       badgeColor: criticalTasksCount > 0 ? 'bg-red-500 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
     },
-    // {
-    //   id: 'trends',
-    //   label: 'Trends',
-    //   icon: TrendingUp,
-    //   badge: activeImportantTrends > 0 ? activeImportantTrends : null,
-    //   badgeColor: 'bg-blue-600 text-white'
-    // },
-    // {
-    //   id: 'alerts',
-    //   label: 'Alerts',
-    //   icon: Bell,
-    //   badge: unacknowledgedAlerts > 0 ? unacknowledgedAlerts : null,
-    //   badgeColor: 'bg-red-500 text-white'
-    // },
+    {
+      id: 'trends',
+      label: 'Trends',
+      icon: TrendingUp,
+      badge: activeImportantTrends > 0 ? activeImportantTrends : null,
+      badgeColor: 'bg-blue-600 text-white'
+    },
+    {
+      id: 'alerts',
+      label: 'Alerts',
+      icon: Bell,
+      badge: unacknowledgedAlerts > 0 ? unacknowledgedAlerts : null,
+      badgeColor: 'bg-red-500 text-white'
+    },
     { 
       id: 'strategy', 
       label: 'AI Strategy', 

@@ -2,11 +2,13 @@ import { useState, useEffect, useContext, useRef } from 'react';
 import { DbContext } from '../App';
 import { 
   AlertCircle, AlertTriangle, Lightbulb, ShieldAlert, Users, Target, Zap, Clock, RefreshCw, 
-  Activity, TrendingUp, Loader2, CheckSquare, ChevronRight
+  Activity, TrendingUp, Loader2, CheckSquare, ChevronRight, FileDown
 } from 'lucide-react';
-import { getCompanyProfile, getCompetitors, getIntelligenceJobs } from '../api';
+import { getCompanyProfile, getCompetitors, getIntelligenceJobs, downloadBoardroomPdf } from '../api';
 import { formatMonitoredTimestamp, getEventTypeBadgeStyle } from '../constants';
 import BounceCards from './BounceCards/BounceCards';
+import WinLossAnalyticsCard from './WinLossAnalyticsCard';
+import WinLossModal from './WinLossModal';
 
 function KPICardCountUp({ value }) {
   const [count, setCount] = useState(0);
@@ -256,13 +258,34 @@ export default function OverviewSection() {
     startCheck,
     setActiveSection,
     taskStats,
-    isVideoActive
+    isVideoActive,
+    showToast
   } = context;
 
   const [profile, setProfile] = useState(companyProfile || null);
   const [competitorsData, setCompetitorsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  // Win/Loss State
+  const [showWinLossModal, setShowWinLossModal] = useState(false);
+  const [winLossRefreshTrigger, setWinLossRefreshTrigger] = useState(0);
+
+  const handleDownloadPdf = async () => {
+    if (isDownloadingPdf) return;
+    setIsDownloadingPdf(true);
+    if (showToast) showToast('Generating institutional Boardroom PDF report...', 'success');
+    try {
+      await downloadBoardroomPdf();
+      if (showToast) showToast('Boardroom PDF downloaded successfully!', 'success');
+    } catch (err) {
+      console.error('PDF download error:', err);
+      if (showToast) showToast(err.message || 'Failed to download Boardroom PDF.', 'error');
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
   
   // Hero Animation State
   const [heroAnimated, setHeroAnimated] = useState(false);
@@ -480,12 +503,33 @@ export default function OverviewSection() {
             </p>
           </div>
 
-          {briefGeneratedAt && (
-            <div className="hero-meta flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 font-medium bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800">
-              <Clock size={14} />
-              <span>Last updated: {new Date(briefGeneratedAt).toLocaleString()}</span>
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleDownloadPdf}
+              disabled={isDownloadingPdf}
+              className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/60 border border-slate-200 dark:border-slate-700 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm text-xs md:text-sm disabled:opacity-50"
+              title="Download executive-grade boardroom vector PDF report"
+            >
+              {isDownloadingPdf ? (
+                <>
+                  <Loader2 size={15} className="animate-spin text-blue-600 dark:text-blue-400" />
+                  Generating PDF...
+                </>
+              ) : (
+                <>
+                  <FileDown size={15} className="text-blue-600 dark:text-blue-400" />
+                  Export Boardroom PDF
+                </>
+              )}
+            </button>
+
+            {briefGeneratedAt && (
+              <div className="hero-meta flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 font-medium bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                <Clock size={14} />
+                <span>Last updated: {new Date(briefGeneratedAt).toLocaleString()}</span>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -707,6 +751,12 @@ export default function OverviewSection() {
         </section>
       )}
 
+      {/* ── Commercial Win/Loss Deal Intelligence ── */}
+      <WinLossAnalyticsCard
+        onOpenLogModal={() => setShowWinLossModal(true)}
+        refreshTrigger={winLossRefreshTrigger}
+      />
+
       {/* ── Phase 2: Footer Last Monitored Timestamp & Refresh Button ── */}
       <section className="border rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 light-surface-panel dark:bg-slate-900 dark:border-slate-800 dark:shadow-none">
         <div className="flex items-center gap-4">
@@ -791,6 +841,15 @@ export default function OverviewSection() {
           </div>
         </div>
       )}
+
+      {/* ── Win/Loss Deal Logger Modal ── */}
+      <WinLossModal
+        isOpen={showWinLossModal}
+        onClose={() => setShowWinLossModal(false)}
+        competitors={competitorsData?.competitors || competitorsData || acceptedCompetitors || []}
+        onSuccess={() => setWinLossRefreshTrigger(prev => prev + 1)}
+        showToast={showToast}
+      />
 
     </div>
   );
