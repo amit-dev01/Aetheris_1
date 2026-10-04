@@ -75,11 +75,14 @@ export async function apiGet(endpoint, requireAuth = true) {
   });
 
   if (res.status === 401 || res.status === 403) {
-    clearAuthSession();
-    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-      window.location.href = '/login/';
+    const token = getStoredToken();
+    if (!token) {
+      clearAuthSession();
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login/';
+      }
     }
-    throw new Error('Unauthorized access. Please log in again.');
+    throw new Error('Session expired or unauthorized. Please sign in again.');
   }
 
   if (!res.ok) {
@@ -117,11 +120,14 @@ export async function apiPost(endpoint, body, requireAuth = true) {
   });
 
   if (res.status === 401 || res.status === 403) {
-    clearAuthSession();
-    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-      window.location.href = '/login/';
+    const token = getStoredToken();
+    if (!token) {
+      clearAuthSession();
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login/';
+      }
     }
-    throw new Error('Unauthorized access. Please log in again.');
+    throw new Error('Session expired or unauthorized. Please sign in again.');
   }
 
   if (!res.ok) {
@@ -159,11 +165,14 @@ export async function apiPut(endpoint, body, requireAuth = true) {
   });
 
   if (res.status === 401 || res.status === 403) {
-    clearAuthSession();
-    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-      window.location.href = '/login/';
+    const token = getStoredToken();
+    if (!token) {
+      clearAuthSession();
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login/';
+      }
     }
-    throw new Error('Unauthorized access. Please log in again.');
+    throw new Error('Session expired or unauthorized. Please sign in again.');
   }
 
   if (!res.ok) {
