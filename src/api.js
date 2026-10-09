@@ -523,3 +523,11 @@ export async function getCommunitySignals(competitorId) {
 export async function getGithubSignals(competitorId) {
   return await apiGet(`/api/competitors/${competitorId}/github-signals`);
 }
+
+export async function chatWithIntelligenceAgent({ message, history = [], competitorId = null }) {
+  return await apiPost('/api/intelligence/chat', { message, history, competitorId });
+}
+
+export async function runBattleSimulation({ competitorId, scenarioType, customScenario = null, targetSegment = 'Mid-Market & Enterprise' }) {
+  return await apiPost('/api/intelligence/battle-simulate', { competitorId, scenarioType, customScenario, targetSegment });
+}

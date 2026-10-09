@@ -3,12 +3,13 @@ import { DbContext } from '../App';
 import { 
   Target, ShieldAlert, Lightbulb, Eye, CheckSquare, Square, 
   ArrowRight, Loader2, AlertCircle, RefreshCw, Sparkles, Building,
-  Bell, TrendingUp, TrendingDown, Clock, FileDown
+  Bell, TrendingUp, TrendingDown, Clock, FileDown, Swords
 } from 'lucide-react';
 import { getIntelligenceSummary, generateIntelligenceSummary, downloadBoardroomPdf } from '../api';
 import { formatBriefTimestamp } from '../constants';
 import PositioningRadar from './PositioningRadar';
 import PricingMatrixWidget from './PricingMatrixWidget';
+import BattleSimulatorModal from './BattleSimulatorModal';
 
 export default function AIStrategySection() {
   const context = useContext(DbContext) || {};
@@ -18,6 +19,7 @@ export default function AIStrategySection() {
     startCheck, 
     setSelectedCompetitorFilter, 
     setActiveSection,
+    acceptedCompetitors,
     showToast
   } = context;
 
@@ -26,6 +28,7 @@ export default function AIStrategySection() {
   const [error, setError] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isBattleSimOpen, setIsBattleSimOpen] = useState(false);
 
   // Checkbox State for Strategic Recommendations (localStorage keyed by companyId & weeklyBriefGeneratedAt)
   const [checkedRecs, setCheckedRecs] = useState({});
@@ -208,6 +211,15 @@ export default function AIStrategySection() {
                 Export Boardroom PDF
               </>
             )}
+          </button>
+
+          <button
+            onClick={() => setIsBattleSimOpen(true)}
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl transition-all shadow-md text-sm shrink-0"
+            title="Launch interactive game-theoretic battle simulation"
+          >
+            <Swords size={16} />
+            AI Battle Simulator 🎮
           </button>
 
           <button
@@ -552,6 +564,13 @@ export default function AIStrategySection() {
 
         </>
       )}
+
+      {/* ── AI Battle Simulator Modal ── */}
+      <BattleSimulatorModal
+        isOpen={isBattleSimOpen}
+        onClose={() => setIsBattleSimOpen(false)}
+        competitors={acceptedCompetitors || []}
+      />
 
     </div>
   );

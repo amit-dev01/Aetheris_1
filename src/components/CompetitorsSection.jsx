@@ -360,7 +360,7 @@ export default function CompetitorsSection() {
               {[
                 { id: 'DIRECT', label: 'Direct Competitors', icon: ShieldAlert, color: 'text-red-500' },
                 { id: 'INDIRECT', label: 'Indirect Competitors', icon: Target, color: 'text-amber-500' },
-                { id: 'EMERGING', label: 'Emerging Competitors', icon: Zap, color: 'text-blue-500' },
+                { id: 'EMERGING', label: 'Stealth & Emerging Rivals 🕵️', icon: Zap, color: 'text-indigo-500' },
               ].map(tab => {
                 const isActive = activeTab === tab.id;
                 const count = confirmedCompetitors.filter(c => getCompType(c) === tab.id).length;
@@ -395,6 +395,23 @@ export default function CompetitorsSection() {
               </select>
             </div>
           </div>
+
+          {activeTab === 'EMERGING' && (
+            <div className="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200/80 dark:border-indigo-900/40 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                  🕵️
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Stealth Competitor & Early Entrant Radar</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Scans emerging seed startups, accelerator cohorts, and fast-growing developer repos in your space.</p>
+                </div>
+              </div>
+              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 shrink-0">
+                Active Scanner
+              </span>
+            </div>
+          )}
 
           {pendingCompetitors.length > 0 && statusFilter !== 'archived' && (
             <section className="bg-amber-50/80 dark:bg-amber-950/20 border-2 border-amber-300 dark:border-amber-800/60 rounded-3xl p-6 shadow-sm space-y-6">

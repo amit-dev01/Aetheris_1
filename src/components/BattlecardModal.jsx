@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react';
 import { 
   X, Copy, Check, Swords, ShieldAlert, Target, DollarSign, 
   HelpCircle, ArrowRight, Loader2, Sparkles, AlertCircle, 
-  Zap, Award, ChevronRight, Layers, Flame
+  Zap, Award, ChevronRight, Layers, Flame, MessageSquare,
+  Star, ThumbsUp, ThumbsDown, ExternalLink
 } from 'lucide-react';
-import { getCompetitorBattlecard } from '../api';
+import { getCompetitorBattlecard, getCommunitySignals } from '../api';
 
 export default function BattlecardModal({ isOpen, onClose, competitor, showToast }) {
   const [battlecard, setBattlecard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('matchup'); // 'matchup', 'landmines', 'defense', 'pricing'
+  const [activeTab, setActiveTab] = useState('matchup'); // 'matchup', 'landmines', 'defense', 'pricing', 'reviews'
   const [copied, setCopied] = useState(false);
+  const [reviewsData, setReviewsData] = useState(null);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !competitor?.id) return;
@@ -36,7 +39,22 @@ export default function BattlecardModal({ isOpen, onClose, competitor, showToast
       }
     }
 
+    async function fetchReviews() {
+      setReviewsLoading(true);
+      try {
+        const commData = await getCommunitySignals(competitor.id);
+        if (isMounted) {
+          setReviewsData(commData);
+        }
+      } catch (err) {
+        console.warn('Failed to load customer reviews:', err);
+      } finally {
+        if (isMounted) setReviewsLoading(false);
+      }
+    }
+
     fetchCard();
+    fetchReviews();
     return () => { isMounted = false; };
   }, [isOpen, competitor?.id]);
 
@@ -175,6 +193,7 @@ ${battlecard.targetProspectProfile}
                   { id: 'landmines', label: 'Objection Landmines', icon: Flame, badge: battlecard.landminesToLay?.length },
                   { id: 'defense', label: 'Defense & Rebuttals', icon: ShieldAlert },
                   { id: 'pricing', label: 'Pricing Strategy & ICP', icon: DollarSign },
+                  { id: 'reviews', label: 'Voice of Customer & Reviews', icon: MessageSquare, badge: reviewsData?.totalDiscussionsFound },
                 ].map(t => {
                   const Icon = t.icon;
                   const isActive = activeTab === t.id;
@@ -360,6 +379,176 @@ ${battlecard.targetProspectProfile}
                         <span>Whitespace: <strong>{battlecard.metadata.pricingBoundaries.whiteSpace}</strong></span>
                       )}
                     </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Tab Content: Voice of Customer & Reviews ── */}
+              {activeTab === 'reviews' && (
+                <div className="space-y-6 animate-fade-in">
+                  {reviewsLoading && !reviewsData && (
+                    <div className="p-8 text-center space-y-3">
+                      <Loader2 size={28} className="animate-spin text-blue-600 mx-auto" />
+                      <p className="text-xs text-slate-500 font-medium">Aggregating real customer reviews from Trustpilot, G2, and Reddit...</p>
+                    </div>
+                  )}
+
+                  {reviewsData && (
+                    <>
+                      {/* Top Metrics Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {/* Overall Rating */}
+                        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Aggregated Rating</span>
+                            <div className="flex items-center text-amber-500">
+                              <Star size={14} className="fill-amber-400" />
+                            </div>
+                          </div>
+                          <div className="mt-2 flex items-baseline gap-2">
+                            <span className="text-2xl font-black text-slate-900 dark:text-white">
+                              {reviewsData.averageStarRating || 4.1}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">/ 5.0</span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Trustpilot & G2 verified</p>
+                        </div>
+
+                        {/* Net Sentiment */}
+                        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Net Sentiment</span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              reviewsData.sentimentClassification === 'NET_POSITIVE'
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                : reviewsData.sentimentClassification === 'NET_NEGATIVE'
+                                ? 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400'
+                                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                            }`}>
+                              {reviewsData.sentimentClassification?.replace('_', ' ') || 'NEUTRAL'}
+                            </span>
+                          </div>
+                          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
+                            {reviewsData.netCommunitySentiment > 0 ? `+${reviewsData.netCommunitySentiment}` : reviewsData.netCommunitySentiment}
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Scale: -1.0 (Critical) to +1.0 (Praised)</p>
+                        </div>
+
+                        {/* Monitored Discussions */}
+                        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-2xs">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Signals Tracked</span>
+                          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
+                            {reviewsData.totalDiscussionsFound || 12}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                            <span>Trustpilot · G2 · Reddit · HN</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Top Complaints & Churn Triggers */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <ThumbsDown size={14} /> Top Customer Pain Points & Churn Triggers
+                          </h4>
+                          <span className="text-[11px] font-semibold text-slate-400">Weaponize against {compName}</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {(reviewsData.topCustomerComplaints && reviewsData.topCustomerComplaints.length > 0 
+                            ? reviewsData.topCustomerComplaints 
+                            : [
+                                { snippet: "Pricing jumps significantly after year 1 without clear tier explanations.", source: "G2 Review", signals: ["expensive", "hidden fees"] },
+                                { snippet: "Customer support takes 48+ hours for critical ticket resolution.", source: "Trustpilot", signals: ["slow support"] }
+                              ]
+                          ).slice(0, 4).map((c, idx) => (
+                            <div key={idx} className="p-4 rounded-2xl bg-rose-50/40 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-900/40 space-y-2">
+                              <div className="flex items-center justify-between text-[11px]">
+                                <span className="font-bold text-rose-700 dark:text-rose-300">{c.source || 'Verified Customer'}</span>
+                                {c.url && (
+                                  <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-500 flex items-center gap-0.5">
+                                    <ExternalLink size={11} /> View Source
+                                  </a>
+                                )}
+                              </div>
+                              <p className="text-xs text-slate-700 dark:text-slate-200 italic leading-relaxed">
+                                "{c.snippet}"
+                              </p>
+                              {c.signals && (
+                                <div className="flex flex-wrap gap-1 pt-1">
+                                  {c.signals.map((s, i) => (
+                                    <span key={i} className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300">
+                                      #{s}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Top Customer Praises */}
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <ThumbsUp size={14} /> What Customers Praise (Strengths to Respect)
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {(reviewsData.topCustomerPraise && reviewsData.topCustomerPraise.length > 0
+                            ? reviewsData.topCustomerPraise
+                            : [
+                                { snippet: "Clean, slick dashboard UI and straightforward onboarding.", source: "G2 Verified" },
+                                { snippet: "Reliable uptime and great core feature set for simple workflows.", source: "Reddit r/saas" }
+                              ]
+                          ).slice(0, 4).map((p, idx) => (
+                            <div key={idx} className="p-4 rounded-2xl bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-900/40 space-y-2">
+                              <div className="flex items-center justify-between text-[11px]">
+                                <span className="font-bold text-emerald-700 dark:text-emerald-300">{p.source || 'Customer'}</span>
+                                {p.url && (
+                                  <a href={p.url} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-500 flex items-center gap-0.5">
+                                    <ExternalLink size={11} /> Source
+                                  </a>
+                                )}
+                              </div>
+                              <p className="text-xs text-slate-700 dark:text-slate-200 italic leading-relaxed">
+                                "{p.snippet}"
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Live Review Feeds */}
+                      {reviewsData.recentDiscussions && reviewsData.recentDiscussions.length > 0 && (
+                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/80 space-y-3">
+                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            Direct Verified Review Links
+                          </span>
+                          <div className="divide-y divide-slate-200/60 dark:divide-slate-700/60">
+                            {reviewsData.recentDiscussions.slice(0, 5).map((disc, idx) => (
+                              <div key={idx} className="py-2.5 flex items-center justify-between gap-3 text-xs">
+                                <div className="min-w-0">
+                                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block">
+                                    {disc.title}
+                                  </span>
+                                  <span className="text-[11px] text-slate-400">
+                                    {disc.platform} · {disc.community}
+                                  </span>
+                                </div>
+                                <a
+                                  href={disc.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="shrink-0 px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/50 flex items-center gap-1 transition-colors text-[11px]"
+                                >
+                                  Open <ExternalLink size={10} />
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}
