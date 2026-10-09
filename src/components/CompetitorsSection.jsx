@@ -3,7 +3,7 @@ import { DbContext } from '../App';
 import { 
   Users, Check, X, Plus, ExternalLink, ShieldAlert, Target, Zap, 
   Sparkles, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Newspaper,
-  MoreVertical, Edit3, Archive, RefreshCw, Trash2, Tag, MessageSquare, RotateCcw, Swords
+  MoreVertical, Edit3, Archive, RefreshCw, Trash2, Tag, MessageSquare, RotateCcw, Swords, Columns
 } from 'lucide-react';
 import { 
   getCompetitors, acceptCompetitor, rejectCompetitor, addManualCompetitor, getIntelligenceFeed,
@@ -12,6 +12,7 @@ import {
 import { getEventTypeBadgeStyle, getImpactBadgeStyle, formatRelativeTime } from '../constants';
 import CompetitorCharts from './CompetitorCharts';
 import BattlecardModal from './BattlecardModal';
+import SideBySideComparisonModal from './SideBySideComparisonModal';
 
 export default function CompetitorsSection() {
   const context = useContext(DbContext) || {};
@@ -23,6 +24,7 @@ export default function CompetitorsSection() {
   const [activeTab, setActiveTab] = useState('DIRECT'); // DIRECT, INDIRECT, EMERGING
   const [statusFilter, setStatusFilter] = useState('active'); // active, archived, all
   const [summaryStats, setSummaryStats] = useState(null);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
 
   // Modals / Dialogs State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -316,13 +318,22 @@ export default function CompetitorsSection() {
             Real-time discovered competitors, AI scoring, and market position analysis.
           </p>
         </div>
-
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg text-sm"
-        >
-          <Plus size={18} /> Add Competitor
-        </button>
+ 
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsCompareOpen(true)}
+            className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/60 border border-slate-200 dark:border-slate-700 font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm text-sm"
+          >
+            <Columns size={16} className="text-blue-600 dark:text-blue-400" />
+            Side-by-Side Comparison
+          </button>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg text-sm"
+          >
+            <Plus size={18} /> Add Competitor
+          </button>
+        </div>
       </div>
 
       {loading && (
@@ -714,6 +725,12 @@ export default function CompetitorsSection() {
         onClose={() => setSelectedBattlecardComp(null)}
         competitor={selectedBattlecardComp}
         showToast={context.showToast || ((msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(''), 3000); })}
+      />
+
+      {/* ── Side-by-Side Comparison Modal ── */}
+      <SideBySideComparisonModal
+        isOpen={isCompareOpen}
+        onClose={() => setIsCompareOpen(false)}
       />
 
     </div>

@@ -531,3 +531,11 @@ export async function chatWithIntelligenceAgent({ message, history = [], competi
 export async function runBattleSimulation({ competitorId, scenarioType, customScenario = null, targetSegment = 'Mid-Market & Enterprise' }) {
   return await apiPost('/api/intelligence/battle-simulate', { competitorId, scenarioType, customScenario, targetSegment });
 }
+
+export async function getCompetitorWebPresence(competitorId) {
+  return await apiGet(`/api/competitors/${competitorId}/web-presence`);
+}
+
+export async function getSideBySideComparison() {
+  return await apiGet('/api/competitors/side-by-side');
+}

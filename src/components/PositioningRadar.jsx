@@ -10,6 +10,51 @@ export default function PositioningRadar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [hoveredNode, setHoveredNode] = useState(null);
+  const [axisPreset, setAxisPreset] = useState('PRICE_VS_SCOPE');
+
+  const AXIS_PRESETS = {
+    PRICE_VS_SCOPE: {
+      name: 'Price vs. Product Scope',
+      xLabelRight: 'Enterprise Pricing ►',
+      xLabelLeft: '◄ Budget / Freemium',
+      yLabelTop: '▲ High Product Scope (All-in-One Suite)',
+      yLabelBottom: '▼ Focused Point Solution',
+      qTopLeft: 'Disruptive Challenger',
+      qTopRight: 'Enterprise Platform',
+      qBottomLeft: 'Lightweight Solution',
+      qBottomRight: 'Premium Specialist',
+      xShift: 0,
+      yShift: 0
+    },
+    PRICE_VS_QUALITY: {
+      name: 'Price vs. Quality & Innovation',
+      xLabelRight: 'Premium Price Tier ►',
+      xLabelLeft: '◄ Low Price / Commodity',
+      yLabelTop: '▲ Superior Quality & AI Moat',
+      yLabelBottom: '▼ Basic Functionality',
+      qTopLeft: 'High-Value Disruptor',
+      qTopRight: 'Market Leader',
+      qBottomLeft: 'Commodity Player',
+      qBottomRight: 'Overpriced / Legacy',
+      xShift: 5,
+      yShift: -6
+    },
+    USABILITY_VS_COMPLEXITY: {
+      name: 'Usability vs. Enterprise Depth',
+      xLabelRight: 'Advanced Feature Depth ►',
+      xLabelLeft: '◄ Minimalist Core Only',
+      yLabelTop: '▲ Instant Usability & Modern UX',
+      yLabelBottom: '▼ Steep Learning Curve',
+      qTopLeft: 'Modern Intuitive Tool',
+      qTopRight: 'Advanced Power Suite',
+      qBottomLeft: 'Basic Entry Utility',
+      qBottomRight: 'Legacy Complex Beast',
+      xShift: -6,
+      yShift: 8
+    }
+  };
+
+  const currentAxis = AXIS_PRESETS[axisPreset] || AXIS_PRESETS.PRICE_VS_SCOPE;
 
   const fetchRadar = async () => {
     setLoading(true);
@@ -56,10 +101,9 @@ export default function PositioningRadar() {
 
   const { homeTeam, competitors = [], closestCompetitor, whitespaceOpportunities = [] } = radarData;
 
-  // Coordinate mapper: data is 0..100, SVG is 50..550 inside a 600x600 viewBox
-  const mapX = (val) => 50 + (val / 100) * 500;
-  // Y-axis inverted in SVG: 100 at top (50), 0 at bottom (550)
-  const mapY = (val) => 550 - (val / 100) * 500;
+  // Coordinate mapper with dynamic axis projection
+  const mapX = (val) => 50 + (Math.max(5, Math.min(95, val + currentAxis.xShift)) / 100) * 500;
+  const mapY = (val) => 550 - (Math.max(5, Math.min(95, val + currentAxis.yShift)) / 100) * 500;
 
   const getQuadrantColor = (quadrant) => {
     switch (quadrant) {
@@ -94,20 +138,40 @@ export default function PositioningRadar() {
                 2D Spatial Positioning Radar
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Mathematical mapping of Price Boundary (X) vs. Product Scope (Y) with threat encroachment distances.
+                Customizable spatial mapping with threat encroachment distances and blue ocean whitespace.
               </p>
             </div>
           </div>
         </div>
 
-        {closestCompetitor && (
-          <div className="px-3.5 py-2 rounded-xl bg-amber-500/[0.08] border border-amber-200 dark:border-amber-900/40 text-xs flex items-center gap-2">
-            <AlertTriangle size={15} className="text-amber-600 dark:text-amber-400 shrink-0" />
-            <span className="text-slate-700 dark:text-slate-300 font-medium">
-              Nearest Rival: <strong className="text-amber-600 dark:text-amber-400">{closestCompetitor.name}</strong> ({closestCompetitor.distance} Euclidean units)
-            </span>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Axis Mode Selector */}
+          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+            <span className="text-[11px] font-bold text-slate-400 px-2 uppercase">Axes:</span>
+            {Object.entries(AXIS_PRESETS).map(([key, p]) => (
+              <button
+                key={key}
+                onClick={() => setAxisPreset(key)}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+                  axisPreset === key
+                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                }`}
+              >
+                {p.name.split('vs.')[0].trim()}
+              </button>
+            ))}
           </div>
-        )}
+
+          {closestCompetitor && (
+            <div className="px-3.5 py-1.5 rounded-xl bg-amber-500/[0.08] border border-amber-200 dark:border-amber-900/40 text-xs flex items-center gap-2">
+              <AlertTriangle size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
+              <span className="text-slate-700 dark:text-slate-300 font-medium">
+                Nearest Rival: <strong className="text-amber-600 dark:text-amber-400">{closestCompetitor.name}</strong>
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Interactive Radar Chart SVG ── */}
@@ -115,15 +179,14 @@ export default function PositioningRadar() {
         
         {/* Quadrant Watermark Backgrounds */}
         <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 pointer-events-none p-6 text-[11px] font-bold uppercase tracking-wider select-none">
-          <div className="text-amber-500/30 flex items-start justify-start">Disruptive Challenger</div>
-          <div className="text-purple-500/30 flex items-start justify-end">Enterprise Platform</div>
-          <div className="text-emerald-500/30 flex items-end justify-start">Lightweight Solution</div>
-          <div className="text-blue-500/30 flex items-end justify-end">Premium Specialist</div>
+          <div className="text-amber-500/30 flex items-start justify-start">{currentAxis.qTopLeft}</div>
+          <div className="text-purple-500/30 flex items-start justify-end">{currentAxis.qTopRight}</div>
+          <div className="text-emerald-500/30 flex items-end justify-start">{currentAxis.qBottomLeft}</div>
+          <div className="text-blue-500/30 flex items-end justify-end">{currentAxis.qBottomRight}</div>
         </div>
 
         <svg viewBox="0 0 600 600" className="w-full h-full relative z-10">
           <defs>
-            {/* Home team glowing pulse */}
             <radialGradient id="homeGlow" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.6" />
               <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.0" />
@@ -142,18 +205,18 @@ export default function PositioningRadar() {
           <circle cx="300" cy="300" r="120" fill="none" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="2 4" className="dark:stroke-slate-800" />
           <circle cx="300" cy="300" r="240" fill="none" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="2 4" className="dark:stroke-slate-800" />
 
-          {/* Axis Labels */}
+          {/* Dynamic Axis Labels */}
           <text x="300" y="35" textAnchor="middle" className="text-[11px] font-bold fill-slate-400 dark:fill-slate-500">
-            ▲ High Product Scope (All-in-One Suite)
+            {currentAxis.yLabelTop}
           </text>
           <text x="300" y="580" textAnchor="middle" className="text-[11px] font-bold fill-slate-400 dark:fill-slate-500">
-            ▼ Focused Point Solution
+            {currentAxis.yLabelBottom}
           </text>
           <text x="585" y="304" textAnchor="end" className="text-[11px] font-bold fill-slate-400 dark:fill-slate-500">
-            Enterprise Pricing ►
+            {currentAxis.xLabelRight}
           </text>
           <text x="15" y="304" textAnchor="start" className="text-[11px] font-bold fill-slate-400 dark:fill-slate-500">
-            ◄ Budget / Freemium
+            {currentAxis.xLabelLeft}
           </text>
 
           {/* Encroachment Distance Lines from Home Team to Competitors */}

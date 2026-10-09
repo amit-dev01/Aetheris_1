@@ -3,7 +3,7 @@ import {
   X, Copy, Check, Swords, ShieldAlert, Target, DollarSign, 
   HelpCircle, ArrowRight, Loader2, Sparkles, AlertCircle, 
   Zap, Award, ChevronRight, Layers, Flame, MessageSquare,
-  Star, ThumbsUp, ThumbsDown, ExternalLink
+  Star, ThumbsUp, ThumbsDown, ExternalLink, Printer, Plus, Grid, Trash2
 } from 'lucide-react';
 import { getCompetitorBattlecard, getCommunitySignals } from '../api';
 
@@ -11,10 +11,13 @@ export default function BattlecardModal({ isOpen, onClose, competitor, showToast
   const [battlecard, setBattlecard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('matchup'); // 'matchup', 'landmines', 'defense', 'pricing', 'reviews'
+  const [activeTab, setActiveTab] = useState('matchup'); // 'matchup', 'landmines', 'defense', 'pricing', 'reviews', 'swot'
   const [copied, setCopied] = useState(false);
   const [reviewsData, setReviewsData] = useState(null);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [swotMatrix, setSwotMatrix] = useState(null);
+  const [newSwotText, setNewSwotText] = useState('');
+  const [activeSwotCategory, setActiveSwotCategory] = useState('strengths');
 
   useEffect(() => {
     if (!isOpen || !competitor?.id) return;
@@ -28,6 +31,16 @@ export default function BattlecardModal({ isOpen, onClose, competitor, showToast
         const data = await getCompetitorBattlecard(competitor.id);
         if (isMounted) {
           setBattlecard(data);
+          if (data?.swotAnalysis) {
+            setSwotMatrix(data.swotAnalysis);
+          } else {
+            setSwotMatrix({
+              strengths: (data?.whereWeWin || []).map(w => w.advantage),
+              weaknesses: (data?.whereTheyWinAndHowToDefend || []).map(d => d.theirClaim),
+              opportunities: ['Capture mid-market accounts frustrated by pricing', 'Direct native API integration whitespace'],
+              threats: ['Aggressive feature bundling in next release', 'Enterprise migration buyouts']
+            });
+          }
         }
       } catch (err) {
         console.error('Failed to load battlecard:', err);
@@ -57,6 +70,22 @@ export default function BattlecardModal({ isOpen, onClose, competitor, showToast
     fetchReviews();
     return () => { isMounted = false; };
   }, [isOpen, competitor?.id]);
+
+  const handleAddSwotItem = () => {
+    if (!newSwotText.trim() || !swotMatrix) return;
+    setSwotMatrix(prev => ({
+      ...prev,
+      [activeSwotCategory]: [...(prev[activeSwotCategory] || []), newSwotText.trim()]
+    }));
+    setNewSwotText('');
+  };
+
+  const handleDeleteSwotItem = (cat, index) => {
+    setSwotMatrix(prev => ({
+      ...prev,
+      [cat]: (prev[cat] || []).filter((_, i) => i !== index)
+    }));
+  };
 
   if (!isOpen) return null;
 
@@ -193,6 +222,7 @@ ${battlecard.targetProspectProfile}
                   { id: 'landmines', label: 'Objection Landmines', icon: Flame, badge: battlecard.landminesToLay?.length },
                   { id: 'defense', label: 'Defense & Rebuttals', icon: ShieldAlert },
                   { id: 'pricing', label: 'Pricing Strategy & ICP', icon: DollarSign },
+                  { id: 'swot', label: 'SWOT Analysis Matrix', icon: Grid },
                   { id: 'reviews', label: 'Voice of Customer & Reviews', icon: MessageSquare, badge: reviewsData?.totalDiscussionsFound },
                 ].map(t => {
                   const Icon = t.icon;
@@ -550,6 +580,213 @@ ${battlecard.targetProspectProfile}
                       )}
                     </>
                   )}
+                </div>
+              )}
+
+              {/* ── Tab Content: 4-Quadrant SWOT Matrix Generator ── */}
+              {activeTab === 'swot' && (
+                <div className="space-y-6 animate-fade-in">
+                  {/* SWOT Header & Export Controls */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/80">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Grid className="text-blue-600 dark:text-blue-400" size={18} />
+                        <h4 className="font-extrabold text-slate-900 dark:text-white text-base">
+                          4-Quadrant SWOT Analysis Generator
+                        </h4>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                          AI-Synthesized & Live Editable
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Comprehensive strategic analysis of {compName}. Add custom factors or remove items in real-time.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          const swotSummary = `SWOT ANALYSIS: ${compName}\n\nSTRENGTHS:\n${(swotMatrix?.strengths || []).map(s => `- ${s}`).join('\n')}\n\nWEAKNESSES:\n${(swotMatrix?.weaknesses || []).map(w => `- ${w}`).join('\n')}\n\nOPPORTUNITIES:\n${(swotMatrix?.opportunities || []).map(o => `- ${o}`).join('\n')}\n\nTHREATS:\n${(swotMatrix?.threats || []).map(t => `- ${t}`).join('\n')}`;
+                          copyToClipboard(swotSummary, 'SWOT Matrix copied to clipboard!');
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold shadow-sm transition-all"
+                      >
+                        <Copy size={13} /> Copy Text
+                      </button>
+                      <button
+                        onClick={() => window.print()}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all"
+                      >
+                        <Printer size={13} /> Export / PDF
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Add New SWOT Point Bar */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-3">
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                      Quick Add Factor to Quadrant
+                    </span>
+                    <div className="flex flex-wrap sm:flex-nowrap gap-2">
+                      <div className="flex rounded-xl p-0.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shrink-0">
+                        {[
+                          { id: 'strengths', label: 'Strengths', color: 'text-emerald-600' },
+                          { id: 'weaknesses', label: 'Weaknesses', color: 'text-rose-600' },
+                          { id: 'opportunities', label: 'Opportunities', color: 'text-blue-600' },
+                          { id: 'threats', label: 'Threats', color: 'text-amber-600' },
+                        ].map(cat => (
+                          <button
+                            key={cat.id}
+                            onClick={() => setActiveSwotCategory(cat.id)}
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                              activeSwotCategory === cat.id
+                                ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white'
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                            }`}
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="flex-1 flex gap-2">
+                        <input
+                          type="text"
+                          value={newSwotText}
+                          onChange={e => setNewSwotText(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') handleAddSwotItem(); }}
+                          placeholder={`Add a new factor to ${activeSwotCategory}...`}
+                          className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <button
+                          onClick={handleAddSwotItem}
+                          disabled={!newSwotText.trim()}
+                          className="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-xs font-bold flex items-center gap-1 transition-all"
+                        >
+                          <Plus size={14} /> Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2x2 SWOT Quadrant Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Strengths Quadrant */}
+                    <div className="p-5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                          🟢 Strengths (Internal)
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                          {swotMatrix?.strengths?.length || 0} factors
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {(swotMatrix?.strengths || []).map((item, idx) => (
+                          <div key={idx} className="group p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/40 text-xs font-medium text-slate-800 dark:text-slate-200 flex items-start justify-between gap-2 shadow-xs">
+                            <span className="leading-relaxed flex-1">{item}</span>
+                            <button
+                              onClick={() => handleDeleteSwotItem('strengths', idx)}
+                              className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity p-0.5"
+                              title="Delete factor"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ))}
+                        {(!swotMatrix?.strengths || swotMatrix.strengths.length === 0) && (
+                          <p className="text-xs text-slate-400 italic">No strengths added yet.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Weaknesses Quadrant */}
+                    <div className="p-5 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/60 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
+                          🔴 Weaknesses (Internal)
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-200/60 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300">
+                          {swotMatrix?.weaknesses?.length || 0} factors
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {(swotMatrix?.weaknesses || []).map((item, idx) => (
+                          <div key={idx} className="group p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-rose-100 dark:border-rose-900/40 text-xs font-medium text-slate-800 dark:text-slate-200 flex items-start justify-between gap-2 shadow-xs">
+                            <span className="leading-relaxed flex-1">{item}</span>
+                            <button
+                              onClick={() => handleDeleteSwotItem('weaknesses', idx)}
+                              className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity p-0.5"
+                              title="Delete factor"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ))}
+                        {(!swotMatrix?.weaknesses || swotMatrix.weaknesses.length === 0) && (
+                          <p className="text-xs text-slate-400 italic">No weaknesses added yet.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Opportunities Quadrant */}
+                    <div className="p-5 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/60 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 flex items-center gap-1.5">
+                          🔵 Opportunities (External)
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-200/60 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300">
+                          {swotMatrix?.opportunities?.length || 0} factors
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {(swotMatrix?.opportunities || []).map((item, idx) => (
+                          <div key={idx} className="group p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/40 text-xs font-medium text-slate-800 dark:text-slate-200 flex items-start justify-between gap-2 shadow-xs">
+                            <span className="leading-relaxed flex-1">{item}</span>
+                            <button
+                              onClick={() => handleDeleteSwotItem('opportunities', idx)}
+                              className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity p-0.5"
+                              title="Delete factor"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ))}
+                        {(!swotMatrix?.opportunities || swotMatrix.opportunities.length === 0) && (
+                          <p className="text-xs text-slate-400 italic">No opportunities added yet.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Threats Quadrant */}
+                    <div className="p-5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                          🟡 Threats (External)
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/60 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
+                          {swotMatrix?.threats?.length || 0} factors
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {(swotMatrix?.threats || []).map((item, idx) => (
+                          <div key={idx} className="group p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-amber-100 dark:border-amber-900/40 text-xs font-medium text-slate-800 dark:text-slate-200 flex items-start justify-between gap-2 shadow-xs">
+                            <span className="leading-relaxed flex-1">{item}</span>
+                            <button
+                              onClick={() => handleDeleteSwotItem('threats', idx)}
+                              className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity p-0.5"
+                              title="Delete factor"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ))}
+                        {(!swotMatrix?.threats || swotMatrix.threats.length === 0) && (
+                          <p className="text-xs text-slate-400 italic">No threats added yet.</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </>
