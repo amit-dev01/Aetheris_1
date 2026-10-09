@@ -158,17 +158,6 @@
                         <span id="btn-text">Sign in</span>
                         <span id="btn-spinner" class="hidden spinner"></span>
                     </button>
-
-                    <div class="relative flex items-center justify-center my-4">
-                        <div class="border-t border-white/20 w-full"></div>
-                        <span class="bg-black/40 px-3 py-0.5 text-[10px] uppercase font-bold text-white/80 tracking-widest absolute rounded-full">Or</span>
-                    </div>
-
-                    <!-- Instant Demo / Judge Access -->
-                    <button type="button" onclick="handleInstantDemo()"
-                        class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-body rounded-pill py-3.5 border border-white/20 hover:brightness-110 shadow-lg snappy-transition">
-                        <span>⚡ Instant Demo / Judge Access</span>
-                    </button>
                 </form>
             </div>
             
@@ -176,11 +165,6 @@
     </main>
 
     <script>
-        function handleInstantDemo() {
-            localStorage.setItem('access_token', 'demo_access_token_hackathon');
-            localStorage.setItem('user_id', 'demo_user_judge');
-            window.location.href = '/dashboard/?demo=true';
-        }
 
         lucide.createIcons();
 

@@ -44,22 +44,16 @@ export default function Hero() {
         {/* Primary/Secondary Call-to-Actions */}
         <div className="animate-fade-up [animation-delay:340ms] mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-4">
           <a 
-            href="/dashboard/?demo=true#competitors" 
-            className="bg-blue-600 text-white text-sm font-semibold px-7 py-3 rounded-full hover:bg-blue-700 hover:shadow-lg transition-all hover:scale-[1.02] text-center flex items-center gap-2 shadow-sm"
+            href="/signup/" 
+            className="bg-gray-900 text-white text-sm font-semibold px-7 py-3 rounded-full hover:bg-gray-800 hover:shadow-lg transition-all hover:scale-[1.02] text-center"
           >
-            <Sparkles size={16} /> Explore Live Demo
+            Get started
           </a>
           <a 
             href="/dashboard/" 
-            className="bg-gray-900 text-white text-sm font-semibold px-7 py-3 rounded-full hover:bg-gray-800 hover:shadow-lg transition-all hover:scale-[1.02] text-center"
+            className="bg-transparent text-slate-800 text-sm font-semibold px-7 py-3 rounded-full ring-1 ring-slate-300 hover:bg-white/50 hover:ring-slate-400 transition-colors text-center"
           >
             Open Dashboard
-          </a>
-          <a 
-            href="/login/" 
-            className="bg-transparent text-slate-800 text-sm font-semibold px-6 py-3 rounded-full ring-1 ring-slate-300 hover:bg-white/50 hover:ring-slate-400 transition-colors text-center"
-          >
-            Sign in
           </a>
         </div>
       </div>
