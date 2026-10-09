@@ -8,11 +8,13 @@ import {
 } from 'lucide-react';
 import { getSideBySideComparison, getProductPortfolioMatrix } from '../api';
 import TimeMachineSlider from './TimeMachineSlider';
+import ProductTeardownModal from './ProductTeardownModal';
 
 export default function SideBySideSection() {
   const [activeView, setActiveView] = useState('products'); // 'products', 'time_machine', 'fundamentals'
   const [data, setData] = useState(null);
   const [productData, setProductData] = useState(null);
+  const [selectedTeardownComp, setSelectedTeardownComp] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -318,6 +320,13 @@ export default function SideBySideSection() {
                         <div className="bg-slate-400 w-[50%]" />
                         <div className="bg-purple-600 w-[30%]" />
                       </div>
+
+                      <button
+                        onClick={() => setSelectedTeardownComp(p)}
+                        className="w-full mt-3 py-2 px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900/40 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]"
+                      >
+                        <Box size={13} /> Product Dossier Teardown
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -517,6 +526,13 @@ export default function SideBySideSection() {
           </div>
         </div>
       )}
+
+      {/* ── Product Dossier & Teardown Modal ── */}
+      <ProductTeardownModal
+        isOpen={!!selectedTeardownComp}
+        onClose={() => setSelectedTeardownComp(null)}
+        competitor={selectedTeardownComp}
+      />
     </div>
   );
 }

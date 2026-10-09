@@ -946,3 +946,80 @@ export async function getProductPortfolioMatrix() {
   }
 }
 
+export async function getCompetitorProductsTeardown(competitorId) {
+  try {
+    return await apiGet(`/api/competitors/${competitorId}/products-teardown`);
+  } catch (err) {
+    console.warn('Backend products teardown fallback:', err);
+    return {
+      competitorId,
+      competitorName: competitorId === 'comp-linear' ? 'Linear' : (competitorId === 'comp-jira' ? 'Jira Software' : 'ClickUp'),
+      website: competitorId === 'comp-linear' ? 'https://linear.app' : 'https://clickup.com',
+      brandSummary: 'High-growth workflow platform analyzed across distinct product offerings.',
+      extractedOgImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+      totalProductsAnalyzed: 3,
+      products: [
+        {
+          id: 'fb-p1',
+          name: 'Core Issue Tracking',
+          category: 'Agile Project Coordination',
+          visualUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+          role: 'Flagship Anchor',
+          roleBadgeColor: 'bg-indigo-500 text-white',
+          revenueShare: '55% of ARR',
+          targetBuyer: 'Engineering Leads & Tech Founders',
+          pricingModel: 'Per-Seat Monthly ($8 - $12/user)',
+          pricingFloor: 8.0,
+          strengths: ['Sub-50ms interaction speed', 'Deep git branching sync', 'Opinionated minimalist UI'],
+          vulnerabilities: ['High friction for non-technical team members', 'Limited custom executive reports'],
+          howToWin: 'Emphasize seamless cross-department collaboration and unified executive reporting.'
+        },
+        {
+          id: 'fb-p2',
+          name: 'Insights & Cycles Analytics',
+          category: 'Team Velocity Forecasting',
+          visualUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
+          role: 'Cash Cow',
+          roleBadgeColor: 'bg-emerald-500 text-white',
+          revenueShare: '25% of ARR',
+          targetBuyer: 'VP of Engineering & Agile PMs',
+          pricingModel: 'Gated in Plus Tier ($14/user/mo)',
+          pricingFloor: 14.0,
+          strengths: ['Automated scope change tracking', 'Cycle progress forecasts'],
+          vulnerabilities: ['Quietly added 5-seat minimum barrier ($70/mo effective floor)', 'Cannot correlate ARR with velocity'],
+          howToWin: 'Offer seat-minimum-free analytics directly correlated with pipeline revenue.'
+        },
+        {
+          id: 'fb-p3',
+          name: 'AI Triage & Copilot',
+          category: 'Automated Ticket Routing',
+          visualUrl: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80',
+          role: 'High-Margin Add-On',
+          roleBadgeColor: 'bg-amber-500 text-white',
+          revenueShare: '20% of ARR',
+          targetBuyer: 'Operations & Support Leads',
+          pricingModel: 'Paid Add-On ($10/seat extra)',
+          pricingFloor: 10.0,
+          strengths: ['Slack message to ticket conversion', 'Automated duplicate detection'],
+          vulnerabilities: ['Charges extra line-item fee on top of core subscription', 'Generic summarizer without market modeling'],
+          howToWin: 'We bundle autonomous adversarial war games and AI triage for free in core accounts.'
+        }
+      ]
+    };
+  }
+}
+
+export async function extractProductVisuals(url) {
+  try {
+    return await apiPost('/api/competitors/extract-product-visuals', { url });
+  } catch (err) {
+    console.warn('Backend extract visuals fallback:', err);
+    return {
+      ogImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+      heroImages: [],
+      screenshotUrl: `https://api.microlink.io?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`
+    };
+  }
+}
+
+

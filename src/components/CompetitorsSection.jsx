@@ -3,7 +3,7 @@ import { DbContext } from '../App';
 import { 
   Users, Check, X, Plus, ExternalLink, ShieldAlert, Target, Zap, 
   Sparkles, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Newspaper,
-  MoreVertical, Edit3, Archive, RefreshCw, Trash2, Tag, MessageSquare, RotateCcw, Swords, Columns
+  MoreVertical, Edit3, Archive, RefreshCw, Trash2, Tag, MessageSquare, RotateCcw, Swords, Columns, Box
 } from 'lucide-react';
 import { 
   getCompetitors, acceptCompetitor, rejectCompetitor, addManualCompetitor, getIntelligenceFeed,
@@ -13,6 +13,7 @@ import { getEventTypeBadgeStyle, getImpactBadgeStyle, formatRelativeTime } from 
 import CompetitorCharts from './CompetitorCharts';
 import BattlecardModal from './BattlecardModal';
 import SideBySideComparisonModal from './SideBySideComparisonModal';
+import ProductTeardownModal from './ProductTeardownModal';
 
 export default function CompetitorsSection() {
   const context = useContext(DbContext) || {};
@@ -49,6 +50,7 @@ export default function CompetitorsSection() {
 
   // Battlecard modal state
   const [selectedBattlecardComp, setSelectedBattlecardComp] = useState(null);
+  const [selectedTeardownComp, setSelectedTeardownComp] = useState(null);
 
   // Expanded Competitor Activity State
   const [activityState, setActivityState] = useState({});
@@ -564,17 +566,24 @@ export default function CompetitorsSection() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setSelectedBattlecardComp(comp)}
-                          className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-900/40 font-bold px-3 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-[0.98]"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-900/40 font-bold px-2.5 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-[0.98]"
                           title="Open tactical sales battlecard against this competitor"
                         >
-                          <Swords size={14} /> Tactical Battlecard
+                          <Swords size={13} /> Battlecard
+                        </button>
+                        <button
+                          onClick={() => setSelectedTeardownComp(comp)}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900/40 font-bold px-2.5 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-[0.98]"
+                          title="Inspect granular products, real visuals, and business teardown"
+                        >
+                          <Box size={13} /> Products
                         </button>
                         <button
                           onClick={() => toggleCompetitorActivity(comp.id)}
-                          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all"
+                          className="flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all"
                         >
                           <span>Activity</span>
-                          {actState.expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          {actState.expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                         </button>
                       </div>
 
@@ -731,6 +740,13 @@ export default function CompetitorsSection() {
       <SideBySideComparisonModal
         isOpen={isCompareOpen}
         onClose={() => setIsCompareOpen(false)}
+      />
+
+      {/* ── Product Dossier & Teardown Modal ── */}
+      <ProductTeardownModal
+        isOpen={!!selectedTeardownComp}
+        onClose={() => setSelectedTeardownComp(null)}
+        competitor={selectedTeardownComp}
       />
 
     </div>
