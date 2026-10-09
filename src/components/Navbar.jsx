@@ -14,16 +14,22 @@ export default function Navbar() {
         {/* Right: CTA Buttons */}
         <div className="flex items-center gap-3">
           <a 
+            href="/dashboard/?demo=true" 
+            className="text-[13px] font-bold text-blue-600 hover:text-blue-700 px-3 py-2 transition-colors"
+          >
+            Live Demo
+          </a>
+          <a 
             href="/login/" 
             className="text-[13px] font-medium text-gray-700 hover:text-gray-900 px-3 py-2 transition-colors"
           >
             Sign in
           </a>
           <a 
-            href="/signup/" 
+            href="/dashboard/" 
             className="bg-gray-900 text-white text-[13px] font-medium px-4 sm:px-5 py-2 rounded-full hover:bg-gray-800 transition-all hover:scale-[1.02] shadow-sm text-center"
           >
-            Get started
+            Dashboard
           </a>
         </div>
       </div>
