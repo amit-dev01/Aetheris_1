@@ -6,12 +6,24 @@
       "destination": "https://ai-backend-zfq1.onrender.com/api/:path*"
     },
     {
+      "source": "/dashboard/(.*)",
+      "destination": "/dashboard/index.html"
+    },
+    {
       "source": "/dashboard",
       "destination": "/dashboard/index.html"
     },
     {
+      "source": "/login/(.*)",
+      "destination": "/login/index.html"
+    },
+    {
       "source": "/login",
       "destination": "/login/index.html"
+    },
+    {
+      "source": "/signup/(.*)",
+      "destination": "/signup/index.html"
     },
     {
       "source": "/signup",
@@ -19,3 +31,4 @@
     }
   ]
 }
+

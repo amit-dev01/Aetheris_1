@@ -775,3 +775,174 @@ export async function getSideBySideComparison() {
     ]
   };
 }
+
+export async function getCompetitorVisualDiff(competitorId) {
+  try {
+    return await apiGet(`/api/competitors/${competitorId}/visual-diff`);
+  } catch (err) {
+    console.warn('Backend visual diff fallback:', err);
+    return {
+      competitorName: competitorId === 'comp-linear' ? 'Linear' : (competitorId === 'comp-jira' ? 'Jira Software' : 'ClickUp'),
+      targetUrl: 'https://linear.app/pricing',
+      historicalDate: 'October 2024 (6 Months Ago)',
+      currentDate: 'Today (Live Capture)',
+      historicalImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+      currentImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
+      changeHighlights: [
+        {
+          id: 'ch-1',
+          type: 'PRICE_INCREASE',
+          color: 'yellow',
+          box: { x: 22, y: 38, w: 24, h: 18 },
+          title: 'Standard Plan Price Hike ($8 → $12/user/mo)',
+          description: 'Base standard pricing increased by +50% from $8 to $12 per user per month billed monthly.',
+          strategicImpact: 'Creates an immediate cost shock for early-stage teams. Counter by highlighting our fixed pricing lock.'
+        },
+        {
+          id: 'ch-2',
+          type: 'TIER_RESTRICTION',
+          color: 'red',
+          box: { x: 50, y: 42, w: 26, h: 22 },
+          title: 'Stealth 5-User Minimum Added',
+          description: 'Quietly instituted a 5-seat minimum on the Plus tier, raising effective entry barrier from $14 to $70/mo.',
+          strategicImpact: 'Small teams (2-4 devs) are actively complaining on Reddit. Prime account poaching opportunity.'
+        },
+        {
+          id: 'ch-3',
+          type: 'NEW_FEATURE',
+          color: 'green',
+          box: { x: 78, y: 35, w: 20, h: 25 },
+          title: 'AI Insights Add-on ($10/seat extra)',
+          description: 'Debuted proprietary AI triage as a paid add-on rather than including it in core plans.',
+          strategicImpact: 'Dilutes their all-inclusive value proposition. We bundle native AI co-pilot for free.'
+        }
+      ],
+      strategicSummary: 'Linear is aggressively transitioning toward higher ACV by introducing user minimums and paid AI add-ons, leaving a massive whitespace for lean startups seeking speed without seat penalties.'
+    };
+  }
+}
+
+export async function getProductPortfolioMatrix() {
+  try {
+    return await apiGet('/api/competitors/product-matrix');
+  } catch (err) {
+    console.warn('Backend product matrix fallback:', err);
+    return {
+      categoryStats: {
+        categoryName: 'Productivity & Issue Tracking',
+        categoryPriceMinima: 7.0,
+        categoryPriceMedian: 13.8,
+        categoryPriceMaxima: 39.99,
+        totalProductsBenchmarked: 5
+      },
+      homeProduct: {
+        id: 'our-product',
+        name: 'Aetheris AI',
+        productCategory: 'Autonomous Competitive Intelligence & Strategy',
+        productVisual: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
+        flagshipProduct: 'Aetheris Autonomous War Room',
+        targetUser: 'Strategic Product Leaders, Founders & Growth PMs',
+        keyDifferentiator: 'Real-time autonomous adversarial battle simulation & visual DOM change detection.',
+        pricingFloor: 0.0,
+        pricingMedian: 18.0,
+        pricingCeiling: 39.0,
+        pricingModel: 'Freemium + Usage Tiers',
+        specs: [
+          { label: 'Flagship Offering', value: 'Aetheris War Room Core' },
+          { label: 'Update Frequency', value: 'Real-Time Continuous Stream' },
+          { label: 'Visual Time Machine', value: 'Full DOM & Pixel Slider' },
+          { label: 'Adversarial Red-Team', value: 'Native Multi-Agent Engine' },
+          { label: 'Customer Churn Hunter', value: 'Live Social & Review Mining' },
+          { label: 'Deployment', value: 'Instant Cloud + API Webhooks' }
+        ]
+      },
+      competitorProducts: [
+        {
+          id: 'comp-linear',
+          name: 'Linear',
+          productCategory: 'High-Velocity Issue Tracking',
+          productVisual: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+          flagshipProduct: 'Linear Cycles & Insights',
+          targetUser: 'Modern High-Performance Software Engineering Teams',
+          keyDifferentiator: 'Sub-50ms keyboard-first desktop client and opinionated git workflow sync.',
+          pricingFloor: 8.0,
+          pricingMedian: 14.0,
+          pricingCeiling: 28.0,
+          pricingModel: 'Per-Seat Monthly',
+          specs: [
+            { label: 'Flagship Offering', value: 'Linear Cycles & Roadmaps' },
+            { label: 'Update Frequency', value: 'Weekly Sprint Releases' },
+            { label: 'Visual Time Machine', value: 'None (Manual changelog only)' },
+            { label: 'Adversarial Red-Team', value: 'None' },
+            { label: 'Customer Churn Hunter', value: 'None' },
+            { label: 'Deployment', value: 'Electron Desktop + Web App' }
+          ]
+        },
+        {
+          id: 'comp-jira',
+          name: 'Jira Software',
+          productCategory: 'Enterprise Agile Workflow Management',
+          productVisual: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
+          flagshipProduct: 'Jira Cloud Enterprise',
+          targetUser: 'Traditional Enterprise IT & Complex Cross-Functional Orgs',
+          keyDifferentiator: 'Extensive Atlassian ecosystem, compliance certifications, and infinite customization.',
+          pricingFloor: 7.75,
+          pricingMedian: 15.25,
+          pricingCeiling: 32.50,
+          pricingModel: 'Per-Seat Monthly (Tiered)',
+          specs: [
+            { label: 'Flagship Offering', value: 'Jira Cloud Standard / Premium' },
+            { label: 'Update Frequency', value: 'Monthly Enterprise Cycles' },
+            { label: 'Visual Time Machine', value: 'None' },
+            { label: 'Adversarial Red-Team', value: 'None' },
+            { label: 'Customer Churn Hunter', value: 'None' },
+            { label: 'Deployment', value: 'Atlassian Cloud Dedicated' }
+          ]
+        },
+        {
+          id: 'comp-asana',
+          name: 'Asana',
+          productCategory: 'Work Coordination & Portfolio Tracking',
+          productVisual: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80',
+          flagshipProduct: 'Asana Work Graph',
+          targetUser: 'Marketing, Operations & Non-Technical Teams',
+          keyDifferentiator: 'Visual Gantt timelines, cross-department goal cascades, and intuitive onboarding.',
+          pricingFloor: 10.99,
+          pricingMedian: 24.99,
+          pricingCeiling: 39.99,
+          pricingModel: 'Per-Seat Monthly',
+          specs: [
+            { label: 'Flagship Offering', value: 'Asana Starter & Advanced' },
+            { label: 'Update Frequency', value: 'Bi-Weekly Web Updates' },
+            { label: 'Visual Time Machine', value: 'None' },
+            { label: 'Adversarial Red-Team', value: 'None' },
+            { label: 'Customer Churn Hunter', value: 'None' },
+            { label: 'Deployment', value: 'Web SaaS' }
+          ]
+        },
+        {
+          id: 'comp-clickup',
+          name: 'ClickUp',
+          productCategory: 'All-in-One Productivity & Collaboration',
+          productVisual: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
+          flagshipProduct: 'ClickUp 3.0 Platform',
+          targetUser: 'Agile Startups & Cost-Conscious Teams Replacing Multiple Tools',
+          keyDifferentiator: 'Feature density (tasks, docs, whiteboards, chat, time tracking) at aggressive entry rates.',
+          pricingFloor: 7.0,
+          pricingMedian: 12.0,
+          pricingCeiling: 19.0,
+          pricingModel: 'Per-Seat Monthly',
+          specs: [
+            { label: 'Flagship Offering', value: 'ClickUp Unlimited & Business' },
+            { label: 'Update Frequency', value: 'Continuous Feature Drops' },
+            { label: 'Visual Time Machine', value: 'None' },
+            { label: 'Adversarial Red-Team', value: 'None' },
+            { label: 'Customer Churn Hunter', value: 'None' },
+            { label: 'Deployment', value: 'Web SaaS & Mobile Apps' }
+          ]
+        }
+      ]
+    };
+  }
+}
+
