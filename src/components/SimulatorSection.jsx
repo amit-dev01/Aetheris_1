@@ -12,7 +12,7 @@ const PRESET_SCENARIOS = [
     id: 'PRICE_DROP_20', 
     title: '20% Price Slash Across All Tiers', 
     icon: DollarSign,
-    desc: 'Rival cuts subscription pricing by 20% to ignite an aggressive price war.'
+    desc: 'Rival cuts subscription pricing by 20% to initiate aggressive discounting.'
   },
   { 
     id: 'AI_COPILOT_LAUNCH', 
@@ -134,7 +134,7 @@ export default function SimulatorSection() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                AI War Game & Move Simulator
+                Strategic Scenario & Counter-Move Simulator
               </h1>
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
                 Game-Theoretic
@@ -235,7 +235,7 @@ export default function SimulatorSection() {
                 <Swords size={32} />
               </div>
               <h3 className="font-extrabold text-slate-900 dark:text-white text-lg">
-                War Room Simulation Idle
+                Scenario Simulation Idle
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mt-1">
                 Select a rival and competitive maneuver on the left, then click Run Simulation to project market share shift and calculate defensive counters.

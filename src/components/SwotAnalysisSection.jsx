@@ -29,7 +29,7 @@ export default function SwotAnalysisSection() {
     ],
     threats: [
       'Aggressive AI feature bundling by established enterprise giants',
-      'Price wars initiated through free startup tier credits'
+      'Aggressive discounting initiated through free startup tier credits'
     ]
   });
   const [activeCategory, setActiveCategory] = useState('strengths');

@@ -151,7 +151,7 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                 )}
               </div>
               <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                <span>360° Comprehensive War Room Dossier</span>
+                <span>360° Comprehensive Executive Dossier</span>
                 {compWeb && (
                   <>
                     <span>•</span>
@@ -344,7 +344,7 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
 
                       <div className="p-5 rounded-2xl bg-rose-500/[0.04] border border-rose-200/80 dark:border-rose-900/40 space-y-2.5">
                         <h4 className="text-xs font-black uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
-                          <ShieldAlert size={15} /> Exploitable Vulnerabilities (Lay Landmines Here)
+                          <ShieldAlert size={15} /> Exploitable Flank Vulnerabilities & Gaps
                         </h4>
                         <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
                           {(flagshipProduct.vulnerabilities || ['Seat-minimum barriers on higher tiers', 'Friction for non-technical departments']).map((v, i) => (
@@ -545,16 +545,16 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                     </div>
                   )}
 
-                  {/* Objection Landmines */}
+                  {/* Strategic Trap Questions */}
                   {battlecardData.landminesToLay && battlecardData.landminesToLay.length > 0 && (
                     <div className="p-5 rounded-2xl bg-amber-500/[0.04] border border-amber-200/80 dark:border-amber-900/40 space-y-3">
                       <h4 className="text-xs font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-2">
-                        <Flame size={15} /> Objection Landmines (Tell Prospect To Ask {compName})
+                        <Flame size={15} /> Strategic Trap Questions (Guide Prospect To Ask {compName})
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         {battlecardData.landminesToLay.map((lm, i) => (
                           <div key={i} className="p-3.5 bg-white dark:bg-slate-800/80 border border-amber-200/80 dark:border-amber-900/30 rounded-xl space-y-1">
-                            <span className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400">Landmine #{i + 1}</span>
+                            <span className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400">Trap Question #{i + 1}</span>
                             <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">{lm}</p>
                           </div>
                         ))}
@@ -741,7 +741,7 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                         </div>
                       </div>
                       <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                        Continuous automated activity monitoring identified an abnormal surge in {compName}'s web activity, pricing tests, and digital footprint. Adversary may be preparing an unannounced stealth product launch or rapid discounting.
+                        Continuous automated activity monitoring identified an abnormal surge in {compName}'s web activity, pricing tests, and digital footprint. The competitor may be preparing an unannounced stealth product launch or rapid discounting.
                       </p>
                     </div>
                   ) : (

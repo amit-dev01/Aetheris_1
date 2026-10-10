@@ -12,7 +12,7 @@ const PRESET_SCENARIOS = [
     id: 'PRICE_DROP_20', 
     title: '20% Price Slash Across All Tiers', 
     icon: DollarSign,
-    desc: 'Rival cuts subscription pricing by 20% to ignite an aggressive price war.'
+    desc: 'Rival cuts subscription pricing by 20% to initiate aggressive discounting.'
   },
   { 
     id: 'AI_COPILOT_LAUNCH', 
@@ -117,7 +117,7 @@ export default function BattleSimulatorModal({ isOpen, onClose, competitors = []
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-fade-in-up">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-5xl w-[94vw] max-h-[92vh] flex flex-col overflow-hidden animate-fade-in-up">
         
         {/* Header */}
         <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 bg-gradient-to-r from-purple-50/50 via-blue-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:via-blue-950/20 dark:to-indigo-950/20">
@@ -128,14 +128,14 @@ export default function BattleSimulatorModal({ isOpen, onClose, competitors = []
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                  AI Battle Simulator 🎮
+                  Strategic Scenario Simulator
                 </h2>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                   Game Theory
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Simulate "what-if" market clashes, predict market share shifts, and auto-generate counter-attacks
+                Simulate "what-if" competitive market moves, project market share shifts, and generate strategic defense playbooks
               </p>
             </div>
           </div>

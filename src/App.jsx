@@ -347,7 +347,7 @@ export default function App() {
     { id: 'swot', label: 'SWOT Generator', icon: Grid, badge: 'AI', badgeColor: 'bg-emerald-600 text-white' },
     { id: 'pricing', label: 'Pricing Matrix', icon: DollarSign },
     { id: 'positioning', label: 'Positioning Map (2D)', icon: Compass },
-    { id: 'simulator', label: 'War Game Simulator', icon: Swords, badge: 'AI', badgeColor: 'bg-purple-600 text-white' },
+    { id: 'simulator', label: 'Scenario Simulator', icon: Swords, badge: 'AI', badgeColor: 'bg-purple-600 text-white' },
     { 
       id: 'market', 
       label: 'Market Intelligence', 

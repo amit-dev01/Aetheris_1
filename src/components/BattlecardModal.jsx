@@ -110,7 +110,7 @@ QUICK DISMISSAL SCRIPT:
 WHERE WE WIN:
 ${(battlecard.whereWeWin || []).map((w, i) => `${i + 1}. ${w.advantage} - ${w.proofPoint}`).join('\n')}
 
-LANDMINES TO LAY:
+STRATEGIC TRAP QUESTIONS:
 ${(battlecard.landminesToLay || []).map((l, i) => `${i + 1}. ${l}`).join('\n')}
 
 WHERE THEY WIN & HOW TO DEFEND:
@@ -145,7 +145,7 @@ ${battlecard.targetProspectProfile}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Real-time competitive dismissal scripts, objection landmines, and pricing defense.
+                Real-time competitive positioning scripts, strategic trap questions, and pricing defense.
               </p>
             </div>
           </div>
@@ -241,7 +241,7 @@ ${battlecard.targetProspectProfile}
               <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
                 {[
                   { id: 'matchup', label: 'Matchup & Strengths', icon: Award },
-                  { id: 'landmines', label: 'Objection Landmines', icon: Flame, badge: battlecard.landminesToLay?.length },
+                  { id: 'landmines', label: 'Strategic Trap Questions', icon: Flame, badge: battlecard.landminesToLay?.length },
                   { id: 'defense', label: 'Defense & Rebuttals', icon: ShieldAlert },
                   { id: 'pricing', label: 'Pricing Strategy & ICP', icon: DollarSign },
                   { id: 'swot', label: 'SWOT Analysis Matrix', icon: Grid },
@@ -354,7 +354,7 @@ ${battlecard.targetProspectProfile}
                           "{landmine}"
                         </div>
                         <button
-                          onClick={() => copyToClipboard(landmine, `Landmine #${idx + 1} copied!`)}
+                          onClick={() => copyToClipboard(landmine, `Trap Question #${idx + 1} copied!`)}
                           className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-blue-600 transition-all p-1"
                           title="Copy question"
                         >

@@ -195,7 +195,7 @@ export default function SideBySideSection() {
                 <Star size={14} /> Flagship Anchor
               </div>
               <div className="text-lg font-black text-slate-900 dark:text-white mt-1 truncate">
-                {homeProduct.flagshipProduct || 'Core War Room'}
+                {homeProduct.flagshipProduct || 'Core Product Suite'}
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">Primary customer acquisition product</p>
             </div>
