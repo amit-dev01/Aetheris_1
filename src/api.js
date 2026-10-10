@@ -600,72 +600,33 @@ export async function getPositioningRadar() {
 }
 
 export async function getPricingMatrix() {
-  try {
-    const res = await apiGet('/api/competitors/pricing-matrix');
-    if (res && res.matrix && res.matrix.length > 0) return res;
-  } catch (err) {
-    console.warn('Backend pricing matrix fallback:', err);
+  const res = await apiGet('/api/competitors/pricing-matrix');
+  if (res) {
+    const rows = res.matrix || res.competitorMatrix || [];
+    return {
+      category: res.category || res.industry || 'B2B Category',
+      categoryStats: {
+        priceFloorMinima: res.categoryStats?.priceFloorMinima ?? res.categoryBenchmarks?.marketFloorMinima ?? 0,
+        priceCeilingMaxima: res.categoryStats?.priceCeilingMaxima ?? res.categoryBenchmarks?.marketCeilingMaxima ?? 0,
+        enterpriseCeilingMaxima: res.categoryStats?.enterpriseCeilingMaxima ?? res.categoryBenchmarks?.marketCeilingMaxima ?? 0,
+        categoryMedianPrice: res.categoryStats?.categoryMedianPrice ?? res.categoryBenchmarks?.categoryMedian ?? 0,
+        totalCompetitorsAnalyzed: res.totalCompetitorsAnalyzed || rows.length
+      },
+      matrix: rows.map(r => ({
+        competitorName: r.competitorName || r.name,
+        flagshipProduct: r.flagshipProduct || 'Core Offering',
+        priceMinima: r.priceMinima ?? 0,
+        priceMaxima: r.priceMaxima ?? 0,
+        pricingFloor: r.priceMinima ?? 0,
+        pricingCeiling: r.priceMaxima ?? 0,
+        competitiveScore: r.competitiveScore ?? 65,
+        features: r.tiers || ['Continuous Intelligence', 'Market Tracking']
+      })),
+      whitespaceGaps: res.whitespaceGaps || res.unoccupiedWhitespaceGaps || [],
+      pricingRecommendations: res.pricingRecommendations || (res.strategicRecommendation ? [res.strategicRecommendation] : [])
+    };
   }
-  return {
-    category: 'Productivity & Issue Tracking SaaS',
-    categoryStats: {
-      priceFloorMinima: 7.0,
-      priceCeilingMaxima: 24.99,
-      categoryMedianPrice: 12.5,
-      totalCompetitorsAnalyzed: 4
-    },
-    matrix: [
-      {
-        competitorName: 'Linear',
-        flagshipProduct: 'Linear Standard',
-        pricingFloor: 8.0,
-        pricingCeiling: 14.0,
-        pricingModel: 'Per-User Monthly',
-        features: ['Keyboard shortcuts', 'Git integrations', 'Cycles & Roadmaps', 'Offline mode']
-      },
-      {
-        competitorName: 'Jira Software',
-        flagshipProduct: 'Jira Cloud Standard',
-        pricingFloor: 7.75,
-        pricingCeiling: 15.25,
-        pricingModel: 'Per-User Monthly',
-        features: ['Scrum & Kanban boards', 'Atlassian marketplace', 'Advanced roadmaps', 'Audit logs']
-      },
-      {
-        competitorName: 'Asana',
-        flagshipProduct: 'Asana Starter & Advanced',
-        pricingFloor: 10.99,
-        pricingCeiling: 24.99,
-        pricingModel: 'Per-User Monthly',
-        features: ['Timeline & Gantt', 'Workflow builder', 'Portfolios & Goals', 'Workload tracking']
-      },
-      {
-        competitorName: 'ClickUp',
-        flagshipProduct: 'ClickUp Unlimited & Business',
-        pricingFloor: 7.0,
-        pricingCeiling: 12.0,
-        pricingModel: 'Per-User Monthly',
-        features: ['Whiteboards', 'Sprint points', 'Docs & Wikis', 'Custom views']
-      }
-    ],
-    whitespaceGaps: [
-      {
-        gapTitle: 'Real-Time Cross-Tool Intelligence Tier',
-        priceBand: '$18 - $28/seat/mo',
-        opportunity: 'Incumbents charge $40+/seat for enterprise intelligence add-ons. Launch a mid-market automated radar tier at $22/seat.'
-      },
-      {
-        gapTitle: 'Usage-Based API Execution Add-On',
-        priceBand: '$0.05/signal sync',
-        opportunity: 'Zero competitors offer consumption-based automated competitor signal scraping. Monetize external webhook triggers.'
-      }
-    ],
-    pricingRecommendations: [
-      'Position starter plan at $9/seat to undercut Asana by 18% while signaling premium speed over ClickUp.',
-      'Offer bundled AI Battlecards free in the standard plan to destroy competitor add-on pricing power.',
-      'Introduce contract buyout credits for Jira migrations to capitalize on legacy pricing fatigue.'
-    ]
-  };
+  throw new Error('Failed to retrieve pricing matrix.');
 }
 
 export async function recordDealOutcome(payload) {
@@ -697,329 +658,51 @@ export async function getCompetitorWebPresence(competitorId) {
 }
 
 export async function getSideBySideComparison() {
-  try {
-    const res = await apiGet('/api/competitors/side-by-side');
-    if (res && res.competitors && res.competitors.length > 0) return res;
-  } catch (err) {
-    console.warn('Backend side-by-side fallback:', err);
+  const res = await apiGet('/api/competitors/side-by-side');
+  if (res && res.competitors) {
+    return res;
   }
-  return {
-    homeCompany: {
-      name: 'Aetheris AI',
-      industry: 'Productivity & Competitive Intelligence',
-      companySize: '25-50',
-      location: 'San Francisco, CA',
-      monthlyTraffic: '185K',
-      domainAuthority: 68,
-      techStack: ['Next.js', 'React', 'Tailwind CSS', 'FastAPI', 'Supabase', 'Stripe'],
-      financialHealth: 'A',
-      pricingModel: 'Freemium / Tiered'
-    },
-    competitors: [
-      {
-        id: 'comp-linear',
-        name: 'Linear',
-        website: 'https://linear.app',
-        foundedYear: 2019,
-        hqLocation: 'San Francisco, CA',
-        teamSize: '50-100',
-        totalFunding: '$52M (Series B)',
-        monthlyTraffic: '1.2M',
-        domainAuthority: 79,
-        techStack: ['React', 'Next.js', 'Tailwind', 'Cloudflare', 'Stripe'],
-        financialHealth: 'A',
-        pricingModel: 'Freemium ($8 - $14/seat)'
-      },
-      {
-        id: 'comp-jira',
-        name: 'Jira Software',
-        website: 'https://atlassian.com/software/jira',
-        foundedYear: 2002,
-        hqLocation: 'Sydney, Australia',
-        teamSize: '10,000+',
-        totalFunding: 'Public (TEAM - $48B Cap)',
-        monthlyTraffic: '38.5M',
-        domainAuthority: 92,
-        techStack: ['React', 'Java', 'AWS', 'PostHog', 'Akamai'],
-        financialHealth: 'A',
-        pricingModel: 'Tiered ($7.75 - $15.25/seat)'
-      },
-      {
-        id: 'comp-asana',
-        name: 'Asana',
-        website: 'https://asana.com',
-        foundedYear: 2008,
-        hqLocation: 'San Francisco, CA',
-        teamSize: '1,800+',
-        totalFunding: 'Public (ASAN - $3.2B Cap)',
-        monthlyTraffic: '14.2M',
-        domainAuthority: 87,
-        techStack: ['React', 'TypeScript', 'AWS', 'Google Analytics'],
-        financialHealth: 'B',
-        pricingModel: 'Tiered ($10.99 - $24.99/seat)'
-      },
-      {
-        id: 'comp-clickup',
-        name: 'ClickUp',
-        website: 'https://clickup.com',
-        foundedYear: 2017,
-        hqLocation: 'San Diego, CA',
-        teamSize: '800+',
-        totalFunding: '$537M (Series C)',
-        monthlyTraffic: '8.4M',
-        domainAuthority: 82,
-        techStack: ['Angular', 'Node.js', 'Cloudflare', 'Segment'],
-        financialHealth: 'B',
-        pricingModel: 'Freemium ($7 - $12/seat)'
-      }
-    ]
-  };
+  throw new Error('Failed to retrieve side-by-side comparison data.');
 }
 
 export async function getCompetitorVisualDiff(competitorId) {
-  try {
-    return await apiGet(`/api/competitors/${competitorId}/visual-diff`);
-  } catch (err) {
-    console.warn('Backend visual diff fallback:', err);
-    return {
-      competitorName: competitorId === 'comp-linear' ? 'Linear' : (competitorId === 'comp-jira' ? 'Jira Software' : 'ClickUp'),
-      targetUrl: 'https://linear.app/pricing',
-      historicalDate: 'October 2024 (6 Months Ago)',
-      currentDate: 'Today (Live Capture)',
-      historicalImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
-      currentImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
-      changeHighlights: [
-        {
-          id: 'ch-1',
-          type: 'PRICE_INCREASE',
-          color: 'yellow',
-          box: { x: 22, y: 38, w: 24, h: 18 },
-          title: 'Standard Plan Price Hike ($8 → $12/user/mo)',
-          description: 'Base standard pricing increased by +50% from $8 to $12 per user per month billed monthly.',
-          strategicImpact: 'Creates an immediate cost shock for early-stage teams. Counter by highlighting our fixed pricing lock.'
-        },
-        {
-          id: 'ch-2',
-          type: 'TIER_RESTRICTION',
-          color: 'red',
-          box: { x: 50, y: 42, w: 26, h: 22 },
-          title: 'Stealth 5-User Minimum Added',
-          description: 'Quietly instituted a 5-seat minimum on the Plus tier, raising effective entry barrier from $14 to $70/mo.',
-          strategicImpact: 'Small teams (2-4 devs) are actively complaining on Reddit. Prime account poaching opportunity.'
-        },
-        {
-          id: 'ch-3',
-          type: 'NEW_FEATURE',
-          color: 'green',
-          box: { x: 78, y: 35, w: 20, h: 25 },
-          title: 'AI Insights Add-on ($10/seat extra)',
-          description: 'Debuted proprietary AI triage as a paid add-on rather than including it in core plans.',
-          strategicImpact: 'Dilutes their all-inclusive value proposition. We bundle native AI co-pilot for free.'
-        }
-      ],
-      strategicSummary: 'Linear is aggressively transitioning toward higher ACV by introducing user minimums and paid AI add-ons, leaving a massive whitespace for lean startups seeking speed without seat penalties.'
-    };
-  }
+  const res = await apiGet(`/api/competitors/${competitorId}/visual-diff`);
+  if (res) return res;
+  throw new Error('Failed to load visual diff for competitor.');
 }
 
 export async function getProductPortfolioMatrix() {
-  try {
-    return await apiGet('/api/competitors/product-matrix');
-  } catch (err) {
-    console.warn('Backend product matrix fallback:', err);
-    return {
-      categoryStats: {
-        categoryName: 'Productivity & Issue Tracking',
-        categoryPriceMinima: 7.0,
-        categoryPriceMedian: 13.8,
-        categoryPriceMaxima: 39.99,
-        totalProductsBenchmarked: 5
-      },
-      homeProduct: {
-        id: 'our-product',
-        name: 'Aetheris AI',
-        productCategory: 'Autonomous Competitive Intelligence & Strategy',
-        productVisual: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
-        flagshipProduct: 'Aetheris Autonomous War Room',
-        targetUser: 'Strategic Product Leaders, Founders & Growth PMs',
-        keyDifferentiator: 'Real-time autonomous adversarial battle simulation & visual DOM change detection.',
-        pricingFloor: 0.0,
-        pricingMedian: 18.0,
-        pricingCeiling: 39.0,
-        pricingModel: 'Freemium + Usage Tiers',
-        specs: [
-          { label: 'Flagship Offering', value: 'Aetheris War Room Core' },
-          { label: 'Update Frequency', value: 'Real-Time Continuous Stream' },
-          { label: 'Visual Time Machine', value: 'Full DOM & Pixel Slider' },
-          { label: 'Adversarial Red-Team', value: 'Native Multi-Agent Engine' },
-          { label: 'Customer Churn Hunter', value: 'Live Social & Review Mining' },
-          { label: 'Deployment', value: 'Instant Cloud + API Webhooks' }
-        ]
-      },
-      competitorProducts: [
-        {
-          id: 'comp-linear',
-          name: 'Linear',
-          productCategory: 'High-Velocity Issue Tracking',
-          productVisual: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
-          flagshipProduct: 'Linear Cycles & Insights',
-          targetUser: 'Modern High-Performance Software Engineering Teams',
-          keyDifferentiator: 'Sub-50ms keyboard-first desktop client and opinionated git workflow sync.',
-          pricingFloor: 8.0,
-          pricingMedian: 14.0,
-          pricingCeiling: 28.0,
-          pricingModel: 'Per-Seat Monthly',
-          specs: [
-            { label: 'Flagship Offering', value: 'Linear Cycles & Roadmaps' },
-            { label: 'Update Frequency', value: 'Weekly Sprint Releases' },
-            { label: 'Visual Time Machine', value: 'None (Manual changelog only)' },
-            { label: 'Adversarial Red-Team', value: 'None' },
-            { label: 'Customer Churn Hunter', value: 'None' },
-            { label: 'Deployment', value: 'Electron Desktop + Web App' }
-          ]
-        },
-        {
-          id: 'comp-jira',
-          name: 'Jira Software',
-          productCategory: 'Enterprise Agile Workflow Management',
-          productVisual: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
-          flagshipProduct: 'Jira Cloud Enterprise',
-          targetUser: 'Traditional Enterprise IT & Complex Cross-Functional Orgs',
-          keyDifferentiator: 'Extensive Atlassian ecosystem, compliance certifications, and infinite customization.',
-          pricingFloor: 7.75,
-          pricingMedian: 15.25,
-          pricingCeiling: 32.50,
-          pricingModel: 'Per-Seat Monthly (Tiered)',
-          specs: [
-            { label: 'Flagship Offering', value: 'Jira Cloud Standard / Premium' },
-            { label: 'Update Frequency', value: 'Monthly Enterprise Cycles' },
-            { label: 'Visual Time Machine', value: 'None' },
-            { label: 'Adversarial Red-Team', value: 'None' },
-            { label: 'Customer Churn Hunter', value: 'None' },
-            { label: 'Deployment', value: 'Atlassian Cloud Dedicated' }
-          ]
-        },
-        {
-          id: 'comp-asana',
-          name: 'Asana',
-          productCategory: 'Work Coordination & Portfolio Tracking',
-          productVisual: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80',
-          flagshipProduct: 'Asana Work Graph',
-          targetUser: 'Marketing, Operations & Non-Technical Teams',
-          keyDifferentiator: 'Visual Gantt timelines, cross-department goal cascades, and intuitive onboarding.',
-          pricingFloor: 10.99,
-          pricingMedian: 24.99,
-          pricingCeiling: 39.99,
-          pricingModel: 'Per-Seat Monthly',
-          specs: [
-            { label: 'Flagship Offering', value: 'Asana Starter & Advanced' },
-            { label: 'Update Frequency', value: 'Bi-Weekly Web Updates' },
-            { label: 'Visual Time Machine', value: 'None' },
-            { label: 'Adversarial Red-Team', value: 'None' },
-            { label: 'Customer Churn Hunter', value: 'None' },
-            { label: 'Deployment', value: 'Web SaaS' }
-          ]
-        },
-        {
-          id: 'comp-clickup',
-          name: 'ClickUp',
-          productCategory: 'All-in-One Productivity & Collaboration',
-          productVisual: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
-          flagshipProduct: 'ClickUp 3.0 Platform',
-          targetUser: 'Agile Startups & Cost-Conscious Teams Replacing Multiple Tools',
-          keyDifferentiator: 'Feature density (tasks, docs, whiteboards, chat, time tracking) at aggressive entry rates.',
-          pricingFloor: 7.0,
-          pricingMedian: 12.0,
-          pricingCeiling: 19.0,
-          pricingModel: 'Per-Seat Monthly',
-          specs: [
-            { label: 'Flagship Offering', value: 'ClickUp Unlimited & Business' },
-            { label: 'Update Frequency', value: 'Continuous Feature Drops' },
-            { label: 'Visual Time Machine', value: 'None' },
-            { label: 'Adversarial Red-Team', value: 'None' },
-            { label: 'Customer Churn Hunter', value: 'None' },
-            { label: 'Deployment', value: 'Web SaaS & Mobile Apps' }
-          ]
-        }
-      ]
-    };
+  const res = await apiGet('/api/competitors/product-matrix');
+  if (res) {
+    return res;
   }
+  throw new Error('Failed to retrieve product portfolio matrix.');
 }
 
 export async function getCompetitorProductsTeardown(competitorId) {
-  try {
-    return await apiGet(`/api/competitors/${competitorId}/products-teardown`);
-  } catch (err) {
-    console.warn('Backend products teardown fallback:', err);
-    return {
-      competitorId,
-      competitorName: competitorId === 'comp-linear' ? 'Linear' : (competitorId === 'comp-jira' ? 'Jira Software' : 'ClickUp'),
-      website: competitorId === 'comp-linear' ? 'https://linear.app' : 'https://clickup.com',
-      brandSummary: 'High-growth workflow platform analyzed across distinct product offerings.',
-      extractedOgImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
-      totalProductsAnalyzed: 3,
-      products: [
-        {
-          id: 'fb-p1',
-          name: 'Core Issue Tracking',
-          category: 'Agile Project Coordination',
-          visualUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
-          role: 'Flagship Anchor',
-          roleBadgeColor: 'bg-indigo-500 text-white',
-          revenueShare: '55% of ARR',
-          targetBuyer: 'Engineering Leads & Tech Founders',
-          pricingModel: 'Per-Seat Monthly ($8 - $12/user)',
-          pricingFloor: 8.0,
-          strengths: ['Sub-50ms interaction speed', 'Deep git branching sync', 'Opinionated minimalist UI'],
-          vulnerabilities: ['High friction for non-technical team members', 'Limited custom executive reports'],
-          howToWin: 'Emphasize seamless cross-department collaboration and unified executive reporting.'
-        },
-        {
-          id: 'fb-p2',
-          name: 'Insights & Cycles Analytics',
-          category: 'Team Velocity Forecasting',
-          visualUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
-          role: 'Cash Cow',
-          roleBadgeColor: 'bg-emerald-500 text-white',
-          revenueShare: '25% of ARR',
-          targetBuyer: 'VP of Engineering & Agile PMs',
-          pricingModel: 'Gated in Plus Tier ($14/user/mo)',
-          pricingFloor: 14.0,
-          strengths: ['Automated scope change tracking', 'Cycle progress forecasts'],
-          vulnerabilities: ['Quietly added 5-seat minimum barrier ($70/mo effective floor)', 'Cannot correlate ARR with velocity'],
-          howToWin: 'Offer seat-minimum-free analytics directly correlated with pipeline revenue.'
-        },
-        {
-          id: 'fb-p3',
-          name: 'AI Triage & Copilot',
-          category: 'Automated Ticket Routing',
-          visualUrl: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80',
-          role: 'High-Margin Add-On',
-          roleBadgeColor: 'bg-amber-500 text-white',
-          revenueShare: '20% of ARR',
-          targetBuyer: 'Operations & Support Leads',
-          pricingModel: 'Paid Add-On ($10/seat extra)',
-          pricingFloor: 10.0,
-          strengths: ['Slack message to ticket conversion', 'Automated duplicate detection'],
-          vulnerabilities: ['Charges extra line-item fee on top of core subscription', 'Generic summarizer without market modeling'],
-          howToWin: 'We bundle autonomous adversarial war games and AI triage for free in core accounts.'
-        }
-      ]
-    };
-  }
+  const res = await apiGet(`/api/competitors/${competitorId}/products-teardown`);
+  if (res) return res;
+  throw new Error('Failed to load competitor products teardown.');
 }
 
 export async function extractProductVisuals(url) {
-  try {
-    return await apiPost('/api/competitors/extract-product-visuals', { url });
-  } catch (err) {
-    console.warn('Backend extract visuals fallback:', err);
-    return {
-      ogImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
-      heroImages: [],
-      screenshotUrl: `https://api.microlink.io?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`
-    };
-  }
+  return await apiPost('/api/competitors/extract-product-visuals', { url });
 }
+
+export async function predictDealOdds(params = {}) {
+  const competitor = params.competitorName || params.competitor_name || 'Linear';
+  const dealSize = params.dealSize ?? params.deal_size ?? 35000;
+  const salesDays = params.salesCycleDays ?? params.sales_cycle_days ?? 30;
+  const clientSize = params.clientSize || params.client_size || 'Mid-Market';
+
+  const query = new URLSearchParams({
+    competitor_name: competitor,
+    deal_size: dealSize,
+    sales_cycle_days: salesDays,
+    client_size: clientSize
+  });
+  return await apiGet(`/api/deals/predict?${query.toString()}`);
+}
+
 
 

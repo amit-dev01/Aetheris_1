@@ -299,6 +299,11 @@ export default function AlertsSection() {
                   <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${getTypeBadgeStyle(alert.type)}`}>
                     {alert.type}
                   </span>
+                  {alert.type === 'ANOMALY' && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                      Isolation Forest ML
+                    </span>
+                  )}
                   <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
                     {alert.competitorName}
                   </span>

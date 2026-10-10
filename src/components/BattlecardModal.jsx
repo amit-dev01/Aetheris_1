@@ -197,6 +197,28 @@ ${battlecard.targetProspectProfile}
 
           {battlecard && !loading && (
             <>
+              {/* ── Stealth Anomaly Alert Banner (Isolation Forest ML) ── */}
+              {battlecard.metadata?.stealthAlert && (
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 animate-fade-in">
+                  <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
+                    <ShieldAlert size={18} />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                        Isolation Forest ML: Stealth Threat Detected
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300">
+                        Severity: {battlecard.metadata.anomalySeverity || '85.0'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-300">
+                      Unusual telemetry variance detected for {compName} (trained on Numenta streaming benchmark). Competitor may be initiating a quiet product tier shift or silent feature release.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* ── Quick Dismissal Script Banner ── */}
               <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 border border-blue-200/80 dark:border-blue-900/40 space-y-2 relative">
                 <div className="flex items-center justify-between">

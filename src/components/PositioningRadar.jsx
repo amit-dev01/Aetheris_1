@@ -99,7 +99,9 @@ export default function PositioningRadar() {
     );
   }
 
-  const { homeTeam, competitors = [], closestCompetitor, whitespaceOpportunities = [] } = radarData;
+  const { homeTeam, competitors = [] } = radarData;
+  const closestCompetitor = radarData.closestCompetitor || (competitors.length > 0 ? competitors[0] : null);
+  const whitespaceOpportunities = radarData.whitespaceOpportunities || radarData.whiteSpaceOpportunities || [];
 
   // Coordinate mapper with dynamic axis projection
   const mapX = (val) => 50 + (Math.max(5, Math.min(95, val + currentAxis.xShift)) / 100) * 500;
@@ -352,19 +354,25 @@ export default function PositioningRadar() {
             <Sparkles size={15} /> Identified Category Whitespace Opportunities
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {whitespaceOpportunities.map((ws, i) => (
-              <div key={i} className="p-3.5 bg-white dark:bg-slate-800/80 border border-emerald-200/80 dark:border-emerald-900/30 rounded-xl space-y-1">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
-                  <span>{ws.opportunityName || `Whitespace Zone #${i + 1}`}</span>
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/50">
-                    Density: Zero Competitors
-                  </span>
+            {whitespaceOpportunities.map((ws, i) => {
+              const name = ws.opportunityName || (ws.quadrant ? ws.quadrant.replace(/_/g, ' ') : `Whitespace Zone #${i + 1}`);
+              const posX = ws.targetX ?? ws.x ?? 50;
+              const posY = ws.targetY ?? ws.y ?? 50;
+              const desc = ws.strategicRationale || ws.description || `Coordinate zone (${posX}, ${posY}) provides maximum market differentiation with minimal friction.`;
+              return (
+                <div key={i} className="p-3.5 bg-white dark:bg-slate-800/80 border border-emerald-200/80 dark:border-emerald-900/30 rounded-xl space-y-1">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
+                    <span className="capitalize">{name}</span>
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/50">
+                      {ws.clearanceDistance ? `Clearance: ${ws.clearanceDistance} units` : 'Density: Zero Competitors'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    {desc}
+                  </p>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  {ws.description || `Coordinate zone (${ws.x}, ${ws.y}) provides maximum differentiation with minimal friction.`}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

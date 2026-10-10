@@ -14,6 +14,7 @@ import CompetitorCharts from './CompetitorCharts';
 import BattlecardModal from './BattlecardModal';
 import SideBySideComparisonModal from './SideBySideComparisonModal';
 import ProductTeardownModal from './ProductTeardownModal';
+import CompetitorDossierModal from './CompetitorDossierModal';
 
 export default function CompetitorsSection() {
   const context = useContext(DbContext) || {};
@@ -48,9 +49,10 @@ export default function CompetitorsSection() {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
 
-  // Battlecard modal state
+  // Battlecard & Dossier modal state
   const [selectedBattlecardComp, setSelectedBattlecardComp] = useState(null);
   const [selectedTeardownComp, setSelectedTeardownComp] = useState(null);
+  const [selectedDossierComp, setSelectedDossierComp] = useState(null);
 
   // Expanded Competitor Activity State
   const [activityState, setActivityState] = useState({});
@@ -529,13 +531,33 @@ export default function CompetitorsSection() {
                       </div>
                     )}
 
-                    {/* Top Header Row */}
-                    <div className="pr-10">
+                    {/* Top Header Row - Click to open 360° Dossier */}
+                    <div 
+                      className="pr-10 cursor-pointer group"
+                      onClick={() => setSelectedDossierComp(comp)}
+                      title={`Open full 360° dossier for ${compName}`}
+                    >
                       <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">{compName}</h3>
+                        <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-2">
+                          {compName}
+                          <Sparkles size={16} className="text-amber-500 opacity-80 group-hover:opacity-100 transition-opacity" />
+                        </h3>
                         {comp.notes && <MessageSquare size={16} className="text-slate-400" />}
                       </div>
-                      {compWeb && <a href={compWeb.startsWith('http') ? compWeb : `https://${compWeb}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold mt-1">{compWeb} <ExternalLink size={12} /></a>}
+                      {compWeb && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <a 
+                            href={compWeb.startsWith('http') ? compWeb : `https://${compWeb}`} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            onClick={(e) => e.stopPropagation()} 
+                            className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                          >
+                            {compWeb} <ExternalLink size={12} />
+                          </a>
+                          <span className="text-[10px] text-slate-400">• Click to open 360° dossier</span>
+                        </div>
+                      )}
                       
                       <div className="flex items-center gap-2 mt-3">
                         <span className={`text-[10px] font-extrabold uppercase px-3 py-1 rounded-full border ${getTypeBadgeStyle(typeBadge)}`}>
@@ -562,28 +584,39 @@ export default function CompetitorsSection() {
                       </div>
                     )}
 
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+                      {/* Primary 360° Dossier Action Button */}
+                      <button
+                        onClick={() => setSelectedDossierComp(comp)}
+                        className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold px-3 py-2.5 rounded-xl text-xs transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
+                        title={`Open all-in-one 360° intelligence dossier for ${compName}`}
+                      >
+                        <Sparkles size={14} className="text-amber-300" />
+                        <span>Inspect 360° Intelligence Dossier</span>
+                      </button>
+
+                      {/* Secondary Quick Actions */}
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setSelectedBattlecardComp(comp)}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-900/40 font-bold px-2.5 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-[0.98]"
-                          title="Open tactical sales battlecard against this competitor"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-900/40 font-bold px-2 py-1.5 rounded-xl text-xs transition-all shadow-sm active:scale-[0.98]"
+                          title="Open tactical sales battlecard"
                         >
-                          <Swords size={13} /> Battlecard
+                          <Swords size={12} /> Battlecard
                         </button>
                         <button
                           onClick={() => setSelectedTeardownComp(comp)}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900/40 font-bold px-2.5 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-[0.98]"
-                          title="Inspect granular products, real visuals, and business teardown"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900/40 font-bold px-2 py-1.5 rounded-xl text-xs transition-all shadow-sm active:scale-[0.98]"
+                          title="Inspect granular products and visual screenshots"
                         >
-                          <Box size={13} /> Products
+                          <Box size={12} /> Products
                         </button>
                         <button
                           onClick={() => toggleCompetitorActivity(comp.id)}
-                          className="flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all"
+                          className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all"
                         >
                           <span>Activity</span>
-                          {actState.expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                          {actState.expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                         </button>
                       </div>
 
@@ -747,6 +780,14 @@ export default function CompetitorsSection() {
         isOpen={!!selectedTeardownComp}
         onClose={() => setSelectedTeardownComp(null)}
         competitor={selectedTeardownComp}
+      />
+
+      {/* ── 360° Unified Competitor Dossier War Room Modal ── */}
+      <CompetitorDossierModal
+        isOpen={!!selectedDossierComp}
+        competitor={selectedDossierComp}
+        onClose={() => setSelectedDossierComp(null)}
+        showToast={context.showToast || ((msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(''), 3000); })}
       />
 
     </div>

@@ -1,14 +1,40 @@
 import { useState, useEffect } from 'react';
 import { 
   Trophy, ThumbsDown, DollarSign, TrendingUp, AlertCircle, 
-  RefreshCw, Plus, ArrowRight, ShieldAlert, BarChart3, HelpCircle
+  RefreshCw, Plus, ArrowRight, ShieldAlert, BarChart3, HelpCircle,
+  Zap, Sparkles, Sliders, CheckCircle2, ShieldCheck, Target, Loader2
 } from 'lucide-react';
-import { getDealAnalytics } from '../api';
+import { getDealAnalytics, predictDealOdds } from '../api';
 
 export default function WinLossAnalyticsCard({ onOpenLogModal, refreshTrigger }) {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // XGBoost Real-Time Predictor State
+  const [predCompetitor, setPredCompetitor] = useState('Linear');
+  const [predDealSize, setPredDealSize] = useState(45000);
+  const [predDays, setPredDays] = useState(30);
+  const [predClientSize, setPredClientSize] = useState('Enterprise');
+  const [prediction, setPrediction] = useState(null);
+  const [predictLoading, setPredictLoading] = useState(false);
+
+  const handlePredict = async (comp = predCompetitor, size = predDealSize, days = predDays, client = predClientSize) => {
+    setPredictLoading(true);
+    try {
+      const res = await predictDealOdds({
+        competitor_name: comp,
+        deal_size: size,
+        sales_cycle_days: days,
+        client_size: client
+      });
+      setPrediction(res);
+    } catch (err) {
+      console.error('Prediction failed:', err);
+    } finally {
+      setPredictLoading(false);
+    }
+  };
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -26,6 +52,7 @@ export default function WinLossAnalyticsCard({ onOpenLogModal, refreshTrigger })
 
   useEffect(() => {
     fetchAnalytics();
+    handlePredict('Linear', 45000, 30, 'Enterprise');
   }, [refreshTrigger]);
 
   if (loading) {
@@ -131,6 +158,191 @@ export default function WinLossAnalyticsCard({ onOpenLogModal, refreshTrigger })
           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             Lost deal value attributed to rivals
           </p>
+        </div>
+      </div>
+
+      {/* ── Real-Time XGBoost Deal Win Predictor (Trained on 78k Real IBM Watson Deals) ── */}
+      <div className="p-5 md:p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-900/60 shadow-lg space-y-5">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-indigo-900/60 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 shrink-0">
+              <Zap size={18} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-extrabold tracking-tight">
+                  Real-Time XGBoost Deal Win Predictor
+                </h4>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-indigo-500/30 text-indigo-300 border border-indigo-400/30">
+                  GBDT Inference
+                </span>
+              </div>
+              <p className="text-[11px] text-indigo-200/70">
+                Trained on 78,000 real IBM Watson B2B sales opportunities · Dynamic probability modeling
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] text-indigo-300/80 font-mono bg-indigo-950/80 px-2.5 py-1 rounded-lg border border-indigo-800/40">
+            Model: xgboost_win_loss
+          </span>
+        </div>
+
+        {/* Inputs & Prediction Gauge Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+          
+          {/* Controls (7 cols) */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Competitor Select */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-indigo-200 uppercase tracking-wider">
+                  Target Rival
+                </label>
+                <select
+                  value={predCompetitor}
+                  onChange={(e) => {
+                    const c = e.target.value;
+                    setPredCompetitor(c);
+                    handlePredict(c, predDealSize, predDays, predClientSize);
+                  }}
+                  className="w-full bg-slate-800/90 border border-indigo-800/70 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                >
+                  {Array.from(new Set([
+                    'Linear', 'Jira', 'ClickUp', 'Asana', 'Monday.com',
+                    ...(headToHead || []).map(h => h.competitorName).filter(Boolean)
+                  ])).map(c => (
+                    <option key={c} value={c} className="bg-slate-900 text-white">{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Client Segment */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-indigo-200 uppercase tracking-wider">
+                  Client Tier
+                </label>
+                <div className="grid grid-cols-3 gap-1 bg-slate-800/80 p-1 rounded-xl border border-indigo-900">
+                  {['SMB', 'Mid-Market', 'Enterprise'].map(tier => (
+                    <button
+                      key={tier}
+                      type="button"
+                      onClick={() => {
+                        setPredClientSize(tier);
+                        handlePredict(predCompetitor, predDealSize, predDays, tier);
+                      }}
+                      className={`text-[10px] font-semibold py-1 rounded-lg transition-all ${
+                        predClientSize === tier
+                          ? 'bg-indigo-600 text-white shadow-sm'
+                          : 'text-indigo-300 hover:text-white'
+                      }`}
+                    >
+                      {tier}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Deal Size Slider */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="font-bold text-indigo-200 text-[11px]">Contract Value (ACV)</span>
+                <span className="font-mono font-extrabold text-amber-300 text-xs">${predDealSize.toLocaleString()}</span>
+              </div>
+              <input
+                type="range"
+                min={5000}
+                max={250000}
+                step={5000}
+                value={predDealSize}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setPredDealSize(val);
+                  handlePredict(predCompetitor, val, predDays, predClientSize);
+                }}
+                className="w-full accent-indigo-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-indigo-300/60 font-mono">
+                <span>$5k (Pilot)</span>
+                <span>$100k</span>
+                <span>$250k (Enterprise)</span>
+              </div>
+            </div>
+
+            {/* Sales Cycle Duration Slider */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="font-bold text-indigo-200 text-[11px]">Sales Cycle Duration</span>
+                <span className="font-mono font-extrabold text-indigo-300 text-xs">{predDays} days</span>
+              </div>
+              <input
+                type="range"
+                min={7}
+                max={180}
+                step={1}
+                value={predDays}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setPredDays(val);
+                  handlePredict(predCompetitor, predDealSize, val, predClientSize);
+                }}
+                className="w-full accent-indigo-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-indigo-300/60 font-mono">
+                <span>7 days (Sprint)</span>
+                <span>45 days (Avg)</span>
+                <span>180 days (Enterprise)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Outcome Gauge (5 cols) */}
+          <div className="lg:col-span-5 bg-slate-800/60 border border-indigo-800/60 rounded-2xl p-4 flex flex-col items-center text-center space-y-3">
+            {predictLoading ? (
+              <div className="py-6 flex flex-col items-center gap-2">
+                <Loader2 size={28} className="animate-spin text-indigo-400" />
+                <span className="text-xs text-indigo-200">Evaluating GBDT trees...</span>
+              </div>
+            ) : prediction ? (
+              <>
+                <div className="space-y-1 w-full">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-indigo-300">
+                    Predicted Win Probability
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className={`text-3xl font-black tracking-tight ${
+                      prediction.winProbability >= 60 ? 'text-emerald-400' :
+                      prediction.winProbability >= 35 ? 'text-amber-400' : 'text-rose-400'
+                    }`}>
+                      {prediction.winProbability}%
+                    </span>
+                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border ${
+                      prediction.status === 'FAVORABLE' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' :
+                      prediction.status === 'AT_RISK' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' :
+                      'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                    }`}>
+                      {prediction.status}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-indigo-900/60">
+                  <div
+                    className={`h-full transition-all duration-300 rounded-full ${
+                      prediction.winProbability >= 60 ? 'bg-emerald-500' :
+                      prediction.winProbability >= 35 ? 'bg-amber-500' : 'bg-rose-500'
+                    }`}
+                    style={{ width: `${Math.min(100, Math.max(5, prediction.winProbability))}%` }}
+                  />
+                </div>
+
+                <p className="text-[11px] text-indigo-200/90 leading-relaxed font-medium bg-slate-900/80 p-2.5 rounded-xl border border-indigo-900/40 text-left w-full">
+                  💡 {prediction.recommendation}
+                </p>
+              </>
+            ) : null}
+          </div>
+
         </div>
       </div>
 
