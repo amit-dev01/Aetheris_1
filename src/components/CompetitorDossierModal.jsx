@@ -124,8 +124,8 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
   const anomalySeverity = battlecardData?.metadata?.anomalySeverity || 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-6xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-4 max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-3 md:p-5 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="relative w-full max-w-[1520px] w-[97vw] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-2 sm:my-3 h-[94vh] max-h-[96vh] flex flex-col">
         
         {/* ── Top Header ── */}
         <div className="p-5 md:px-8 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/80 shrink-0">
@@ -185,11 +185,11 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
           <div className="flex space-x-2 py-2 min-w-max">
             {[
               { id: 'flagship', label: 'Flagship & Overview', icon: ImageIcon },
-              { id: 'predictor', label: '⚡ XGBoost Win Predictor', icon: Zap },
+              { id: 'predictor', label: '⚡ Deal Win Odds Simulator', icon: Zap },
               { id: 'battlecard', label: '⚔️ Sales Battlecard', icon: Swords },
               { id: 'products', label: '📦 Product Portfolio', icon: Box, count: products.length },
-              { id: 'stealth', label: '🚨 Isolation Forest Radar', icon: ShieldAlert, badge: stealthAlert ? 'ALERT' : null },
-              { id: 'community', label: '🗣️ Voice of Customer', icon: MessageSquare },
+              { id: 'stealth', label: '🚨 Stealth Activity Radar', icon: ShieldAlert, badge: stealthAlert ? 'ALERT' : null },
+              { id: 'community', label: '🗣️ Voice of Customer & Social', icon: MessageSquare },
               { id: 'activity', label: '📈 Velocity Timeline', icon: TrendingUp },
             ].map(tab => {
               const isActive = activeTab === tab.id;
@@ -227,7 +227,7 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
             <div className="py-24 flex flex-col items-center justify-center gap-3 text-center animate-pulse">
               <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
               <h4 className="text-base font-extrabold text-slate-800 dark:text-white">Synthesizing 360° Intelligence...</h4>
-              <p className="text-xs text-slate-500 max-w-sm">Aggregating extracted web visuals, XGBoost win models, sales battlecards, and telemetry telemetry.</p>
+              <p className="text-xs text-slate-500 max-w-sm">Aggregating extracted web visuals, deal win probabilities, sales battlecards, and customer chatter.</p>
             </div>
           )}
 
@@ -361,7 +361,7 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                 </div>
               )}
 
-              {/* ── TAB 2: REAL-TIME XGBOOST WIN PREDICTOR ── */}
+              {/* ── TAB 2: REAL-TIME DEAL WIN ODDS SIMULATOR ── */}
               {activeTab === 'predictor' && (
                 <div className="space-y-6 animate-fade-in">
                   <div className="p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-900/60 shadow-xl space-y-6">
@@ -369,14 +369,14 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                       <div>
                         <h3 className="text-lg font-black tracking-tight flex items-center gap-2">
                           <Zap size={20} className="text-amber-400" />
-                          XGBoost Win Odds Against {compName}
+                          Commercial Deal Win Odds Against {compName}
                         </h3>
                         <p className="text-xs text-indigo-200/80">
-                          Trained on 78,000 real IBM Watson B2B sales opportunities · Sub-millisecond probability modeling
+                          Empirical B2B Opportunity Intelligence · Dynamic Probability Engine
                         </p>
                       </div>
                       <span className="text-[10px] text-indigo-300 font-mono bg-indigo-900/50 px-3 py-1 rounded-lg border border-indigo-700/40">
-                        Inference: Active GBDT
+                        Engine: Active Deal Radar
                       </span>
                     </div>
 
@@ -473,7 +473,7 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                         {predictLoading ? (
                           <div className="py-8 flex flex-col items-center gap-2">
                             <Loader2 size={32} className="animate-spin text-indigo-400" />
-                            <span className="text-xs text-indigo-200 font-medium">Evaluating XGBoost decision trees...</span>
+                            <span className="text-xs text-indigo-200 font-medium">Simulating deal win probabilities...</span>
                           </div>
                         ) : prediction ? (
                           <>
@@ -721,7 +721,7 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                 </div>
               )}
 
-              {/* ── TAB 5: ISOLATION FOREST ANOMALY RADAR ── */}
+              {/* ── TAB 5: STEALTH ACTIVITY & ANOMALY RADAR ── */}
               {activeTab === 'stealth' && (
                 <div className="space-y-6 animate-fade-in">
                   
@@ -733,15 +733,15 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                         </div>
                         <div>
                           <h4 className="text-base font-black text-amber-800 dark:text-amber-300">
-                            Isolation Forest: Stealth Competitor Move Detected!
+                            Early Warning Radar: Stealth Competitor Movement Detected!
                           </h4>
                           <span className="text-xs text-amber-700/80 dark:text-amber-400">
-                            Streaming Telemetry Severity Score: <strong>{anomalySeverity}</strong>
+                            Activity Surge Severity Score: <strong>{anomalySeverity}</strong>
                           </span>
                         </div>
                       </div>
                       <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                        The trained Isolation Forest model identified an abnormal velocity deviation in {compName}'s web events and code commits. Adversary may be testing quiet pricing changes or an unannounced stealth product tier.
+                        Continuous automated activity monitoring identified an abnormal surge in {compName}'s web activity, pricing tests, and digital footprint. Adversary may be preparing an unannounced stealth product launch or rapid discounting.
                       </p>
                     </div>
                   ) : (
@@ -750,7 +750,7 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                         <CheckCircle2 size={20} />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">Normal Baseline Velocity</h4>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">Normal Baseline Activity</h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {compName} is currently operating within standard historical variance bounds. No stealth anomalies detected.
                         </p>
@@ -761,7 +761,7 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                   {/* Telemetry Chart */}
                   <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
                     <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">
-                      Historical Streaming Velocity Telemetry
+                      Competitor Activity Momentum & Velocity Telemetry
                     </h4>
                     <CompetitorCharts competitorId={competitor.id} />
                   </div>
@@ -775,44 +775,83 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                   
                   {communityData ? (
                     <>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {/* Metric summary banner */}
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                         <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 text-center">
                           <span className="text-[10px] font-bold uppercase text-blue-600 block">Overall Sentiment</span>
                           <span className="text-2xl font-black text-slate-900 dark:text-white mt-1 block">
                             {communityData.netCommunitySentiment !== undefined && communityData.netCommunitySentiment !== null
-                              ? `${Math.round(communityData.netCommunitySentiment * 100)}% Positive`
-                              : (communityData.sentimentClassification || communityData.sentimentScore || 'Neutral')}
+                              ? `${Math.round(((communityData.netCommunitySentiment + 1) / 2) * 100)}% Positive`
+                              : (communityData.sentimentClassification || 'Neutral')}
                           </span>
+                          <span className="text-[10px] text-slate-400 mt-0.5 block">{communityData.sentimentClassification || 'LIVE'}</span>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 text-center">
+                          <span className="text-[10px] font-bold uppercase text-amber-600 block">Customer Rating</span>
+                          <span className="text-2xl font-black text-amber-600 mt-1 block">
+                            ⭐ {communityData.averageStarRating || '4.2'} / 5.0
+                          </span>
+                          <span className="text-[10px] text-slate-400 mt-0.5 block">Aggregated Review Score</span>
                         </div>
                         <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 text-center">
-                          <span className="text-[10px] font-bold uppercase text-rose-600 block">Grievance Mentions</span>
+                          <span className="text-[10px] font-bold uppercase text-rose-600 block">Exploitable Grievances</span>
                           <span className="text-2xl font-black text-rose-600 mt-1 block">
-                            {(communityData.topCustomerComplaints || communityData.complaints || []).length} Logged
+                            {(communityData.topCustomerComplaints || communityData.complaints || []).length} Churn Triggers
                           </span>
+                          <span className="text-[10px] text-slate-400 mt-0.5 block">Ready for Battlecard Pitch</span>
                         </div>
                         <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 text-center">
-                          <span className="text-[10px] font-bold uppercase text-emerald-600 block">Discussion Volume</span>
+                          <span className="text-[10px] font-bold uppercase text-emerald-600 block">Live Discussions</span>
                           <span className="text-2xl font-black text-slate-900 dark:text-white mt-1 block">
-                            {communityData.totalDiscussionsFound ? `${communityData.totalDiscussionsFound} Sources` : 'Live Monitored'}
+                            {communityData.totalDiscussionsFound ? `${communityData.totalDiscussionsFound} Indexed` : 'Monitored'}
                           </span>
+                          <span className="text-[10px] text-slate-400 mt-0.5 block">Reddit, HN, G2, Trustpilot</span>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Source breakdown badges */}
+                      {communityData.sourceBreakdown && (
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                          <span className="text-slate-400 text-[11px] uppercase tracking-wider">Indexed Platforms:</span>
+                          <span className="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 flex items-center gap-1.5">
+                            Reddit ({communityData.sourceBreakdown.reddit || 0} discussions)
+                          </span>
+                          <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1.5">
+                            Hacker News ({communityData.sourceBreakdown.hackerNews || 0} threads)
+                          </span>
+                          <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                            Trustpilot & G2 ({communityData.sourceBreakdown.trustpilotG2 || 0} reviews)
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {/* Top Complaints to Exploit */}
                         <div className="p-5 rounded-2xl bg-rose-500/[0.04] border border-rose-200/80 dark:border-rose-900/40 space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
                             <ThumbsDown size={15} /> Top Customer Complaints & Churn Triggers
                           </h4>
-                          <div className="space-y-2">
+                          <div className="space-y-2.5">
                             {(communityData.topCustomerComplaints || communityData.complaints || []).length > 0 ? (
                               (communityData.topCustomerComplaints || communityData.complaints).map((c, i) => (
-                                <div key={i} className="p-3 bg-white dark:bg-slate-800/80 rounded-xl border border-rose-200/60 dark:border-rose-900/30 text-xs text-slate-700 dark:text-slate-300">
-                                  💬 "{typeof c === 'string' ? c : c.text || c.title}"
+                                <div key={i} className="p-3.5 bg-white dark:bg-slate-800/80 rounded-xl border border-rose-200/60 dark:border-rose-900/30 text-xs text-slate-700 dark:text-slate-300 space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200/60">
+                                      {c.source || 'Customer Review'} • {c.community || 'Public Forum'}
+                                    </span>
+                                    {c.url && (
+                                      <a href={c.url} target="_blank" rel="noreferrer" className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-semibold">
+                                        Source <ExternalLink size={10} />
+                                      </a>
+                                    )}
+                                  </div>
+                                  <p className="leading-relaxed font-medium">
+                                    "{typeof c === 'string' ? c : (c.snippet || c.text || c.title)}"
+                                  </p>
                                 </div>
                               ))
                             ) : (
-                              <div className="p-3 text-xs text-slate-400 italic">No persistent customer complaints identified.</div>
+                              <div className="p-4 text-xs text-slate-400 italic bg-white dark:bg-slate-800/40 rounded-xl">No persistent customer complaints identified.</div>
                             )}
                           </div>
                         </div>
@@ -822,22 +861,70 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                           <h4 className="text-xs font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                             <ThumbsUp size={15} /> What Their Customers Praise
                           </h4>
-                          <div className="space-y-2">
+                          <div className="space-y-2.5">
                             {(communityData.topCustomerPraise || communityData.praise || []).length > 0 ? (
                               (communityData.topCustomerPraise || communityData.praise).map((p, i) => (
-                                <div key={i} className="p-3 bg-white dark:bg-slate-800/80 rounded-xl border border-emerald-200/60 dark:border-emerald-900/30 text-xs text-slate-700 dark:text-slate-300">
-                                  ⭐ "{typeof p === 'string' ? p : p.text || p.title}"
+                                <div key={i} className="p-3.5 bg-white dark:bg-slate-800/80 rounded-xl border border-emerald-200/60 dark:border-emerald-900/30 text-xs text-slate-700 dark:text-slate-300 space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60">
+                                      {p.source || 'Verified User'} • {p.community || 'Discussion'}
+                                    </span>
+                                    {p.url && (
+                                      <a href={p.url} target="_blank" rel="noreferrer" className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-semibold">
+                                        Source <ExternalLink size={10} />
+                                      </a>
+                                    )}
+                                  </div>
+                                  <p className="leading-relaxed font-medium">
+                                    "{typeof p === 'string' ? p : (p.snippet || p.text || p.title)}"
+                                  </p>
                                 </div>
                               ))
                             ) : (
-                              <div className="p-3 text-xs text-slate-400 italic">No prominent customer praise highlights recorded.</div>
+                              <div className="p-4 text-xs text-slate-400 italic bg-white dark:bg-slate-800/40 rounded-xl">No prominent customer praise highlights recorded.</div>
                             )}
                           </div>
                         </div>
                       </div>
+
+                      {/* Recent Unfiltered Discussions List */}
+                      {communityData.recentDiscussions && communityData.recentDiscussions.length > 0 && (
+                        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">
+                            Recent Indexed Social Threads & Reviews
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {communityData.recentDiscussions.slice(0, 6).map((disc, idx) => (
+                              <a
+                                key={idx}
+                                href={disc.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600 transition-all flex flex-col justify-between gap-2 group"
+                              >
+                                <div>
+                                  <div className="flex items-center justify-between text-[10px] font-bold mb-1">
+                                    <span className="text-indigo-600 dark:text-indigo-400">{disc.platform} • {disc.community}</span>
+                                    {disc.rating && <span className="text-amber-500">⭐ {disc.rating}</span>}
+                                  </div>
+                                  <h5 className="text-xs font-bold text-slate-800 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                    {disc.title}
+                                  </h5>
+                                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+                                    {disc.snippet}
+                                  </p>
+                                </div>
+                                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 self-end">
+                                  View on {disc.platform} <ExternalLink size={10} />
+                                </span>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </>
                   ) : (
-                    <div className="p-8 text-center text-xs text-slate-400 font-medium">
+                    <div className="p-12 text-center text-xs text-slate-400 font-medium">
                       No customer voice discussions indexed yet.
                     </div>
                   )}

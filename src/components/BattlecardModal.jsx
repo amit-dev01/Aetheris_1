@@ -126,8 +126,8 @@ ${battlecard.targetProspectProfile}
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-6xl w-[95vw] max-h-[94vh] h-[92vh] flex flex-col overflow-hidden animate-fade-in-up">
         
         {/* ── Modal Header ── */}
         <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/50">
@@ -197,7 +197,7 @@ ${battlecard.targetProspectProfile}
 
           {battlecard && !loading && (
             <>
-              {/* ── Stealth Anomaly Alert Banner (Isolation Forest ML) ── */}
+              {/* ── Stealth Anomaly Alert Banner (Early Warning Radar) ── */}
               {battlecard.metadata?.stealthAlert && (
                 <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 animate-fade-in">
                   <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
@@ -206,14 +206,14 @@ ${battlecard.targetProspectProfile}
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                        Isolation Forest ML: Stealth Threat Detected
+                        Early Warning Radar: Stealth Threat Detected
                       </span>
                       <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300">
                         Severity: {battlecard.metadata.anomalySeverity || '85.0'}
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-300">
-                      Unusual telemetry variance detected for {compName} (trained on Numenta streaming benchmark). Competitor may be initiating a quiet product tier shift or silent feature release.
+                      Unusual activity velocity surge detected for {compName}. Competitor may be initiating a quiet product tier shift, pricing test, or silent feature release.
                     </p>
                   </div>
                 </div>

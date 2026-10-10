@@ -703,6 +703,3 @@ export async function predictDealOdds(params = {}) {
   });
   return await apiGet(`/api/deals/predict?${query.toString()}`);
 }
-
-
-

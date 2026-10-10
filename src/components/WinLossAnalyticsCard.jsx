@@ -161,7 +161,7 @@ export default function WinLossAnalyticsCard({ onOpenLogModal, refreshTrigger })
         </div>
       </div>
 
-      {/* ── Real-Time XGBoost Deal Win Predictor (Trained on 78k Real IBM Watson Deals) ── */}
+      {/* ── Deal Outcome Win/Loss Simulator ── */}
       <div className="p-5 md:p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-900/60 shadow-lg space-y-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-indigo-900/60 pb-3">
           <div className="flex items-center gap-2.5">
@@ -171,19 +171,19 @@ export default function WinLossAnalyticsCard({ onOpenLogModal, refreshTrigger })
             <div>
               <div className="flex items-center gap-2">
                 <h4 className="text-sm font-extrabold tracking-tight">
-                  Real-Time XGBoost Deal Win Predictor
+                  Commercial Deal Win / Loss Simulator
                 </h4>
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-indigo-500/30 text-indigo-300 border border-indigo-400/30">
-                  GBDT Inference
+                  Predictive Scoring
                 </span>
               </div>
               <p className="text-[11px] text-indigo-200/70">
-                Trained on 78,000 real IBM Watson B2B sales opportunities · Dynamic probability modeling
+                Empirical Commercial Pipeline Intelligence · Dynamic Opportunity Probability Engine
               </p>
             </div>
           </div>
           <span className="text-[10px] text-indigo-300/80 font-mono bg-indigo-950/80 px-2.5 py-1 rounded-lg border border-indigo-800/40">
-            Model: xgboost_win_loss
+            Engine: Live Deal Radar
           </span>
         </div>
 
@@ -301,7 +301,7 @@ export default function WinLossAnalyticsCard({ onOpenLogModal, refreshTrigger })
             {predictLoading ? (
               <div className="py-6 flex flex-col items-center gap-2">
                 <Loader2 size={28} className="animate-spin text-indigo-400" />
-                <span className="text-xs text-indigo-200">Evaluating GBDT trees...</span>
+                <span className="text-xs text-indigo-200">Simulating deal win probabilities...</span>
               </div>
             ) : prediction ? (
               <>
