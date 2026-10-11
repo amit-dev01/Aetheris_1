@@ -202,12 +202,15 @@ export default function PricingMatrixWidget() {
             <CheckCircle2 size={14} className="text-blue-500" /> Strategic Pricing Directives
           </h4>
           <div className="space-y-1">
-            {pricingRecommendations.map((rec, i) => (
-              <div key={i} className="text-xs text-slate-600 dark:text-slate-300 flex items-start gap-2">
-                <ArrowRight size={13} className="text-blue-500 shrink-0 mt-0.5" />
-                <span>{rec}</span>
-              </div>
-            ))}
+            {pricingRecommendations.map((rec, i) => {
+              const recText = typeof rec === 'object' ? (rec.recommendation || rec.action || rec.title || JSON.stringify(rec)) : rec;
+              return (
+                <div key={i} className="text-xs text-slate-600 dark:text-slate-300 flex items-start gap-2">
+                  <ArrowRight size={13} className="text-blue-500 shrink-0 mt-0.5" />
+                  <span>{recText}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

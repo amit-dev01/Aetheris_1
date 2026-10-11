@@ -104,8 +104,8 @@ export default function PositioningRadar() {
   const whitespaceOpportunities = radarData.whitespaceOpportunities || radarData.whiteSpaceOpportunities || [];
 
   // Coordinate mapper with dynamic axis projection
-  const mapX = (val) => 50 + (Math.max(5, Math.min(95, val + currentAxis.xShift)) / 100) * 500;
-  const mapY = (val) => 550 - (Math.max(5, Math.min(95, val + currentAxis.yShift)) / 100) * 500;
+  const mapX = (val) => 50 + (Math.max(5, Math.min(95, (typeof val === 'number' ? val : 50) + currentAxis.xShift)) / 100) * 500;
+  const mapY = (val) => 550 - (Math.max(5, Math.min(95, (typeof val === 'number' ? val : 50) + currentAxis.yShift)) / 100) * 500;
 
   const getQuadrantColor = (quadrant) => {
     switch (quadrant) {

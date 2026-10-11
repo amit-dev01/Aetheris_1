@@ -30,10 +30,59 @@ export default function AIStrategySection() {
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [isBattleSimOpen, setIsBattleSimOpen] = useState(false);
 
-  // Checkbox State for Strategic Recommendations (localStorage keyed by companyId & weeklyBriefGeneratedAt)
   const [checkedRecs, setCheckedRecs] = useState({});
 
   const companyId = companyProfile?.id || sessionStorage.getItem('company_id') || 'default_co';
+
+  // Defensive extractors preventing object-as-React-child crashes
+  const getThreatText = (t) => {
+    if (!t) return '';
+    if (typeof t === 'string') return t;
+    return t.description || t.threat || t.title || t.summary || '';
+  };
+
+  const getThreatCompetitor = (t) => {
+    if (!t || typeof t !== 'object') return null;
+    return t.competitorName || t.competitor || t.company || null;
+  };
+
+  const getThreatAction = (t) => {
+    if (!t || typeof t !== 'object') return null;
+    return t.recommendedAction || t.action || t.counterAction || null;
+  };
+
+  const getOppText = (o) => {
+    if (!o) return '';
+    if (typeof o === 'string') return o;
+    return o.description || o.opportunity || o.title || '';
+  };
+
+  const getOppBasis = (o) => {
+    if (!o || typeof o !== 'object') return null;
+    return o.basis || o.source || o.rationale || null;
+  };
+
+  const getOppAction = (o) => {
+    if (!o || typeof o !== 'object') return null;
+    return o.recommendedAction || o.action || null;
+  };
+
+  const getRecData = (r) => {
+    if (!r) return { text: '', priority: '', owner: '', rationale: '' };
+    if (typeof r === 'string') return { text: r, priority: '', owner: '', rationale: '' };
+    return {
+      text: r.recommendation || r.action || r.text || r.title || r.description || '',
+      priority: r.priority || '',
+      owner: r.owner || '',
+      rationale: r.rationale || r.reason || ''
+    };
+  };
+
+  const getWatchItemName = (item) => {
+    if (!item) return '';
+    if (typeof item === 'string') return item;
+    return item.name || item.competitor || item.company || '';
+  };
 
   const fetchSummary = async () => {
     setLoading(true);
@@ -43,7 +92,7 @@ export default function AIStrategySection() {
       setSummaryData(data);
 
       // Load saved recommendation checkboxes from localStorage
-      const genAt = data?.weeklyBriefGeneratedAt || 'latest';
+      const genAt = data?.generatedAt || data?.weeklyBriefGeneratedAt || 'latest';
       const storageKey = `intelligence_recs_${companyId}_${genAt}`;
       const saved = localStorage.getItem(storageKey);
       if (saved) {
@@ -64,7 +113,7 @@ export default function AIStrategySection() {
   }, []);
 
   const toggleCheckRec = (index) => {
-    const genAt = summaryData?.weeklyBriefGeneratedAt || 'latest';
+    const genAt = summaryData?.generatedAt || summaryData?.weeklyBriefGeneratedAt || 'latest';
     const storageKey = `intelligence_recs_${companyId}_${genAt}`;
 
     setCheckedRecs(prev => {
@@ -161,7 +210,7 @@ export default function AIStrategySection() {
   }
 
   const weeklyBrief = summaryData?.weeklyBrief;
-  const generatedAtText = formatBriefTimestamp(summaryData?.weeklyBriefGeneratedAt);
+  const generatedAtText = formatBriefTimestamp(summaryData?.generatedAt || summaryData?.weeklyBriefGeneratedAt);
   const topThreats = Array.isArray(summaryData?.topThreats) ? summaryData.topThreats : [];
   const opportunities = Array.isArray(summaryData?.opportunities) ? summaryData.opportunities : [];
   const watchList = Array.isArray(summaryData?.watchList) ? summaryData.watchList : [];
@@ -413,36 +462,41 @@ export default function AIStrategySection() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {topThreats.map((threat, idx) => (
-                    <div 
-                      key={idx}
-                      className="bg-red-50/60 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-2xl p-5 space-y-3"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${getUrgencyBadgeStyle(threat.urgency)}`}>
-                          {threat.urgency || 'MEDIUM'} URGENCY
-                        </span>
-
-                        {threat.competitorName && (
-                          <span className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300">
-                            <Building size={12} className="text-slate-400" />
-                            {threat.competitorName}
+                  {topThreats.map((threat, idx) => {
+                    const threatText = getThreatText(threat);
+                    const compName = getThreatCompetitor(threat);
+                    const actionText = getThreatAction(threat);
+                    return (
+                      <div 
+                        key={idx}
+                        className="bg-red-50/60 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-2xl p-5 space-y-3"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${getUrgencyBadgeStyle(threat?.urgency)}`}>
+                            {threat?.urgency || 'MEDIUM'} URGENCY
                           </span>
+
+                          {compName && (
+                            <span className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300">
+                              <Building size={12} className="text-slate-400" />
+                              {compName}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                          {threatText}
+                        </p>
+
+                        {actionText && (
+                          <div className="text-xs font-semibold text-red-700 dark:text-red-400 flex items-start gap-1.5 pt-1 border-t border-red-200/50 dark:border-red-900/40">
+                            <ArrowRight size={14} className="shrink-0 mt-0.5" />
+                            <span>{actionText}</span>
+                          </div>
                         )}
                       </div>
-
-                      <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
-                        {threat.description}
-                      </p>
-
-                      {threat.recommendedAction && (
-                        <div className="text-xs font-semibold text-red-700 dark:text-red-400 flex items-start gap-1.5 pt-1 border-t border-red-200/50 dark:border-red-900/40">
-                          <ArrowRight size={14} className="shrink-0 mt-0.5" />
-                          <span>{threat.recommendedAction}</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </section>
@@ -460,29 +514,34 @@ export default function AIStrategySection() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {opportunities.map((opp, idx) => (
-                    <div 
-                      key={idx}
-                      className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-2xl p-5 space-y-3"
-                    >
-                      <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
-                        {opp.description}
-                      </p>
+                  {opportunities.map((opp, idx) => {
+                    const oppText = getOppText(opp);
+                    const basisText = getOppBasis(opp);
+                    const actionText = getOppAction(opp);
+                    return (
+                      <div 
+                        key={idx}
+                        className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-2xl p-5 space-y-3"
+                      >
+                        <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                          {oppText}
+                        </p>
 
-                      {opp.basis && (
-                        <div className="text-xs text-slate-500 font-medium">
-                          Based on: <span className="text-slate-700 dark:text-slate-300 font-semibold">{opp.basis}</span>
-                        </div>
-                      )}
+                        {basisText && (
+                          <div className="text-xs text-slate-500 font-medium">
+                            Based on: <span className="text-slate-700 dark:text-slate-300 font-semibold">{basisText}</span>
+                          </div>
+                        )}
 
-                      {opp.recommendedAction && (
-                        <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-start gap-1.5 pt-1 border-t border-emerald-200/50 dark:border-emerald-900/40">
-                          <ArrowRight size={14} className="shrink-0 mt-0.5" />
-                          <span>{opp.recommendedAction}</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        {actionText && (
+                          <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-start gap-1.5 pt-1 border-t border-emerald-200/50 dark:border-emerald-900/40">
+                            <ArrowRight size={14} className="shrink-0 mt-0.5" />
+                            <span>{actionText}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </section>
@@ -501,17 +560,20 @@ export default function AIStrategySection() {
               </p>
 
               <div className="flex flex-wrap gap-3 pt-2">
-                {watchList.map((compName, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleWatchListClick(compName)}
-                    className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-4 py-2 rounded-xl text-xs font-extrabold transition-all shadow-sm group"
-                  >
-                    <Building size={14} />
-                    <span>{compName}</span>
-                    <ArrowRight size={12} className="opacity-50 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                ))}
+                {watchList.map((item, idx) => {
+                  const compName = getWatchItemName(item);
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleWatchListClick(compName)}
+                      className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-4 py-2 rounded-xl text-xs font-extrabold transition-all shadow-sm group"
+                    >
+                      <Building size={14} />
+                      <span>{compName}</span>
+                      <ArrowRight size={12} className="opacity-50 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  );
+                })}
               </div>
             </section>
           )}
@@ -532,6 +594,7 @@ export default function AIStrategySection() {
               <div className="space-y-3">
                 {recommendations.map((rec, idx) => {
                   const isChecked = !!checkedRecs[idx];
+                  const { text: recText, priority, owner, rationale } = getRecData(rec);
 
                   return (
                     <div
@@ -552,8 +615,27 @@ export default function AIStrategySection() {
                       </button>
 
                       <div className="flex-1 text-sm md:text-base font-semibold leading-relaxed">
-                        <span className="text-blue-600 dark:text-blue-400 font-bold mr-2">{idx + 1}.</span>
-                        {rec}
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="text-blue-600 dark:text-blue-400 font-bold">{idx + 1}.</span>
+                          {priority && (
+                            <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              {priority}
+                            </span>
+                          )}
+                          {owner && (
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                              Owner: {owner}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-slate-900 dark:text-white font-medium">
+                          {recText}
+                        </div>
+                        {rationale && (
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-normal mt-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800 italic">
+                            Rationale: {rationale}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

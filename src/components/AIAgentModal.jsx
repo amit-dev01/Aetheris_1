@@ -2,6 +2,63 @@ import { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
 import { chatWithIntelligenceAgent } from '../api';
 
+function FormattedMessage({ text }) {
+  if (!text) return null;
+
+  const renderInline = (str) => {
+    const parts = str.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={idx} className="font-extrabold text-slate-900 dark:text-white">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
+  const lines = text.split('\n');
+  return (
+    <div className="space-y-2 text-sm leading-relaxed">
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={idx} className="h-1" />;
+
+        if (trimmed.startsWith('### ')) {
+          return (
+            <h4 key={idx} className="text-xs font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 pt-2.5 pb-1 border-b border-slate-100 dark:border-slate-800">
+              {trimmed.replace(/^###\s+/, '')}
+            </h4>
+          );
+        }
+
+        if (trimmed.startsWith('## ')) {
+          return (
+            <h3 key={idx} className="text-sm font-extrabold text-slate-900 dark:text-white pt-2 pb-0.5">
+              {trimmed.replace(/^##\s+/, '')}
+            </h3>
+          );
+        }
+
+        if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
+              <div className="flex-1 text-slate-700 dark:text-slate-200">
+                {renderInline(trimmed.replace(/^[*\-]\s+/, ''))}
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <p key={idx} className="text-slate-800 dark:text-slate-200">
+            {renderInline(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AIAgentModal({ isOpen, onClose }) {
   const [query, setQuery] = useState('');
   const [messages, setMessages] = useState([
@@ -103,12 +160,16 @@ export default function AIAgentModal({ isOpen, onClose }) {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/40">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[88%] rounded-2xl p-4 text-sm shadow-sm leading-relaxed whitespace-pre-wrap ${
+              <div className={`max-w-[88%] rounded-2xl p-4 text-sm shadow-sm leading-relaxed ${
                 msg.role === 'user' 
-                  ? 'bg-blue-600 text-white rounded-tr-sm' 
-                  : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm font-normal'
+                  ? 'bg-blue-600 text-white rounded-tr-sm whitespace-pre-wrap' 
+                  : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm'
               }`}>
-                {msg.content}
+                {msg.role === 'user' ? (
+                  msg.content
+                ) : (
+                  <FormattedMessage text={msg.content} />
+                )}
               </div>
             </div>
           ))}
