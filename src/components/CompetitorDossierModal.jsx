@@ -511,6 +511,26 @@ export default function CompetitorDossierModal({ isOpen, competitor, onClose, sh
                             <p className="text-xs text-indigo-100/90 leading-relaxed font-medium bg-slate-900/80 p-3 rounded-xl border border-indigo-900/50 text-left w-full">
                               💡 {prediction.recommendation}
                             </p>
+
+                            {prediction.keyDrivers && prediction.keyDrivers.length > 0 && (
+                              <div className="w-full space-y-1.5 text-left bg-slate-900/60 p-3 rounded-xl border border-indigo-900/30">
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1">
+                                  <Sparkles size={12} className="text-amber-400" /> Model Feature Drivers
+                                </div>
+                                <div className="space-y-1">
+                                  {prediction.keyDrivers.map((driver, dIdx) => (
+                                    <div key={dIdx} className="text-[11px] text-indigo-200/80 leading-snug flex items-start gap-1.5">
+                                      <span className="text-indigo-400 mt-0.5">•</span>
+                                      <span>{driver}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="text-[10px] font-mono text-indigo-400/60 text-center tracking-tight pt-0.5">
+                              ML Engine: {prediction.model || 'Calibrated XGBoost GBDT'}
+                            </div>
                           </>
                         ) : null}
                       </div>
